@@ -22,6 +22,7 @@ global using StanbicIBTC.AccountOpening.Domain.Events;
 global using StanbicIBTC.AccountOpening.Domain.Exceptions;
 global using StanbicIBTC.AccountOpening.Domain.ValueObjects;
 global using StanbicIBTC.AccountOpening.Domain.Config;
+global using StanbicIBTC.AccountOpening.Service;
 
 
 

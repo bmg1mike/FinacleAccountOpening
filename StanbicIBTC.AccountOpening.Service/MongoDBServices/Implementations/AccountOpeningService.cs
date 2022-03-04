@@ -4,7 +4,8 @@ using RestSharp;
 
 namespace StanbicIBTC.AccountOpening.Service;
 
-public class AccountOpeningService
+
+public class AccountOpeningService : IAccountOpeningService
 {
     private readonly ISoapRequestHelper _soapRequestHelper;
     private readonly ILogger<AccountOpeningService> _logger;
@@ -13,12 +14,14 @@ public class AccountOpeningService
     private readonly ICIFRequestRepository _cifRepository;
     private readonly IAccountOpeningAttemptRepository _accountOpeningAttempt;
 
-    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt)
+    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt, IConfiguration config, IRestRequestHelper restRequestHelper)
     {
         _logger = logger;
         _soapRequestHelper = soapRequestHelper;
         _cifRepository = cifRepository;
         _accountOpeningAttempt = accountOpeningAttempt;
+        _config = config;
+        _restRequestHelper = restRequestHelper;
     }
 
     public async Task<string> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request)
@@ -35,7 +38,7 @@ public class AccountOpeningService
 
             var bvnDetails = bvnDetailsResponse.data;
 
-            var ninDetailsResponse = await GetNinDetails(request.Nin,request.DateOfBirth.ToString());
+            var ninDetailsResponse = await GetNinDetails(request.Nin, request.DateOfBirth.ToString());
 
             if (ninDetailsResponse.data is null)
             {
@@ -71,6 +74,8 @@ public class AccountOpeningService
                 return "Details given does not match with your BVN details";
             }
 
+            accountOpeningAttempt.Response = "Request successfully stored in the database for processing";
+            var accountOpeningAttemptId = await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
             var nextOfKinDetails = new CIFNextOfKinDetail
             {
                 FirstName = ninDetails.FullData.nok_firstname,
@@ -81,7 +86,8 @@ public class AccountOpeningService
                 Town = ninDetails.FullData.nok_town
             };
 
-            var cifRequest = new CIFRequest{
+            var cifRequest = new CIFRequest
+            {
                 BvnEnrollmentBranch = bvnDetails.EnrollmentBranch,
                 BvnErollmentBank = bvnDetails.EnrollmentBank,
                 CustomerAddress = bvnDetails.ResidentialAddress,
@@ -116,7 +122,7 @@ public class AccountOpeningService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
+            _logger.LogError(ex, ex.Message);
             return ex.Message;
         }
     }
@@ -125,12 +131,18 @@ public class AccountOpeningService
     {
         try
         {
-            
-            
-            
+            var accountOpeningAttempt = new AccountOpeningAttempt
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Bvn = request.CustomerBVN,
+                Response = string.Empty,
+                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber()
+            };
+
             var cif = await CreateCIF(request);
 
-            if(cif.data == null)
+            if (cif.data == null)
             {
                 _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
             }
@@ -139,78 +151,77 @@ public class AccountOpeningService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
+            _logger.LogError(ex, ex.Message);
             return null;
         }
     }
 
-    public async Task<(string responseCode, string responseDescription, VerifyBVNResponseModel data)> GetBVNDetails(string bvn)
+    private async Task<(string responseCode, string responseDescription, VerifyBVNResponseModel data)> GetBVNDetails(string bvn)
     {
         try
         {
             var request = new
+            {
+                requestId = Util.PaymentId(),
+                bvnRequest = new
                 {
-                    requestId = Util.PaymentId(),
-                    bvnRequest = new
-                    {
-                        bvns = new string[] {$"{bvn}"}
-                    }
-                };
+                    bvns = new string[] { $"{bvn}" }
+                }
+            };
             // validate BVN
-            var headers = new Dictionary<string,string>()
+            var headers = new Dictionary<string, string>()
             {
                 { "module_id",_config["BVN_service:moduleId"] }
             };
-            var response = await _restRequestHelper.HttpAsync(Method.POST,_config["BVN_service:base_url"],headers,request);
+            var response = await _restRequestHelper.HttpAsync(Method.POST, _config["BVN_service:base_url"], headers, request);
             if (response.Content is null)
             {
                 return ("9xx", "Error validating customer's BVN", null);
             }
             var result = JsonConvert.DeserializeObject<VerifyBVNResponseModel>(response.Content);
-            return (result.ResponseCode,result.ResponseMessage,result);
+            return (result.ResponseCode, result.ResponseMessage, result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
+            _logger.LogError(ex, ex.Message);
             return ("9xx", ex.Message, null);
         }
     }
 
-     public async Task<(string responseCode, string responseDescription, AccountNINResponseModel data)> GetNinDetails(string nin, string dob)
+    private async Task<(string responseCode, string responseDescription, AccountNINResponseModel data)> GetNinDetails(string nin, string dob)
+    {
+        var bvnDob = DateTime.Parse(dob).ToString("yyyy-MM-dd");
+        try
         {
-            var bvnDob = DateTime.Parse(dob).ToString("yyyy-MM-dd");
-            try
+            var request = new
             {
-                var request = new 
-                {
-                    IdNumber = nin,
-                    //Dob = dob,
-                    Dob = bvnDob,
-                    Channel = _config["NIN_service:channel"],
-                    ModuleId = _config["NIN_service:moduleId"]
-                };
+                IdNumber = nin,
+                Dob = bvnDob,
+                Channel = _config["NIN_service:channel"],
+                ModuleId = _config["NIN_service:moduleId"]
+            };
 
-                var response = await _restRequestHelper.HttpAsync(Method.POST,_config["NIN_service:base_url"],null,request);
-                if (response.Content == null)
-                {
-                    return ("9xx", "Error validating customer's NIN", null);
-                }
-                var result = JsonConvert.DeserializeObject<AccountNINResponseModel>(response.Content);
-                if (result.ResultCode != "1012")
-                {
-                    return ("9xx", result.ResultText, null);
-                }
-
-                return ("00", "success", result);
-
-            }
-            catch (Exception ex)
+            var response = await _restRequestHelper.HttpAsync(Method.POST, _config["NIN_service:base_url"], null, request);
+            if (response.Content == null)
             {
-                _logger.LogError(ex,ex.Message);
-                throw;
+                return ("9xx", "Error validating customer's NIN", null);
             }
+            var result = JsonConvert.DeserializeObject<AccountNINResponseModel>(response.Content);
+            if (result.ResultCode != "1012")
+            {
+                return ("9xx", result.ResultText, null);
+            }
+
+            return ("00", "success", result);
+
         }
-    public async Task<(string responseCode, string responseDescription, CIFCreationResponse data)> CreateCIF(CIFRequest request)
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+    private async Task<(string responseCode, string responseDescription, CIFCreationResponse data)> CreateCIF(CIFRequest request)
     {
         try
         {
@@ -218,7 +229,7 @@ public class AccountOpeningService
 
             if (response.ResponseCode != "000")
             {
-                return (response.ResponseCode,response.ResponseDescription,null);
+                return (response.ResponseCode, response.ResponseDescription, null);
             }
             throw new NotImplementedException();
         }
@@ -255,7 +266,7 @@ public class AccountOpeningService
                 <EntityId></EntityId>
                 <EntityType></EntityType>
                 <ArmCorrelationId></ArmCorrelationId>
-                <MessageDateTime>{DateTime.Now.ToString("yyyy-MM-dd"+"T"+"HH:mm:ss.fff")}</MessageDateTime>
+                <MessageDateTime>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</MessageDateTime>
                       </RequestMessageInfo>
                 <Security>
                 <Token>
@@ -285,7 +296,7 @@ public class AccountOpeningService
                 <FreeTextLabel>Suites</FreeTextLabel>
                 <PrefAddr>Y</PrefAddr>
                 <PrefFormat>FREE_TEXT_FORMAT</PrefFormat>
-                <StartDt>{DateTime.Now.ToString("yyyy-MM-dd"+"T"+"HH:mm:ss.fff")}</StartDt>
+                <StartDt>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</StartDt>
                 <State>{request.StateOfResidence.ToUpper().Trim()}</State>
                 <PostalCode>12345</PostalCode>
                 </AddrDtls>
@@ -309,7 +320,7 @@ public class AccountOpeningService
                 <FreeTextLabel>Suites</FreeTextLabel>
                 <PrefAddr>N</PrefAddr>
                 <PrefFormat>FREE_TEXT_FORMAT</PrefFormat>
-                <StartDt>{DateTime.Now.ToString("yyyy-MM-dd"+"T"+"HH:mm:ss.fff")}</StartDt>
+                <StartDt>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</StartDt>
                 <State>{request.StateOfResidence.ToUpper()}</State>
                 <PostalCode>12345</PostalCode>
                 </AddrDtls>
@@ -344,7 +355,7 @@ public class AccountOpeningService
                 <PrefName>{request.FirstName.ToUpper().Trim()}</PrefName>
                 <PrimarySolId>999999</PrimarySolId>
                 <Region>001</Region>
-                <RelationshipOpeningDt>{DateTime.Now.ToString("yyyy-MM-dd"+"T"+"HH:mm:ss.fff")}</RelationshipOpeningDt>
+                <RelationshipOpeningDt>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</RelationshipOpeningDt>
                 <RiskProfileScore>0</RiskProfileScore>
                 <Salutation>040</Salutation>
                 <Sector>96</Sector>
@@ -366,7 +377,7 @@ public class AccountOpeningService
                 <EntityDoctData>
                 <CountryOfIssue>NG</CountryOfIssue>
                 <DocCode>D0113</DocCode>
-                <IssueDt>{DateTime.Now.ToString("yyyy-MM-dd"+"T"+"HH:mm:ss.fff")}</IssueDt>
+                <IssueDt>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</IssueDt>
                 <TypeCode>DT010</TypeCode>
                 <TypeDesc>ADDRESS PROOF INDIVIDUAL</TypeDesc>
                 <PlaceOfIssue>NG</PlaceOfIssue>

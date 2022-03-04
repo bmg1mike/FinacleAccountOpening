@@ -1,8 +1,14 @@
+using FluentValidation.AspNetCore;
+using StanbicIBTC.AccountOpening.Domain;
+
 namespace StanbicIBTC.AccountOpening.Core.Data;
 public static class DependencyInjection
 {
     public static IServiceCollection AddDataDependencies(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddControllers()
+            .AddFluentValidation(x => x.RegisterValidatorsFromAssemblyContaining<AccountOpeningAttemptDtoValidator>());
+        
 
         services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(configuration.GetConnectionString("MongoDb")));
 

@@ -18,6 +18,9 @@ public static class DependencyInjection
          services.AddTransient<IAccountOpeningAttemptService, AccountOpeningAttemptService>();
          services.AddTransient<IInboundLogService, InboundLogService>();
          services.AddTransient<IOutboundLogService, OutboundLogService>();
+         services.AddScoped<IAccountOpeningService,AccountOpeningService>();
+         services.AddScoped<IRestRequestHelper,RestRequestHelper>();
+         services.AddScoped<ISoapRequestHelper,SoapRequestHelper>();
 
 
         return services;

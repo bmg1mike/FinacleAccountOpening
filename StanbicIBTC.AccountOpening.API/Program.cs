@@ -28,6 +28,21 @@ builder.Services.AddHealthChecks()
             ("https://uat.firstcentralcreditbureau.com/FirstCentralNigeriaWebService_JSON3/FirstCentralNigeriaWebService.asmx"),
              name: "First Central Credit Bureau",
              failureStatus: HealthStatus.Degraded)
+    .AddUrlGroup(new Uri
+        ("http://10.234.135.44:60003/smileidentity/verify"),
+        name: "NIN Redbox Endpoint",
+        failureStatus: HealthStatus.Degraded
+    )
+    .AddUrlGroup(new Uri
+        ("http://10.234.135.44:9882/uat/redbox/services/api/bvn/getbvndetails"),
+        name: "BVN Redbox Endpoint",
+        failureStatus: HealthStatus.Degraded
+    )
+    .AddUrlGroup(new Uri
+        ("https://10.234.135.44:8443/uat/redbox/services/messaging/outbound"),
+        name: "SMS Redbox Endpoint",
+        failureStatus: HealthStatus.Degraded
+    )
 ;
 
 builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
