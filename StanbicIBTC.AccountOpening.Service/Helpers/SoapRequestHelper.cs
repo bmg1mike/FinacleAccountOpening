@@ -24,11 +24,11 @@ public class SoapRequestHelper : ISoapRequestHelper
 
     public async Task<FinacleResponse> FinacleCall(string soapRequest, string soapAction = "\"treat\"", string url = "", string moduleId = "", string authId = "")
     {
-        url = string.IsNullOrEmpty(url) ? _configSettings["Finacle:url"] : url;
-        moduleId = string.IsNullOrEmpty(moduleId) ? _configSettings["ModuleId"] : moduleId;
-        authId = string.IsNullOrEmpty(authId) ? _configSettings["AuthId"] : authId;
+        url = string.IsNullOrEmpty(url) ? _configSettings["Finacle:base_url"] : url;
+        moduleId = string.IsNullOrEmpty(moduleId) ? _configSettings["Finacle:moduleId"] : moduleId;
+        authId = string.IsNullOrEmpty(authId) ? _configSettings["Finacle:authorization"] : authId;
 
-        var k = new FinacleResponse("99", "Init");
+        var responseResult = new FinacleResponse("99", "Init");
         var reqId = $"{soapAction}_{Util.TimeStampCode()}";
         _logger.LogInformation($"{soapAction} API REQ: {reqId}\nModuleId:{moduleId}|AuthId:{authId}\n{soapRequest}:{url}");
         try
@@ -58,23 +58,23 @@ public class SoapRequestHelper : ISoapRequestHelper
             if (responseMessage.IsSuccessStatusCode)
             {
                 var resp = await responseMessage.Content.ReadAsStringAsync();
-                k = new FinacleResponse("000", resp);
+                responseResult = new FinacleResponse("000", resp);
             }
             else
             {
                 var resp = await responseMessage.Content.ReadAsStringAsync();
-                k = new FinacleResponse("9XX", resp);
+                responseResult = new FinacleResponse("9XX", resp);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            k = new FinacleResponse("9XX", ex.Message);
+            responseResult = new FinacleResponse("9XX", ex.Message);
         }
 
-        var responseLogMsg = $"{soapAction} API RESP: {reqId} -> {JsonConvert.SerializeObject(k)}";
+        var responseLogMsg = $"{soapAction} API RESP: {reqId} -> {JsonConvert.SerializeObject(responseResult)}";
         _logger.LogInformation(responseLogMsg);
-        return k;
+        return responseResult;
     }
 
     private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)

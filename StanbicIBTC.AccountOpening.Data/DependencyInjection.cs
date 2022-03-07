@@ -1,4 +1,6 @@
 using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
+using StanbicIBTC.AccountOpening.Data;
 using StanbicIBTC.AccountOpening.Domain;
 
 namespace StanbicIBTC.AccountOpening.Core.Data;
@@ -17,6 +19,7 @@ public static class DependencyInjection
         configuration.GetSection("MongoDbSettings:DatabaseName").Value));
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();
+        services.AddDbContext<ModelContext>(x => x.UseOracle(configuration.GetConnectionString("RedBoxConnection")));
 
 
          services.AddTransient<ICIFRequestRepository, CIFRequestRepository>();
@@ -24,6 +27,7 @@ public static class DependencyInjection
          services.AddTransient<IAccountOpeningAttemptRepository, AccountOpeningAttemptRepository>();
          services.AddTransient<IInboundLogRepository, InboundLogRepository>();
          services.AddTransient<IOutboundLogRepository, OutboundLogRepository>();
+         services.AddScoped<IFinacleRepository,FinacleRepository>();
 
 
         return services;

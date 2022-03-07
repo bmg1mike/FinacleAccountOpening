@@ -16,18 +16,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddHealthChecks()
-   .AddUrlGroup(new Uri    
-            ("https://www.google.com"),
-             name: "Google",
-             failureStatus: HealthStatus.Degraded)
-    .AddUrlGroup(new Uri    
-            ("https://api.remita.net/"),
-             name: "Remita",
-             failureStatus: HealthStatus.Degraded)
-    .AddUrlGroup(new Uri    
-            ("https://uat.firstcentralcreditbureau.com/FirstCentralNigeriaWebService_JSON3/FirstCentralNigeriaWebService.asmx"),
-             name: "First Central Credit Bureau",
-             failureStatus: HealthStatus.Degraded)
     .AddUrlGroup(new Uri
         ("http://10.234.135.44:60003/smileidentity/verify"),
         name: "NIN Redbox Endpoint",
@@ -43,7 +31,11 @@ builder.Services.AddHealthChecks()
         name: "SMS Redbox Endpoint",
         failureStatus: HealthStatus.Degraded
     )
-;
+    .AddUrlGroup(new Uri
+        ("https://ungcorweb.ng.sbicdirectory.com/fiwebservice/FIWebService"),
+        name: "Finacle Endpoint",
+        failureStatus: HealthStatus.Degraded
+    );
 
 builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
     {
@@ -69,7 +61,7 @@ builder.Services.AddHealthChecksUI(opt =>
     opt.SetEvaluationTimeInSeconds(10); //time in seconds between check    
     opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
     opt.SetApiMaxActiveRequests(1); //api requests concurrency    
-    opt.AddHealthCheckEndpoint("default api", "/health"); //map health check api    
+    opt.AddHealthCheckEndpoint("Acount Opening api", "/health"); //map health check api    
 })    
 .AddInMemoryStorage();   
 

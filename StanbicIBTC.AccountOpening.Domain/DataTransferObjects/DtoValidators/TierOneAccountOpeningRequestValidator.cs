@@ -15,9 +15,13 @@ public class TierOneAccountOpeningRequestValidator : AbstractValidator<TierOneAc
         RuleFor(x => x.OccupationCode).NotEmpty()
                                         .NotNull()
                                         .Length(3,3);
-                                        
-        RuleFor(x => x.MaritalStatus).NotEmpty()
-                                     .NotNull()
-                                     .Length(3,3);
+        
+        RuleFor(x => x.PhoneNumber).NotEmpty()
+                                    .NotNull()
+                                    .Length(11,11);
+
+        RuleFor(x => x.DateOfBirth).NotEmpty()
+                                    .NotNull();
+                                    
     }
 }

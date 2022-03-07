@@ -28,4 +28,8 @@ global using Microsoft.Extensions.DependencyInjection;
 
 global using StanbicIBTC.AccountOpening.Core.Repositories;
 
+global using System.Data;
+global using Oracle.ManagedDataAccess.Client;
+global using Dapper;
+
 

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RestSharp;
+using StanbicIBTC.AccountOpening.Data;
 
 namespace StanbicIBTC.AccountOpening.Service;
 
@@ -13,8 +14,9 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly IConfiguration _config;
     private readonly ICIFRequestRepository _cifRepository;
     private readonly IAccountOpeningAttemptRepository _accountOpeningAttempt;
+    private readonly IFinacleRepository _finacleRepository;
 
-    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt, IConfiguration config, IRestRequestHelper restRequestHelper)
+    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt, IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository)
     {
         _logger = logger;
         _soapRequestHelper = soapRequestHelper;
@@ -22,9 +24,10 @@ public class AccountOpeningService : IAccountOpeningService
         _accountOpeningAttempt = accountOpeningAttempt;
         _config = config;
         _restRequestHelper = restRequestHelper;
+        _finacleRepository = finacleRepository;
     }
 
-    public async Task<string> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request)
+    public async Task<(string responseCode, string responseDescription)> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request)
     {
         try
         {
@@ -33,7 +36,7 @@ public class AccountOpeningService : IAccountOpeningService
             if (bvnDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
-                return bvnDetailsResponse.responseDescription;
+                return ("999",bvnDetailsResponse.responseDescription);
             }
 
             var bvnDetails = bvnDetailsResponse.data;
@@ -43,7 +46,7 @@ public class AccountOpeningService : IAccountOpeningService
             if (ninDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
-                return ninDetailsResponse.responseDescription;
+                return ("999",ninDetailsResponse.responseDescription);
             }
 
             var ninDetails = ninDetailsResponse.data;
@@ -62,7 +65,7 @@ public class AccountOpeningService : IAccountOpeningService
                 _logger.LogInformation($"The Phone number provided is not the same with the Bvn phone number. BVN : {bvnDetails.BVN}");
                 accountOpeningAttempt.Response = "The Phone number provided is not the same with the Bvn phone number";
                 await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return "Details given does not match with your BVN details";
+                return ("999","Details given does not match with your BVN details");
             }
 
             var bvnDob = DateTime.Parse(bvnDetails.DateOfBirth);
@@ -71,7 +74,7 @@ public class AccountOpeningService : IAccountOpeningService
                 _logger.LogInformation($"BVN Date Of Birth does not match the supplied Date Of Birth");
                 accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
                 await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return "Details given does not match with your BVN details";
+                return ("999","Details given does not match with your BVN details");
             }
 
             accountOpeningAttempt.Response = "Request successfully stored in the database for processing";
@@ -100,7 +103,7 @@ public class AccountOpeningService : IAccountOpeningService
                 DateOfBirthInY_M_D_Format = bvnDetails.DateOfBirth,
                 Email = bvnDetails.Email,
                 StateOfResidence = bvnDetails.StateOfResidence,
-                MaritalStatus = request.MaritalStatus,
+                MaritalStatus = MaritalStatusCode(bvnDetails.MaritalStatus),
                 LgaOfResidence = bvnDetails.LgaOfResidence,
                 NIN = bvnDetails.NIN,
                 PhoneNumber = bvnDetails.PhoneNumber,
@@ -114,20 +117,20 @@ public class AccountOpeningService : IAccountOpeningService
             if (saveCifRequest == null)
             {
                 _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
-                return $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later";
+                return ("999",$"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later");
             }
 
-            return "Account request has been recieved successfully and scheduled for processing";
+            return ("000","Account request has been recieved successfully and scheduled for processing");
 
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return ex.Message;
+            return ("999",ex.Message);
         }
     }
 
-    public async Task<AccountOpeningModel> OpenAccount(CIFRequest request)
+    public async Task<string> OpenAccount(CIFRequest request)
     {
         try
         {
@@ -140,14 +143,41 @@ public class AccountOpeningService : IAccountOpeningService
                 PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber()
             };
 
+            request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Trim());
+            if (string.IsNullOrEmpty(request.StateOfResidence))
+            {
+                accountOpeningAttempt.Response = "The state in the BVN is not available in the finacle Database";
+                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return null;
+            }
+
+            request.LgaOfResidence = _finacleRepository.GetCityCode(request.LgaOfResidence.ToUpper().Trim());
+            if (string.IsNullOrEmpty(request.LgaOfResidence))
+            {
+                accountOpeningAttempt.Response = "The City in the BVN is not available in the finacle Database";
+                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return null;
+            }
+
             var cif = await CreateCIF(request);
 
-            if (cif.data == null)
+            if (cif.cif == null)
             {
                 _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
             }
 
-            return new AccountOpeningModel();
+            var openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayload(cif.cif,request));
+
+            if (openSavingsAccount.ResponseCode != "000")
+            {
+                // send sms to customer for unsuccessful attempt
+                accountOpeningAttempt.Response = $"Could not open account for CIF : {cif.cif}";   
+            }
+
+            
+            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(openSavingsAccount.ResponseDescription,"CustId");
+
+            return successDescription;
         }
         catch (Exception ex)
         {
@@ -176,6 +206,7 @@ public class AccountOpeningService : IAccountOpeningService
             var response = await _restRequestHelper.HttpAsync(Method.POST, _config["BVN_service:base_url"], headers, request);
             if (response.Content is null)
             {
+                _logger.LogInformation(response.ErrorMessage);
                 return ("9xx", "Error validating customer's BVN", null);
             }
             var result = JsonConvert.DeserializeObject<VerifyBVNResponseModel>(response.Content);
@@ -195,6 +226,7 @@ public class AccountOpeningService : IAccountOpeningService
         {
             var request = new
             {
+                Country = "NG",
                 IdNumber = nin,
                 Dob = bvnDob,
                 Channel = _config["NIN_service:channel"],
@@ -204,6 +236,7 @@ public class AccountOpeningService : IAccountOpeningService
             var response = await _restRequestHelper.HttpAsync(Method.POST, _config["NIN_service:base_url"], null, request);
             if (response.Content == null)
             {
+                _logger.LogInformation(response.ErrorMessage);
                 return ("9xx", "Error validating customer's NIN", null);
             }
             var result = JsonConvert.DeserializeObject<AccountNINResponseModel>(response.Content);
@@ -221,7 +254,7 @@ public class AccountOpeningService : IAccountOpeningService
             throw;
         }
     }
-    private async Task<(string responseCode, string responseDescription, CIFCreationResponse data)> CreateCIF(CIFRequest request)
+    private async Task<(string responseCode, string responseDescription, string cif)> CreateCIF(CIFRequest request)
     {
         try
         {
@@ -231,7 +264,9 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 return (response.ResponseCode, response.ResponseDescription, null);
             }
-            throw new NotImplementedException();
+
+            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription,"CustId");
+            return ("000","CIF was created successfully", successDescription);
         }
         catch (Exception ex)
         {
@@ -386,7 +421,7 @@ public class AccountOpeningService : IAccountOpeningService
                 </EntityDoctData>
                 <PsychographicData>
                 <PsychographMiscData>
-                <DTDt1>2099-12-31T00:00:00.000</DTDt1>
+                <DTDt1>{DateTime.Now.ToString("yyyy-MM-dd")}T00:00:00.000</DTDt1>
                 <StrText10>NGN</StrText10>
                 <Type>CURRENCY</Type>
                 </PsychographMiscData>
@@ -407,6 +442,106 @@ public class AccountOpeningService : IAccountOpeningService
         return payloaad;
     }
 
+    private string AccountOpeningPayload(string cif,CIFRequest request)
+    {
+        var payloaad = @$"
+    <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <web:executeService>
+            <arg_0_0>
+                <![CDATA[
+                    <FIXML
+                    xmlns:ns5=""http://soap.finacle.redbox.stanbic.com/""
+                    xmlns:ns2=""http://webservice.fiusb.ci.infosys.com/""
+                    xmlns:ns4=""http://www.finacle.com/fixml"">
+                    <Header>
+                    <RequestHeader>
+                    <MessageKey>
+                    <RequestUUID>{Util.GenerateRandomNumbers(16)}</RequestUUID>
+                    <ServiceRequestId>SBAcctAdd</ServiceRequestId>
+                    <ServiceRequestVersion>10.2</ServiceRequestVersion>
+                    <ChannelId>RBX</ChannelId>
+                    </MessageKey>
+                    <RequestMessageInfo>
+                    <BankId>NG</BankId>
+                    <TimeZone></TimeZone>
+                    <EntityId></EntityId>
+                    <EntityType></EntityType>
+                    <ArmCorrelationId></ArmCorrelationId>
+                    <MessageDateTime>{DateTime.Now.ToString("yyyy-MM-dd"+"T"+"HH:mm:ss.fff")}</MessageDateTime>
+                    </RequestMessageInfo>
+                    <Security>
+                    <Token>
+                    <PasswordToken>
+                    <UserId></UserId>
+                    <Password></Password>
+                    </PasswordToken>
+                    </Token>
+                    <FICertToken></FICertToken>
+                    <RealUserLoginSessionId></RealUserLoginSessionId>
+                    <RealUser></RealUser>
+                    <RealUserPwd></RealUserPwd>
+                    <SSOTransferToken></SSOTransferToken>
+                    </Security>
+                    </RequestHeader>
+                    </Header>
+                    <Body>
+                    <SBAcctAddRequest>
+                    <SBAcctAddRq>
+                    <CustId>
+                    <CustId>{cif}</CustId>
+                    </CustId>
+                    <SBAcctId>
+                    <AcctType>
+                    <SchmCode>KYCL1</SchmCode>
+                    </AcctType>
+                    <AcctCurr>NGN</AcctCurr>
+                    <BankInfo>
+                    <BankId>NG</BankId>
+                    <BranchId>999999</BranchId>
+                    </BankInfo>
+                    </SBAcctId>
+                    <SBAcctGenInfo>
+                    <GenLedgerSubHead>
+                    <GenLedgerSubHeadCode>3501</GenLedgerSubHeadCode>
+                    <CurCode>NGN</CurCode>
+                    </GenLedgerSubHead>
+                    <AcctName>{request.FirstName} {request.MiddleName} {request.LastName}</AcctName>
+                    <AcctShortName>{request.FirstName}</AcctShortName>
+                    <AcctStmtMode>S</AcctStmtMode>
+                    <DespatchMode>N</DespatchMode>
+                    </SBAcctGenInfo>
+                    </SBAcctAddRq>
+                    <SBAcctAdd_CustomData>
+                    <INTCRACCTFLG>S</INTCRACCTFLG>
+                    <SOLID>999999</SOLID>
+                    <LOCALCALFLG>N</LOCALCALFLG>
+                    <PRICINGCODE>PAYAS</PRICINGCODE>
+                    <MISENTERED>1</MISENTERED>
+                    <PFNUM></PFNUM>
+                    <EMAILTYPE></EMAILTYPE>
+                    <WTAXFLG>N</WTAXFLG>
+                    <WTAXBRNBY>N</WTAXBRNBY>
+                    <NXTINTRUNDT>{DateTime.Now.ToString("yyyy-MM-dd"+"T"+"HH:mm:ss.fff")}</NXTINTRUNDT>
+                    <DAILYCOMPINTFLG>N</DAILYCOMPINTFLG>
+                    <WTAXLEVELFLG>A</WTAXLEVELFLG>
+                    <WTAXPCNT>0</WTAXPCNT>
+                    <WTAXFLOORLIMIT>0</WTAXFLOORLIMIT>
+                    <ACCTMGRATACCT>A221040</ACCTMGRATACCT>
+                    </SBAcctAdd_CustomData>
+                    </SBAcctAddRequest>
+                    </Body>
+                    </FIXML>
+                ]]>
+            </arg_0_0>
+            </web:executeService>
+        </soapenv:Body>
+        </soapenv:Envelope>";
+
+        return payloaad;
+    }
+
     private static (string year, string month, string day) GetDateParts(string date)
     {
         var dateParts = date.Split('-');
@@ -414,4 +549,41 @@ public class AccountOpeningService : IAccountOpeningService
             return (dateParts[0], dateParts[1], dateParts[2]);
         return ("0001", "01", "01");
     }
+
+    private string MaritalStatusCode(string maritalStatus)
+        {
+            string status = string.Empty;
+
+            switch (maritalStatus.ToUpper())
+            {
+                case "SINGLE":
+                    status = "001";
+                    break;
+                case "MARRIED":
+                    status = "002";
+                    break;
+                case "SEPARATED":
+                    status = "003";
+                    break;
+                case "DIVORCED":
+                    status = "004";
+                    break;
+                case "DIVORCEE":
+                    status = "004";
+                    break;
+                case "WIDOWED":
+                    status = "005";
+                    break;
+                case "NOT GIVEN":
+                    status = "008";
+                    break;
+                case "LIVE-IN RELATIONSHIP":
+                    status = "009";
+                    break;
+                default:
+                    status = "010";
+                    break;
+            }
+            return status;
+        }
 }

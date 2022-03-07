@@ -15,7 +15,9 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         public async Task<IActionResult> OpenTierOneAccount(TierOneAccountOpeningRequest request)
         {
             var result = new Result<string>();
-            result.Content = await _accountOpeningService.ValidateTierOneAccountOpeningRequest(request);
+            var response = await _accountOpeningService.ValidateTierOneAccountOpeningRequest(request);
+            result.Content = response.responseDescription;
+            result.ResponseCode = response.responseCode;
             return Ok(result);
         }
     }
