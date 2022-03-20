@@ -22,13 +22,13 @@ public class SoapRequestHelper : ISoapRequestHelper
         _configSettings = settings;
     }
 
-    public async Task<FinacleResponse> FinacleCall(string soapRequest, string soapAction = "\"treat\"", string url = "", string moduleId = "", string authId = "")
+    public async Task<OccupationResponse> FinacleCall(string soapRequest, string soapAction = "\"treat\"", string url = "", string moduleId = "", string authId = "")
     {
         url = string.IsNullOrEmpty(url) ? _configSettings["Finacle:base_url"] : url;
         moduleId = string.IsNullOrEmpty(moduleId) ? _configSettings["Finacle:moduleId"] : moduleId;
         authId = string.IsNullOrEmpty(authId) ? _configSettings["Finacle:authorization"] : authId;
 
-        var responseResult = new FinacleResponse("99", "Init");
+        var responseResult = new OccupationResponse("99", "Init");
         var reqId = $"{soapAction}_{Util.TimeStampCode()}";
         _logger.LogInformation($"{soapAction} API REQ: {reqId}\nModuleId:{moduleId}|AuthId:{authId}\n{soapRequest}:{url}");
         try
@@ -48,7 +48,7 @@ public class SoapRequestHelper : ISoapRequestHelper
             };
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
-            client.DefaultRequestHeaders.Add("SOAPAction", soapAction);
+            //client.DefaultRequestHeaders.Add("SOAPAction", soapAction);
             client.DefaultRequestHeaders.Add("module_id", $"{moduleId}");
             client.DefaultRequestHeaders.Add("authorization", $"{authId}");
             HttpResponseMessage responseMessage = null;
@@ -58,18 +58,18 @@ public class SoapRequestHelper : ISoapRequestHelper
             if (responseMessage.IsSuccessStatusCode)
             {
                 var resp = await responseMessage.Content.ReadAsStringAsync();
-                responseResult = new FinacleResponse("000", resp);
+                responseResult = new OccupationResponse("000", resp);
             }
             else
             {
                 var resp = await responseMessage.Content.ReadAsStringAsync();
-                responseResult = new FinacleResponse("9XX", resp);
+                responseResult = new OccupationResponse("9XX", resp);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            responseResult = new FinacleResponse("9XX", ex.Message);
+            responseResult = new OccupationResponse("9XX", ex.Message);
         }
 
         var responseLogMsg = $"{soapAction} API RESP: {reqId} -> {JsonConvert.SerializeObject(responseResult)}";

@@ -7,7 +7,7 @@ public partial class MongoDbConfig:IMongoDbConfig
     public MongoDbConfig(string connectionString, string databaseName)
     {
         DatabaseName = databaseName;
-        ConnectionString =  connectionString;
+        ConnectionString = connectionString;
 
-    }   
+    }
 }

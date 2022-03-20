@@ -31,7 +31,7 @@ public static class DependencyInjection
          services.AddScoped<IAccountOpeningService,AccountOpeningService>();
          services.AddScoped<IRestRequestHelper,RestRequestHelper>();
          services.AddScoped<ISoapRequestHelper,SoapRequestHelper>();
-
+         services.AddScoped<ISmsNotification, SmsNotification>();
 
         return services;
 

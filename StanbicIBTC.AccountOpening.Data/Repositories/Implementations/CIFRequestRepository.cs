@@ -1,3 +1,5 @@
+using StanbicIBTC.AccountOpening.Domain;
+
 namespace StanbicIBTC.AccountOpening.Core.Repositories;
 public partial class CIFRequestRepository : ICIFRequestRepository
 {
@@ -45,6 +47,14 @@ public partial class CIFRequestRepository : ICIFRequestRepository
 
         return cIFRequests ;
     } */
+
+    public async Task<List<CIFRequest>> GetPendingCifRequests()
+    {
+        var filter = Builders<CIFRequest>.Filter.Eq(m => m.AccountOpeningStatus, AccountOpeningStatus.Pending.ToString());
+        var cIFRequests = await context.CIFRequests.Find(filter).ToListAsync();
+
+        return cIFRequests;
+    }
 
     public async Task<bool> RemoveCIFRequest(string cIFRequestId)
     {
