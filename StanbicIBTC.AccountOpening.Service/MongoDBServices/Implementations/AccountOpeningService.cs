@@ -32,7 +32,7 @@ public class AccountOpeningService : IAccountOpeningService
         _modelContext = modelContext;
     }
 
-    public async Task<(string responseCode, string responseDescription)> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request)
+    public async Task<ApiResult> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request)
     {
         try
         {
@@ -41,7 +41,7 @@ public class AccountOpeningService : IAccountOpeningService
             if (bvnDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
-                return ("999",bvnDetailsResponse.responseDescription);
+                return new ApiResult { responseCode = "999", responseDescription = bvnDetailsResponse.responseDescription };
             }
 
             var bvnDetails = bvnDetailsResponse.data;
@@ -51,7 +51,7 @@ public class AccountOpeningService : IAccountOpeningService
             if (ninDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
-                return ("999", ninDetailsResponse.responseDescription);
+                return new ApiResult { responseCode = "999", responseDescription = ninDetailsResponse.responseDescription };
             }
 
             var ninDetails = ninDetailsResponse.data;
@@ -70,7 +70,7 @@ public class AccountOpeningService : IAccountOpeningService
                 _logger.LogInformation($"The Phone number provided is not the same with the Bvn phone number. BVN : {bvnDetails.BVN}");
                 accountOpeningAttempt.Response = "The Phone number provided is not the same with the Bvn phone number";
                 await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return ("999","Details given does not match with your BVN details");
+                return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
             }
 
             var bvnDob = DateTime.Parse(bvnDetails.DateOfBirth);
@@ -79,7 +79,7 @@ public class AccountOpeningService : IAccountOpeningService
                 _logger.LogInformation($"BVN Date Of Birth does not match the supplied Date Of Birth");
                 accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
                 await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return ("999","Details given does not match with your BVN details");
+                return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
             }
 
             
@@ -122,7 +122,7 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again later");
-                return ("999",$"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
             }
 
             
@@ -130,13 +130,32 @@ public class AccountOpeningService : IAccountOpeningService
             accountOpeningAttempt.Response = "Request successfully stored in the database for processing";
             var accountOpeningAttemptId = await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
 
-            return ("000","Account request has been recieved successfully and scheduled for processing");
+            return new ApiResult { responseCode = "000", responseDescription = "Account request has been recieved successfully and scheduled for processing" };
 
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return ("999",ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription=ex.Message };
+        }
+    }
+
+    public async Task<List<ApiResult>> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests)
+    {
+        try
+        {
+            var apiResults = new List<ApiResult>();
+            foreach (var item in requests)
+            {
+                var accountOpened = await ValidateTierOneAccountOpeningRequest(item);
+                apiResults.Add(accountOpened);
+            }
+            return apiResults;
+        }
+        catch (Exception ex)
+        {
+
+            throw new Exception(ex.Message);
         }
     }
 
@@ -231,6 +250,71 @@ public class AccountOpeningService : IAccountOpeningService
         {
             _logger.LogError(ex, ex.Message);
             return null;
+        }
+    }
+
+    public async Task<VirtualAccountOpeningResponse> OpenVirtualAccount(CreateVirtualAccountDto request)
+    {
+        try
+        {
+            var bvnDetailsResponse = await GetBVNDetails(request.BankVerificationNumber);
+
+            if (bvnDetailsResponse.data is null)
+            {
+                _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
+                return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = bvnDetailsResponse.responseDescription, ResponseFriendlyMessage = bvnDetailsResponse.responseDescription };
+            }
+
+            var bvnDetails = bvnDetailsResponse.data;
+
+            if (request.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
+            {
+                _logger.LogInformation($"The phone number provided does not match the phone number in the BVN");
+                return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = "Validation Failed", ResponseFriendlyMessage = "Validation failed, please make sure your the information given matches what is in your BVN" };
+            }
+
+            var rubyRequest = new VirtualAccountOpeningRequest
+            {
+                BankVerificationNumber = request.BankVerificationNumber,
+                Address = bvnDetails.ResidentialAddress,
+                FirstName = bvnDetails.FirstName,
+                LastName = bvnDetails.LastName,
+                Gender = bvnDetails.Gender.ToUpper() == "FEMALE" ? "F" : "M",
+                PhoneNumber = bvnDetails.PhoneNumber.AsNigerianPhoneNumber(),
+                DateOfBirth = DateTime.Parse(bvnDetails.DateOfBirth),
+                SecretWord = request.SecretWord,
+                ReferralCode = request.ReferralCode ?? "HPP00",
+                RequestId = Util.GenerateRandomNumbers(15),
+                SessionId = Guid.NewGuid().ToString(),
+            };
+
+            var testrequest = JsonConvert.SerializeObject(rubyRequest);
+
+            var rubyHeaders = new Dictionary<string, string>();
+
+            rubyHeaders.Add("client_id", _config["RubyConnection:client_id"]);
+            rubyHeaders.Add("api_key", _config["RubyConnection:api_key"]);
+            rubyHeaders.Add("api_token", _config["RubyConnection:api_token"]);
+            rubyHeaders.Add("organization_id", _config["RubyConnection:organization_id"]);
+
+            var rubyResponse = await _restRequestHelper.HttpAsync(Method.POST, _config["RubyConnection:RubyUrl"], rubyHeaders, rubyRequest);
+
+            if (string.IsNullOrEmpty(rubyResponse.Content))
+            {
+                _logger.LogInformation(rubyResponse.ErrorMessage);
+                return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = rubyResponse.ErrorMessage, ResponseFriendlyMessage = rubyResponse.ErrorMessage };
+                
+            }
+
+            var result = JsonConvert.DeserializeObject<VirtualAccountOpeningResponse>(rubyResponse.Content);
+
+
+            return result;
+        }
+        catch ( Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = ex.Message, ResponseFriendlyMessage = ex.Message };
         }
     }
 
@@ -383,7 +467,7 @@ public class AccountOpeningService : IAccountOpeningService
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            throw new NotImplementedException();
+            return ("999","Finacle Responded with an error",ex.Message);
         }
     }
 
@@ -700,103 +784,5 @@ xmlns:ns4=""http://www.finacle.com/fixml"">
             return status;
         }
 
-        private string TestPayload(string cif, CIFRequest request)
-        {
-            var payload = @$"
-                <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
-    <soapenv:Header/>
-    <soapenv:Body>
-        <web:executeService>
-            <arg_0_0>
-                <![CDATA[
-<FIXML
-xmlns:ns5=""http://soap.finacle.redbox.stanbic.com/""
-xmlns:ns2=""http://webservice.fiusb.ci.infosys.com/""
-xmlns:ns4=""http://www.finacle.com/fixml"">
-<Header>
-<RequestHeader>
-<MessageKey>
-<RequestUUID>{Util.GenerateRandomNumbers(16)}</RequestUUID>
-<ServiceRequestId>SBAcctAdd</ServiceRequestId>
-<ServiceRequestVersion>10.2</ServiceRequestVersion>
-<ChannelId>RBX</ChannelId>
-</MessageKey>
-<RequestMessageInfo>
-<BankId>NG</BankId>
-<TimeZone></TimeZone>
-<EntityId></EntityId>
-<EntityType></EntityType>
-<ArmCorrelationId></ArmCorrelationId>
-<MessageDateTime>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</MessageDateTime>
-</RequestMessageInfo>
-<Security>
-<Token>
-<PasswordToken>
-<UserId></UserId>
-<Password></Password>
-</PasswordToken>
-</Token>
-<FICertToken></FICertToken>
-<RealUserLoginSessionId></RealUserLoginSessionId>
-<RealUser></RealUser>
-<RealUserPwd></RealUserPwd>
-<SSOTransferToken></SSOTransferToken>
-</Security>
-</RequestHeader>
-</Header>
-<Body>
-<SBAcctAddRequest>
-<SBAcctAddRq>
-<CustId>
-<CustId>{cif}</CustId>
-</CustId>
-<SBAcctId>
-<AcctType>
-<SchmCode>KYCL1</SchmCode>
-</AcctType>
-<AcctCurr>NGN</AcctCurr>
-<BankInfo>
-<BankId>NG</BankId>
-<BranchId>999999</BranchId>
-</BankInfo>
-</SBAcctId>
-<SBAcctGenInfo>
-<GenLedgerSubHead>
-<GenLedgerSubHeadCode>3501</GenLedgerSubHeadCode>
-<CurCode>NGN</CurCode>
-</GenLedgerSubHead>
-<AcctName>{request.FirstName.ToUpper() + " " + request.MiddleName.ToUpper() + " " + request.LastName.ToUpper()}</AcctName>
-<AcctShortName>{request.FirstName.ToUpper()}</AcctShortName>
-<AcctStmtMode>S</AcctStmtMode>
-<DespatchMode>N</DespatchMode>
-</SBAcctGenInfo>
-</SBAcctAddRq>
-<SBAcctAdd_CustomData>
-<INTCRACCTFLG>S</INTCRACCTFLG>
-<SOLID>999999</SOLID>
-<LOCALCALFLG>N</LOCALCALFLG>
-<PRICINGCODE>PAYAS</PRICINGCODE>
-<MISENTERED>1</MISENTERED>
-<PFNUM></PFNUM>
-<EMAILTYPE></EMAILTYPE>
-<WTAXFLG>N</WTAXFLG>
-<WTAXBRNBY>N</WTAXBRNBY>
-<NXTINTRUNDT>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</NXTINTRUNDT>
-<DAILYCOMPINTFLG>N</DAILYCOMPINTFLG>
-<WTAXLEVELFLG>A</WTAXLEVELFLG>
-<WTAXPCNT>0</WTAXPCNT>
-<WTAXFLOORLIMIT>0</WTAXFLOORLIMIT>
-<ACCTMGRATACCT>A221040</ACCTMGRATACCT>
-</SBAcctAdd_CustomData>
-</SBAcctAddRequest>
-</Body>
-</FIXML>
-]]>
-</arg_0_0>
-</web:executeService>
-</soapenv:Body>
-</soapenv:Envelope>
-            ";
-            return payload;
-        }
+       
 }

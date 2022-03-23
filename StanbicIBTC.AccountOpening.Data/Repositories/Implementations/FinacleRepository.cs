@@ -33,4 +33,5 @@ public class FinacleRepository : IFinacleRepository
         var sql = $@"select a.value as EmploymentStatusCode, b.localetext as EmploymentStatus from CRMUSER.categories a, crmuser.category_lang b where categorytype = 'EMPLOYMENT_STATUS' and a.categoryid = b.categoryid";
         return db.Query<EmploymentResult>(sql).ToList();
     }
+
 }

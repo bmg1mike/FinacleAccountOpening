@@ -61,13 +61,17 @@ builder.Services.AddHealthChecksUI(opt =>
     opt.SetEvaluationTimeInSeconds(10); //time in seconds between check    
     opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
     opt.SetApiMaxActiveRequests(1); //api requests concurrency    
-    opt.AddHealthCheckEndpoint("Acount Opening api", "/health"); //map health check api    
+    opt.AddHealthCheckEndpoint("Acount Opening api", "https://localhost:7215/newaccountopening/health"); //map health check api    
 })    
 .AddInMemoryStorage();   
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 if (app.Environment.IsDevelopment())
 {
    app.UseSwagger();
