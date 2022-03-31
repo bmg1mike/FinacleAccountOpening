@@ -1,36 +1,19 @@
 using Microsoft.AspNetCore.Builder;
 using StanbicIBTC.AccountOpening.Core.Data;
-using StanbicIBTC.AccountOpening.Core.Services;
 using StanbicIBTC.AccountOpening.WorkerService;
 using Serilog;
 using StanbicIBTC.AccountOpening.Service;
 using StanbicIBTC.AccountOpening.Core.Repositories;
 using StanbicIBTC.AccountOpening.Domain.Config;
 using MongoDB.Driver;
-using System.Configuration;
 using StanbicIBTC.AccountOpening.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 IHost host = Host.CreateDefaultBuilder(args)
+    .UseWindowsService()
     .ConfigureServices((hostContext,services) =>
     {
-
-        //using (var scope = host.Services.CreateScope())
-        //{
-        //    var service = scope.ServiceProvider;
-        //    try
-        //    {
-        //        var context = service.GetRequiredService<ModelContext>();
-        //        context.Database.EnsureCreated();
-        //    }
-        //    catch (Exception)
-        //    {
-
-        //        throw;
-        //    }
-        //}
         services.AddSingleton<IAccountOpeningService,AccountOpeningService>();
         services.AddSingleton<ICIFRequestRepository, CIFRequestRepository>();
         services.AddSingleton<ISoapRequestHelper, SoapRequestHelper>();
@@ -45,11 +28,6 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IMongoDbConfig, MongoDbConfig>(
             sp => new MongoDbConfig(builder.Configuration.GetSection("MongoDbSettings:ConnectionString").Value,
         builder.Configuration.GetSection("MongoDbSettings:DatabaseName").Value));
-
-        //var optionBuilder = new DbContextOptionsBuilder<ModelContext>();
-        //optionBuilder.UseOracle(builder.Configuration.GetConnectionString("RedBoxConnection"));
-
-        //services.AddScoped<ModelContext>(d => new ModelContext(optionBuilder.Options));
 
         services.AddHostedService<Worker>();
         

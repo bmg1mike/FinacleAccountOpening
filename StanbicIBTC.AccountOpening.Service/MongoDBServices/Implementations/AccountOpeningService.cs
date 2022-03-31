@@ -140,6 +140,13 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
+    public async Task UpgradeToTierThreeAccountOpening(TierOneUgrade request)
+    {
+
+        // check account and convert to tier 3
+
+    }
+
     public async Task<List<ApiResult>> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests)
     {
         try
@@ -720,7 +727,7 @@ xmlns:ns4=""http://www.finacle.com/fixml"">
 <EMAILTYPE></EMAILTYPE>
 <WTAXFLG>N</WTAXFLG>
 <WTAXBRNBY>N</WTAXBRNBY>
-<NXTINTRUNDT>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</NXTINTRUNDT>
+<NXTINTRUNDT>{DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</NXTINTRUNDT>
 <DAILYCOMPINTFLG>N</DAILYCOMPINTFLG>
 <WTAXLEVELFLG>A</WTAXLEVELFLG>
 <WTAXPCNT>0</WTAXPCNT>

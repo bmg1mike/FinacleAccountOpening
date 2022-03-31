@@ -8,4 +8,5 @@ public interface IFinacleRepository
     string GetStateCode(string state);
     List<OccupationResult> GetOccupations();
     List<EmploymentResult> GetEmploymentStatus();
+    CifCheck CheckCifForBvn(string bvn);
 }

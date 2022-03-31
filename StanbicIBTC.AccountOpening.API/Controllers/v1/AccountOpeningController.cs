@@ -1,3 +1,4 @@
+using StanbicIBTC.AccountOpening.Domain;
 using StanbicIBTC.AccountOpening.Service;
 
 namespace StanbicIBTC.AccountOpening.API.Controllers.v1
@@ -40,6 +41,12 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(result.Content);
         }
 
+        [HttpPost("AccountUpgrade/")]
+        public async Task<IActionResult> AccountUgrade(TierOneUgrade request)
+        {
+            throw new NotImplementedException();
+        }
+
         [HttpGet("GetOccupations/")]
         public IActionResult GetOccupations()
         {
@@ -59,5 +66,6 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             result.ResponseCode = "000";
             return Ok(result);
         }
+
     }
 }
