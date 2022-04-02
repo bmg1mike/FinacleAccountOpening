@@ -212,4 +212,41 @@ public class Util
     {
         return mobile.Substring(mobile.Length - 10, 10);
     }
+
+    public static string MaritalStatusCode(string maritalStatus)
+    {
+        string status = string.Empty;
+
+        switch (maritalStatus.ToUpper())
+        {
+            case "SINGLE":
+                status = "001";
+                break;
+            case "MARRIED":
+                status = "002";
+                break;
+            case "SEPARATED":
+                status = "003";
+                break;
+            case "DIVORCED":
+                status = "004";
+                break;
+            case "DIVORCEE":
+                status = "004";
+                break;
+            case "WIDOWED":
+                status = "005";
+                break;
+            case "NOT GIVEN":
+                status = "008";
+                break;
+            case "LIVE-IN RELATIONSHIP":
+                status = "009";
+                break;
+            default:
+                status = "010";
+                break;
+        }
+        return status;
+    }
 }
