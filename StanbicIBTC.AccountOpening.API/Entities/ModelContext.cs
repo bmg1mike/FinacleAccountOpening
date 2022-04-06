@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace StanbicIBTC.AccountOpening.Data;
-
+namespace StanbicIBTC.AccountOpening.API.Entities
+{
     public partial class ModelContext : DbContext
     {
         public ModelContext()
@@ -16,23 +16,22 @@ namespace StanbicIBTC.AccountOpening.Data;
         {
         }
 
-        public virtual DbSet<RbxBpmCifCustomDatum> RbxBpmCifCustomData { get; set; }
-        public virtual DbSet<RbxBpmCorpCifCompany> RbxBpmCorpCifCompanies { get; set; }
-        public virtual DbSet<RbxBpmCorpCifCustomDatum> RbxBpmCorpCifCustomData { get; set; }
-        public virtual DbSet<RbxBpmNextOfKinDetail> RbxBpmNextOfKinDetails { get; set; }
-        public virtual DbSet<RbxTBvnLinkageLog> RbxTBvnLinkageLogs { get; set; }
-        public virtual DbSet<RbxRetailsUpdateCustomDatum> RbxRetailsUpdateCustomData { get; set; }
+        public virtual DbSet<RbxBpmCifCustomDatum> RbxBpmCifCustomData { get; set; } = null!;
+        public virtual DbSet<RbxBpmCorpCifCompany> RbxBpmCorpCifCompanies { get; set; } = null!;
+        public virtual DbSet<RbxBpmCorpCifCustomDatum> RbxBpmCorpCifCustomData { get; set; } = null!;
+        public virtual DbSet<RbxBpmNextOfKinDetail> RbxBpmNextOfKinDetails { get; set; } = null!;
+        public virtual DbSet<RbxTBvnLinkageLog> RbxTBvnLinkageLogs { get; set; } = null!;
 
-    //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //        {
-    //            if (!optionsBuilder.IsConfigured)
-    //            {
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-    //                optionsBuilder.UseOracle("Data Source=(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = ungcorora2)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = ungrdbox)));User Id=Redbox;Password=redbox123;");
-    //            }
-    //        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseOracle("Data Source=(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = ungcorora2)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = ungrdbox)));User Id=Redbox;Password=redbox123;");
+            }
+        }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("REDBOX")
                 .UseCollation("USING_NLS_COMP");
@@ -803,13 +802,11 @@ namespace StanbicIBTC.AccountOpening.Data;
                     .HasColumnName("BVN_FORM");
 
                 entity.Property(e => e.BvnNumber)
-                    .IsRequired()
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("BVN_NUMBER");
 
                 entity.Property(e => e.CifId)
-                    .IsRequired()
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("CIF_ID");
@@ -872,290 +869,7 @@ namespace StanbicIBTC.AccountOpening.Data;
                     .HasColumnName("WKF_ID");
             });
 
-        modelBuilder.Entity<RbxRetailsUpdateCustomDatum>(entity =>
-        {
-            entity.HasKey(e => e.CustomerId)
-                .HasName("RBX_RETAILS_UPDATE_CUSTOM_DATA_PK");
-
-            entity.ToTable("RBX_RETAILS_UPDATE_CUSTOM_DATA");
-
-            entity.Property(e => e.CustomerId)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("CUSTOMER_ID");
-
-            entity.Property(e => e.AssetClassification)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("ASSET_CLASSIFICATION");
-
-            entity.Property(e => e.BranchId)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("BRANCH_ID");
-
-            entity.Property(e => e.CounterPartyInformation)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("COUNTER_PARTY_INFORMATION");
-
-            entity.Property(e => e.CountryOfTaxResidence)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("COUNTRY_OF_TAX_RESIDENCE");
-
-            entity.Property(e => e.DefaultAddressType)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("DEFAULT_ADDRESS_TYPE");
-
-            entity.Property(e => e.DistributionChannel)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("DISTRIBUTION_CHANNEL");
-
-            entity.Property(e => e.EmploymentType)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("EMPLOYMENT_TYPE");
-
-            entity.Property(e => e.FnrClassification)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("FNR_CLASSIFICATION");
-
-            entity.Property(e => e.FnrStatus)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("FNR_STATUS");
-
-            entity.Property(e => e.ForeignCustomer)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("FOREIGN_CUSTOMER");
-
-            entity.Property(e => e.IdentityNumber)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("IDENTITY_NUMBER");
-
-            entity.Property(e => e.IndustryClassificationCode)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("INDUSTRY_CLASSIFICATION_CODE");
-
-            entity.Property(e => e.IsCoreProfileActive)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("IS_CORE_PROFILE_ACTIVE");
-
-            entity.Property(e => e.IsCustomerMinor)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("IS_CUSTOMER_MINOR");
-
-            entity.Property(e => e.IsOnlyCountryOfNationality)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("IS_ONLY_COUNTRY_OF_NATIONALITY");
-
-            entity.Property(e => e.IsOnlyCountryTaxResidence)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("IS_ONLY_COUNTRY_TAX_RESIDENCE");
-
-            entity.Property(e => e.KeyContactPersonName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("KEY_CONTACT_PERSON_NAME");
-
-            entity.Property(e => e.KycIndicator)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("KYC_INDICATOR");
-
-            entity.Property(e => e.LegalChallengeStatus)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("LEGAL_CHALLENGE_STATUS");
-
-            entity.Property(e => e.LegalEntity)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("LEGAL_ENTITY");
-
-            entity.Property(e => e.LocalIndicia)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("LOCAL_INDICIA");
-
-            entity.Property(e => e.MonthlyNetIncome)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("MONTHLY_NET_INCOME");
-
-            entity.Property(e => e.NokAddress)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_ADDRESS");
-
-            entity.Property(e => e.NokAddressCategory)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_ADDRESS_CATEGORY");
-
-            entity.Property(e => e.NokAddressFormat)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_ADDRESS_FORMAT");
-
-            entity.Property(e => e.NokAddressLine1)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_ADDRESS_LINE1");
-
-            entity.Property(e => e.NokAddressLine2)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_ADDRESS_LINE2");
-
-            entity.Property(e => e.NokAddressLine3)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_ADDRESS_LINE3");
-
-            entity.Property(e => e.NokCity)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_CITY");
-
-            entity.Property(e => e.NokCountry)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_COUNTRY");
-
-            entity.Property(e => e.NokDateOfBirth)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_DATE_OF_BIRTH");
-
-            entity.Property(e => e.NokEmail)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_EMAIL");
-
-            entity.Property(e => e.NokFirstName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_FIRST_NAME");
-
-            entity.Property(e => e.NokGender)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_GENDER");
-
-            entity.Property(e => e.NokLastName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_LAST_NAME");
-
-            entity.Property(e => e.NokLocalityName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_LOCALITY_NAME");
-
-            entity.Property(e => e.NokMiddleName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_MIDDLE_NAME");
-
-            entity.Property(e => e.NokPhoneNumber)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_PHONE_NUMBER");
-
-            entity.Property(e => e.NokPostalCode)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_POSTAL_CODE");
-
-            entity.Property(e => e.NokPreferredAddress)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_PREFERRED_ADDRESS");
-
-            entity.Property(e => e.NokPreferredFormat)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_PREFERRED_FORMAT");
-
-            entity.Property(e => e.NokRelationshipType)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_RELATIONSHIP_TYPE");
-
-            entity.Property(e => e.NokStateCode)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_STATE_CODE");
-
-            entity.Property(e => e.NokStreetName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("NOK_STREET_NAME");
-
-            entity.Property(e => e.PoliticallyExposed)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("POLITICALLY_EXPOSED");
-
-            entity.Property(e => e.PrimaryNationality)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("PRIMARY_NATIONALITY");
-
-            entity.Property(e => e.PrimaryTaxResidenceCountry)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("PRIMARY_TAX_RESIDENCE_COUNTRY");
-
-            entity.Property(e => e.Relationship)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("RELATIONSHIP");
-
-            entity.Property(e => e.ReserveBankCode)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("RESERVE_BANK_CODE");
-
-            entity.Property(e => e.ReturnsClassificationCode)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("RETURNS_CLASSIFICATION_CODE");
-
-            entity.Property(e => e.TaxIdentificationNumber)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("TAX_IDENTIFICATION_NUMBER");
-
-            entity.Property(e => e.ValidateFnr)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("VALIDATE_FNR");
-
-            entity.Property(e => e.WithholdingTax)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("WITHHOLDING_TAX");
-
-            entity.Property(e => e.Zip)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("ZIP");
-        });
-
-        modelBuilder.HasSequence("ACC_MAINTENANCE_SEQ");
+            modelBuilder.HasSequence("ACC_MAINTENANCE_SEQ");
 
             modelBuilder.HasSequence("AIRTIME_TSQ_SEQ");
 
@@ -1840,4 +1554,4 @@ namespace StanbicIBTC.AccountOpening.Data;
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
-
+}

@@ -7,4 +7,5 @@ public interface IAccountOpeningService
     List<EmploymentResult> GetEmploymentStatus();
     Task<VirtualAccountOpeningResponse> OpenVirtualAccount(CreateVirtualAccountDto request);
     Task<List<ApiResult>> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests);
+    Task<ApiResult> OpenTierThreeAccount(TierThreeAccountOpeningRequest request);
 }

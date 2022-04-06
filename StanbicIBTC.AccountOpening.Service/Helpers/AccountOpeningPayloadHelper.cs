@@ -170,7 +170,7 @@ public static class AccountOpeningPayloadHelper
         return payloaad;
     }
 
-    public static string AccountOpeningPayload(string cif,CIFRequest request)
+    public static string AccountOpeningPayload(string cif,CIFRequest request,string schemeCode = "KYCL1", string currency = "NGN")
     {
         var payloaad = @$"
     <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
@@ -222,9 +222,9 @@ public static class AccountOpeningPayloadHelper
     </CustId>
     <SBAcctId>
     <AcctType>
-    <SchmCode>KYCL1</SchmCode>
+    <SchmCode>{schemeCode}</SchmCode>
     </AcctType>
-    <AcctCurr>NGN</AcctCurr>
+    <AcctCurr>{currency}</AcctCurr>
     <BankInfo>
     <BankId>NG</BankId>
     <BranchId>999999</BranchId>

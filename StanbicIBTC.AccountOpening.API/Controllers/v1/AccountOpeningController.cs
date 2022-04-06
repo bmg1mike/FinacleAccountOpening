@@ -21,6 +21,17 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             result.ResponseCode = response.responseCode;
             return Ok(result);
         }
+
+        [HttpPost("OpenTierThreeAccount/")]
+        public async Task<IActionResult> OpenTierThreeAccount(TierThreeAccountOpeningRequest request)
+        {
+            var result = new Result<string>();
+            var response = await _accountOpeningService.OpenTierThreeAccount(request);
+            result.Content = response.responseDescription;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
+        }
+
         [HttpPost("BulkTierOneAccountOpening/")]
         public async Task<IActionResult> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests)
         {

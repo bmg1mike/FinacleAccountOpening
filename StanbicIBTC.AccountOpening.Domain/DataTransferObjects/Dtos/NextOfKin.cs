@@ -11,5 +11,7 @@
         public string Gender { get; set; }
         public string Relationship { get; set; }
         public DateTime DateOfBirth { get; set; }
-    }
+    public string StateOfResidence { get; set; }
+    public string Town { get; set; }
+}
 
