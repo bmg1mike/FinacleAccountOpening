@@ -49,13 +49,17 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             result.Content = response;
             result.ResponseCode = response.ResponseCode;
 
-            return Ok(result.Content);
+            return Ok(result);
         }
 
         [HttpPost("AccountUpgrade/")]
         public async Task<IActionResult> AccountUgrade(TierOneUgrade request)
         {
-            throw new NotImplementedException();
+            var result = new Result<string>();
+            var response = await _accountOpeningService.UpgradeToTierThreeAccountOpening(request);
+            result.Content = response.responseDescription;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
         }
 
         [HttpGet("GetOccupations/")]

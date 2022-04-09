@@ -9,4 +9,7 @@ public interface IFinacleRepository
     List<OccupationResult> GetOccupations();
     List<EmploymentResult> GetEmploymentStatus();
     CifCheck CheckCifForBvn(string bvn);
+    FinacleAccountDetailResponse GetAccountDetailsByAccountNumber(string accountNumber);
+    bool UpgradeToTierThree(string accountNumber);
+    FinacleAccountDetailResponse GetAccountDetailsByCif(string cif);
 }

@@ -22,6 +22,9 @@ public class TierOneAccountOpeningRequestValidator : AbstractValidator<TierOneAc
 
         RuleFor(x => x.DateOfBirth).NotEmpty()
                                     .NotNull();
+        RuleFor(x => x.Platform).NotEmpty()
+            .NotNull()
+            .IsInEnum();
                                     
     }
 }

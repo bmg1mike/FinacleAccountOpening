@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StanbicIBTC.AccountOpening.Data
+namespace StanbicIBTC.AccountOpening.Domain
 {
     public partial class RbxBpmNextOfKinDetail
     {
@@ -17,7 +17,7 @@ namespace StanbicIBTC.AccountOpening.Data
         public string MiddleName { get; set; }
         public string PhoneNumber { get; set; }
         public string RelationshipType { get; set; }
-        public long? FkCustomerAddDetails { get; set; }
+        public long FkCustomerAddDetails { get; set; }
 
         public virtual RbxBpmCifCustomDatum FkCustomerAddDetailsNavigation { get; set; }
     }

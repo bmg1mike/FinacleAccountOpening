@@ -269,4 +269,80 @@ public static class AccountOpeningPayloadHelper
 
         return payloaad;
     }
+
+    public static string SchemeCodeModificationPayload(string newGlSubHeadCode, string oldGlSubHeadCode,string oldSchemeCode,string newSchemeCode,string accountNumber)
+    {
+        var payload = @$"
+        <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <web:executeService>
+            <arg_0_0>
+                <![CDATA[
+                    <FIXML xmlns:ns5=""http://soap.finacle.redbox.stanbic.com/"" xmlns:ns2=""http://webservice.fiusb.ci.infosys.com/"" xmlns:ns4=""http://www.finacle.com/fixml"">
+<Header>
+<RequestHeader>
+<MessageKey>
+<RequestUUID>{Util.GenerateRandomNumbers(14)}</RequestUUID>
+<ServiceRequestId>executeFinacleScript</ServiceRequestId>
+<ServiceRequestVersion>10.2</ServiceRequestVersion>
+<ChannelId>RBX</ChannelId>
+</MessageKey>
+<RequestMessageInfo>
+<BankId>NG</BankId>
+<TimeZone>
+</TimeZone>
+<EntityId>
+</EntityId>
+<EntityType>
+</EntityType>
+<ArmCorrelationId>
+</ArmCorrelationId>
+<MessageDateTime>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</MessageDateTime>
+</RequestMessageInfo>
+<Security>
+<Token>
+<PasswordToken>
+<UserId>
+</UserId>
+<Password>
+</Password>
+</PasswordToken>
+</Token>
+<FICertToken>
+</FICertToken>
+<RealUserLoginSessionId>
+</RealUserLoginSessionId>
+<RealUser>
+</RealUser>
+<RealUserPwd>
+</RealUserPwd>
+<SSOTransferToken>
+</SSOTransferToken>
+</Security>
+</RequestHeader>
+</Header>
+<Body>
+<executeFinacleScriptRequest>
+<ExecuteFinacleScriptInputVO>
+<requestId>FI_SchmModify.scr</requestId>
+</ExecuteFinacleScriptInputVO>
+<executeFinacleScript_CustomData>
+<acctNum>{accountNumber}</acctNum>
+<oldSchm>{oldSchemeCode}</oldSchm>
+<newSchm>{newSchemeCode}</newSchm>
+<oldGlSubHead>{oldGlSubHeadCode}</oldGlSubHead>
+<newGlSubHead>{newGlSubHeadCode}</newGlSubHead>
+</executeFinacleScript_CustomData>
+</executeFinacleScriptRequest>
+</Body>
+</FIXML>
+                    ]]>
+    </arg_0_0>
+    </web:executeService>
+    </soapenv:Body>
+    </soapenv:Envelope>";
+
+        return payload;
+    }
 }

@@ -41,9 +41,28 @@ public class FinacleRepository : IFinacleRepository
 
     }
 
-    //public bool UpgradeToTierThree(string bvn)
-    //{
-    //    var sql = $@"";
-    //}
+    public FinacleAccountDetailResponse GetAccountDetailsByAccountNumber(string accountNumber)
+    {
+        var sql = $"select cif_id as Cif,schm_code as SchemeCode,acct_name as AccountName,GL_SUB_HEAD_CODE as GlSubHeadCode from tbaadm.gam where foracid = :accountNumber";
+        return db.Query<FinacleAccountDetailResponse>(sql, new { accountNumber = accountNumber }).SingleOrDefault();
+    }
+
+    public FinacleAccountDetailResponse GetAccountDetailsByCif(string cif)
+    {
+        var sql = $"select cif_id as Cif,schm_code as SchemeCode,acct_name as AccountName from tbaadm.gam where cif_id = :cif";
+        return db.Query<FinacleAccountDetailResponse>(sql, new { cif = cif }).SingleOrDefault();
+    }
+
+    public bool UpgradeToTierThree(string accountNumber)
+    {
+        var sql = $@"update tbaadm.gam set schm_code = 'SB001' where foracid = :accountNumber";
+        var result = db.Execute(sql, new {accountNumber = accountNumber});
+        if (result < 1)
+        {
+            return false;
+        }
+
+        return true;
+    }
 
 }

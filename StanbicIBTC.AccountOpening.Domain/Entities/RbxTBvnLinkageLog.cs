@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StanbicIBTC.AccountOpening.Data
+namespace StanbicIBTC.AccountOpening.Domain
 {
     public partial class RbxTBvnLinkageLog
     {
-        public long Id { get; set; }
+        public long Id { get; set; } 
         public string AcctNo { get; set; }
         public string AcctName { get; set; }
         public string BankEnrolled { get; set; }

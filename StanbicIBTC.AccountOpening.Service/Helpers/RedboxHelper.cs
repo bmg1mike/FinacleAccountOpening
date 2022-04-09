@@ -9,11 +9,11 @@ namespace StanbicIBTC.AccountOpening.Service;
 public class RedboxHelper
 {
     private readonly ILogger<RedboxHelper> _logger;
-    private readonly ModelContext _modelContext;
+    private readonly DataContext _modelContext;
     private readonly IRestRequestHelper _restRequestHelper;
     private readonly IConfiguration _config;
 
-    public RedboxHelper(ILogger<RedboxHelper> logger, ModelContext modelContext, IRestRequestHelper restRequestHelper, IConfiguration config)
+    public RedboxHelper(ILogger<RedboxHelper> logger, DataContext modelContext, IRestRequestHelper restRequestHelper, IConfiguration config)
     {
         _logger = logger;
         _modelContext = modelContext;

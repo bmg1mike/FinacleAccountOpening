@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using StanbicIBTC.AccountOpening.Domain;
 
 namespace StanbicIBTC.AccountOpening.Data;
 
-    public partial class ModelContext : DbContext
+    public partial class DataContext : DbContext
     {
-        public ModelContext()
+        public DataContext()
         {
         }
 
-        public ModelContext(DbContextOptions<ModelContext> options)
+        public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
         }
@@ -23,14 +24,6 @@ namespace StanbicIBTC.AccountOpening.Data;
         public virtual DbSet<RbxTBvnLinkageLog> RbxTBvnLinkageLogs { get; set; }
         public virtual DbSet<RbxRetailsUpdateCustomDatum> RbxRetailsUpdateCustomData { get; set; }
 
-    //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //        {
-    //            if (!optionsBuilder.IsConfigured)
-    //            {
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-    //                optionsBuilder.UseOracle("Data Source=(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = ungcorora2)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = ungrdbox)));User Id=Redbox;Password=redbox123;");
-    //            }
-    //        }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StanbicIBTC.AccountOpening.Data
+namespace StanbicIBTC.AccountOpening.Domain
 {
     public partial class RbxBpmCorpCifCustomDatum
     {

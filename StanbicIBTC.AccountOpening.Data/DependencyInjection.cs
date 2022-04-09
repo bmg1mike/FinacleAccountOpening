@@ -19,7 +19,7 @@ public static class DependencyInjection
         configuration.GetSection("MongoDbSettings:DatabaseName").Value));
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();
-        services.AddDbContext<ModelContext>(x => x.UseOracle(configuration.GetConnectionString("RedBoxConnection")));
+        services.AddDbContext<DataContext>(x => x.UseOracle(configuration.GetConnectionString("RedBoxConnection")));
 
 
          services.AddTransient<ICIFRequestRepository, CIFRequestRepository>();

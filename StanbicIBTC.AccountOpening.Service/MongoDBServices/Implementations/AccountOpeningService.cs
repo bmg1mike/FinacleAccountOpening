@@ -17,9 +17,9 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly IAccountOpeningAttemptRepository _accountOpeningAttempt;
     private readonly IFinacleRepository _finacleRepository;
     private readonly ISmsNotification _smsNotification;
-    private readonly ModelContext _modelContext;
+    private readonly DataContext _modelContext;
 
-    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt, IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository, ISmsNotification smsNotification, ModelContext modelContext)
+    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt, IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository, ISmsNotification smsNotification, DataContext modelContext)
     {
         _logger = logger;
         _soapRequestHelper = soapRequestHelper;
@@ -45,7 +45,7 @@ public class AccountOpeningService : IAccountOpeningService
             }
 
             var bvnDetails = bvnDetailsResponse.data;
-
+            
             var ninDetailsResponse = await GetNinDetails(request.Nin, request.DateOfBirth.ToString());
 
             if (ninDetailsResponse.data is null)
@@ -162,12 +162,25 @@ public class AccountOpeningService : IAccountOpeningService
 
     
 
-    public async Task UpgradeToTierThreeAccountOpening(TierOneUgrade request)
+    public async Task<ApiResult> UpgradeToTierThreeAccountOpening(TierOneUgrade request)
     {
         try
         {
-            // check account number 
-            
+
+            var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(request.AccountNumber);
+            if (accountDetails == null)
+            {
+                _logger.LogInformation("Account number does not exist");
+                return new ApiResult { responseCode = "999", responseDescription = "You are not allowed to upgrade since your account is invalid" };
+            }
+
+            if (accountDetails.SchemeCode != "KYCL1")
+            {
+                _logger.LogInformation($"{request.AccountNumber} is already a tier 3 account");
+                return new ApiResult { responseCode = "999", responseDescription = "Account is already a Tier 3 Account" };
+            }
+
+
             var upgradeDetails = new RbxRetailsUpdateCustomDatum
             {
                 MonthlyNetIncome = request.MonthlyIncome.ToString(),
@@ -180,18 +193,56 @@ public class AccountOpeningService : IAccountOpeningService
                 NokGender = request.NextOfKin.Gender,
                 NokMiddleName = request.NextOfKin.MiddleName,
                 NokPhoneNumber = request.NextOfKin.PhoneNumber,
-                Relationship = request.NextOfKin.Relationship 
+                Relationship = request.NextOfKin.Relationship,
+                CustomerId = accountDetails.Cif,
             };
+            await _modelContext.RbxRetailsUpdateCustomData.AddAsync(upgradeDetails);
+            if (await _modelContext.SaveChangesAsync() < 1)
+            {
+                _logger.LogInformation("There was a problem saving to redbox");
+                return new ApiResult { responseCode = "999", responseDescription = "There was a problem uprading your account. Please try again later" };
+            }
+            // save images
+            
+            var photographResponse = await SaveImage(accountDetails.Cif, request.PassportPhotograph);
+            var idImageResponse = await SaveImage(accountDetails.Cif, request.IdImage);
+            var signatureResponse = await SaveImage(accountDetails.Cif, request.Signature);
+            if (!string.IsNullOrEmpty(request.UtilityBill))
+            {
+                var utilityBillResponse = await SaveImage(accountDetails.Cif, request.UtilityBill);
+            }
+            
+            var response =  await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.SchemeCodeModificationPayload(
+                accountDetails.GlSubHeadCode,accountDetails.GlSubHeadCode,accountDetails.SchemeCode, "SB001",request.AccountNumber)
+                );
+
+            if (response.ResponseCode != "000")
+            {
+                _logger.LogInformation("There was a problem connecting to finnacle");
+                return new ApiResult { responseCode = "999", responseDescription = "There was a problem uprading your account. Please try again later" };
+            }
+
+
+            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatus");
+
+            if (successDescription != "SUCCESS")
+            {
+                var errorDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatusDesc");
+                _logger.LogInformation(errorDescription);
+                return new ApiResult { responseCode = "999", responseDescription = "There was a problem uprading your account. Please try again later" };
+            }
+
+            return new ApiResult { responseCode = "000", responseDescription = "Your account has been ugraded successfully" };
+
+
         }
         catch (Exception ex)
         {
-
-            throw;
+            _logger.LogError(ex, ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription = "There was a problem uprading your account. Please try again later" };
         }
-        throw new NotImplementedException();
-        // check account and convert to tier 3
-
     }
+
     public async Task OpenChessAccount()
     {
         throw new NotImplementedException();
@@ -392,7 +443,16 @@ public class AccountOpeningService : IAccountOpeningService
                 return null;
             }
 
-            
+            //var existingCif = _finacleRepository.CheckCifForBvn(request.CustomerBVN);
+            //FinacleAccountDetailResponse checkAccount = null;
+            //if (existingCif.Cif is not null)
+            //{
+            //    checkAccount = _finacleRepository.GetAccountDetailsByCif(existingCif.Cif);
+            //}
+            //if (checkAccount is not null)
+            //{
+            //    return "This Customer already has an account";
+            //}
 
             var cif = await CreateCIF(request);
 
@@ -402,14 +462,14 @@ public class AccountOpeningService : IAccountOpeningService
                 _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
             }
 
-            //var redboxResult = await SaveToRedbox(cif.cif,request);
-            //if (!redboxResult)
-            //{
-            //    accountOpeningAttempt.Response = "There was a problem saving the request to the redbox database";
-            //    await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-            //    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-            //    return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
-            //}
+            var redboxResult = await SaveToRedbox(cif.cif, request);
+            if (!redboxResult)
+            {
+                accountOpeningAttempt.Response = "There was a problem saving the request to the redbox database";
+                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
+            }
 
             var openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif.cif, request));
 
@@ -566,15 +626,26 @@ public class AccountOpeningService : IAccountOpeningService
                 DateCreated = DateTime.UtcNow,
                 CountryOfBirth = "NG",
                 CountryOfTaxResidence = "NG",
-                TaxIdentificationNumber = tierThreeAccount.TaxIdentificationNumber,
-                TaxIdNumber = tierThreeAccount.TaxIdentificationNumber,
-                IdentityNumber = tierThreeAccount.IdNumber,
-                MonthlyNetIncome = tierThreeAccount.MonthlyIncome.ToString(),
-                IdentityType = tierThreeAccount.IdentityType,
+                //TaxIdentificationNumber = tierThreeAccount.TaxIdentificationNumber,
+                //TaxIdNumber = tierThreeAccount.TaxIdentificationNumber,
+                //IdentityNumber = tierThreeAccount.IdNumber,
+                //MonthlyNetIncome = tierThreeAccount.MonthlyIncome.ToString(),
+                //IdentityType = tierThreeAccount.IdentityType,
                 CustomerId = cif,
                 
             };
             await _modelContext.AddAsync(customData);
+            //var bvnLinkageLog = new RbxTBvnLinkageLog
+            //{
+            //    AcctName = cifRequest.FirstName + " " + cifRequest.LastName,
+            //    BankEnrolled = cifRequest.BvnErollmentBank,
+            //    BranchEnrolled = cifRequest.BvnEnrollmentBranch,
+            //    BvnNumber = cifRequest.CustomerBVN,
+            //    PhoneNo = cifRequest.PhoneNumber,
+            //    RecordDelFlag = "N",
+            //    CifId = cif
+            //};
+            //await _modelContext.AddAsync(bvnLinkageLog);
             var result = await _modelContext.SaveChangesAsync();
 
 
@@ -592,8 +663,8 @@ public class AccountOpeningService : IAccountOpeningService
                 FkCustomerAddDetails = getCustomer.Id,
                 FkCustomerAddDetailsNavigation = getCustomer,
                 Gender = cifRequest.Gender,
-                DateOfBirth = tierThreeAccount.NextOfKinDetails.DateOfBirth,
-                RelationshipType = tierThreeAccount.NextOfKinDetails.Relationship
+                //DateOfBirth = tierThreeAccount.NextOfKinDetails.DateOfBirth,
+                //RelationshipType = tierThreeAccount.NextOfKinDetails.Relationship
             };
 
             
