@@ -10,7 +10,7 @@ namespace StanbicIBTC.AccountOpening.Domain
             RbxBpmCorpCifCompanies = new HashSet<RbxBpmCorpCifCompany>();
         }
 
-        public long Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string BusinessType { get; set; }
         public string CorporateType { get; set; }
         public string CounterPartyInfo { get; set; }
@@ -61,6 +61,6 @@ namespace StanbicIBTC.AccountOpening.Domain
         public string Region { get; set; }
         public string TertiarySicCode { get; set; }
 
-        public virtual ICollection<RbxBpmCorpCifCompany> RbxBpmCorpCifCompanies { get; set; }
+        public ICollection<RbxBpmCorpCifCompany> RbxBpmCorpCifCompanies { get; set; }
     }
 }

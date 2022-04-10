@@ -9,4 +9,5 @@ public interface IAccountOpeningService
     Task<List<ApiResult>> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests);
     Task<ApiResult> OpenTierThreeAccount(TierThreeAccountOpeningRequest request);
     Task<ApiResult> UpgradeToTierThreeAccountOpening(TierOneUgrade request);
+    Task<ApiResult> OpenChessAccount(ChessAccountRequest request);
 }

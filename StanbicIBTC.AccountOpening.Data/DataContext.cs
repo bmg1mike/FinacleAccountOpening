@@ -1,28 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 using StanbicIBTC.AccountOpening.Domain;
 
 namespace StanbicIBTC.AccountOpening.Data;
 
-    public partial class DataContext : DbContext
+public partial class DataContext : DbContext
     {
-        public DataContext()
-        {
-        }
 
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
         }
 
-        public virtual DbSet<RbxBpmCifCustomDatum> RbxBpmCifCustomData { get; set; }
-        public virtual DbSet<RbxBpmCorpCifCompany> RbxBpmCorpCifCompanies { get; set; }
-        public virtual DbSet<RbxBpmCorpCifCustomDatum> RbxBpmCorpCifCustomData { get; set; }
-        public virtual DbSet<RbxBpmNextOfKinDetail> RbxBpmNextOfKinDetails { get; set; }
-        public virtual DbSet<RbxTBvnLinkageLog> RbxTBvnLinkageLogs { get; set; }
-        public virtual DbSet<RbxRetailsUpdateCustomDatum> RbxRetailsUpdateCustomData { get; set; }
+        public  DbSet<RbxBpmCifCustomDatum> RbxBpmCifCustomData { get; set; }
+        public  DbSet<RbxBpmCorpCifCompany> RbxBpmCorpCifCompanies { get; set; }
+        public  DbSet<RbxBpmCorpCifCustomDatum> RbxBpmCorpCifCustomData { get; set; }
+        public  DbSet<RbxBpmNextOfKinDetail> RbxBpmNextOfKinDetails { get; set; }
+        public  DbSet<RbxTBvnLinkageLog> RbxTBvnLinkageLogs { get; set; }
+        public  DbSet<RbxRetailsUpdateCustomDatum> RbxRetailsUpdateCustomData { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

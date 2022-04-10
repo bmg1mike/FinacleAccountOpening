@@ -5,7 +5,7 @@ namespace StanbicIBTC.AccountOpening.Domain
 {
     public partial class RbxTBvnLinkageLog
     {
-        public long Id { get; set; } 
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string AcctNo { get; set; }
         public string AcctName { get; set; }
         public string BankEnrolled { get; set; }

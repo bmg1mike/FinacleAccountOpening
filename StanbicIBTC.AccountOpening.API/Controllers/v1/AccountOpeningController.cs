@@ -62,6 +62,16 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(result);
         }
 
+        [HttpPost("OpenChessAccount/")]
+        public async Task<IActionResult> OpenChessAccount(ChessAccountRequest request)
+        {
+            var result = new Result<string>();
+            var response = await _accountOpeningService.OpenChessAccount(request);
+            result.Content = response.responseDescription;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
+        }
+
         [HttpGet("GetOccupations/")]
         public IActionResult GetOccupations()
         {

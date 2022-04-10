@@ -243,9 +243,39 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
-    public async Task OpenChessAccount()
+    public async Task<ApiResult> OpenChessAccount(ChessAccountRequest request)
     {
-        throw new NotImplementedException();
+        try
+        {
+           var cifDetails = _finacleRepository.CheckCifForBvn(request.Bvn); 
+           if (cifDetails is null)
+           {
+               return new ApiResult{responseCode = "999", responseDescription = "You must have an account with us before you can open an account for your child"};
+           }
+
+           var cifRequest = new CIFRequest{
+               FirstName = request.ChildFirstName,
+               LastName = request.ChildLastName
+           };
+           var birthCertificate = await SaveImage(cifDetails.Cif,request.ChildBirthCertificate);
+           var photograph = await SaveImage(cifDetails.Cif,request.Photograph);
+           
+           var openAccount = await _soapRequestHelper.FinacleCall(
+               AccountOpeningPayloadHelper.AccountOpeningPayload(cifDetails.Cif,cifRequest,"CHESS"));
+            
+            var accountNumber = _soapRequestHelper.GetXmlTagValue<string>(openAccount.ResponseDescription, "AcctId");
+            if (string.IsNullOrEmpty(accountNumber))
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "Could not open the account, please try again later " };
+            }
+
+            return new ApiResult { responseCode = "000", responseDescription = $"Your Account has been opened Successfully. Your Chess Account Number Is {accountNumber}." };
+        }
+        catch (Exception ex)
+        {
+           _logger.LogError(ex,ex.Message);
+           return new ApiResult{responseCode = "999", responseDescription = "There was a problem opening your account, Please try again later"};
+        }
     }
 
     public async Task OpenCurrentAccout()
@@ -346,7 +376,7 @@ public class AccountOpeningService : IAccountOpeningService
             var saveIdImage = await SaveImage(createCif.cif,request.IdImage);
             var savePhotograph = await SaveImage(createCif.cif,request.PassportPhotograph);
 
-            var saveToRedbox = await SaveToRedbox(createCif.cif,cifRequest,request);
+            //var saveToRedbox = await SaveTierOneCustomData(createCif.cif,cifRequest,request);
 
             var openAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(createCif.cif, cifRequest, "SB001",request.CurrencyCode.ToUpper()));
 
@@ -462,7 +492,7 @@ public class AccountOpeningService : IAccountOpeningService
                 _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
             }
 
-            var redboxResult = await SaveToRedbox(cif.cif, request);
+            var redboxResult = await SaveTierOneCustomData(cif.cif, request);
             if (!redboxResult)
             {
                 accountOpeningAttempt.Response = "There was a problem saving the request to the redbox database";
@@ -611,7 +641,7 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
-    private async Task<bool> SaveToRedbox(string cif, CIFRequest cifRequest = null, TierThreeAccountOpeningRequest tierThreeAccount = null )
+    private async Task<bool> SaveTierOneCustomData(string cif, CIFRequest cifRequest = null)
     {
         try
         {
@@ -626,31 +656,22 @@ public class AccountOpeningService : IAccountOpeningService
                 DateCreated = DateTime.UtcNow,
                 CountryOfBirth = "NG",
                 CountryOfTaxResidence = "NG",
-                //TaxIdentificationNumber = tierThreeAccount.TaxIdentificationNumber,
-                //TaxIdNumber = tierThreeAccount.TaxIdentificationNumber,
-                //IdentityNumber = tierThreeAccount.IdNumber,
-                //MonthlyNetIncome = tierThreeAccount.MonthlyIncome.ToString(),
-                //IdentityType = tierThreeAccount.IdentityType,
                 CustomerId = cif,
                 
             };
             await _modelContext.AddAsync(customData);
-            //var bvnLinkageLog = new RbxTBvnLinkageLog
-            //{
-            //    AcctName = cifRequest.FirstName + " " + cifRequest.LastName,
-            //    BankEnrolled = cifRequest.BvnErollmentBank,
-            //    BranchEnrolled = cifRequest.BvnEnrollmentBranch,
-            //    BvnNumber = cifRequest.CustomerBVN,
-            //    PhoneNo = cifRequest.PhoneNumber,
-            //    RecordDelFlag = "N",
-            //    CifId = cif
-            //};
-            //await _modelContext.AddAsync(bvnLinkageLog);
-            var result = await _modelContext.SaveChangesAsync();
+            var bvnLinkageLog = new RbxTBvnLinkageLog
+            {
+               AcctName = cifRequest.FirstName + " " + cifRequest.LastName,
+               BankEnrolled = cifRequest.BvnErollmentBank,
+               BranchEnrolled = cifRequest.BvnEnrollmentBranch,
+               BvnNumber = cifRequest.CustomerBVN,
+               PhoneNo = cifRequest.PhoneNumber,
+               RecordDelFlag = "N",
+               CifId = cif
+            };
+            await _modelContext.AddAsync(bvnLinkageLog);
 
-
-
-            var getCustomer = await _modelContext.RbxBpmCifCustomData.FirstOrDefaultAsync(x => x.Bvn == cifRequest.CustomerBVN);
             var nextOfKin = new RbxBpmNextOfKinDetail
             {
                 Address = cifRequest.NextOfKinDetail.Address1,
@@ -660,17 +681,15 @@ public class AccountOpeningService : IAccountOpeningService
                 PhoneNumber = cifRequest.NextOfKinDetail.PhoneNumber,
                 MiddleName = cifRequest.NextOfKinDetail.MiddleName,
                 DateCreated = DateTime.UtcNow,
-                FkCustomerAddDetails = getCustomer.Id,
-                FkCustomerAddDetailsNavigation = getCustomer,
+                FkCustomerAddDetails = customData.Id,
+                FkCustomerAddDetailsNavigation = customData,
                 Gender = cifRequest.Gender,
-                //DateOfBirth = tierThreeAccount.NextOfKinDetails.DateOfBirth,
-                //RelationshipType = tierThreeAccount.NextOfKinDetails.Relationship
             };
 
             
             await _modelContext.AddAsync(nextOfKin);
 
-            if (await _modelContext.SaveChangesAsync() <= 0)
+            if (await _modelContext.SaveChangesAsync() < 1)
             {
                 _logger.LogInformation("There was a problem saving to the Redbox Database");
                 return false;

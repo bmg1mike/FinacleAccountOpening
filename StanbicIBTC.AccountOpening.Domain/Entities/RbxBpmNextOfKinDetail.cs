@@ -5,7 +5,7 @@ namespace StanbicIBTC.AccountOpening.Domain
 {
     public partial class RbxBpmNextOfKinDetail
     {
-        public long Id { get; set; }
+        public string Id { get; set; }
         public string Address { get; set; }
         public string AddressFormat { get; set; }
         public DateTime? DateCreated { get; set; }
@@ -17,8 +17,8 @@ namespace StanbicIBTC.AccountOpening.Domain
         public string MiddleName { get; set; }
         public string PhoneNumber { get; set; }
         public string RelationshipType { get; set; }
-        public long FkCustomerAddDetails { get; set; }
+        public string FkCustomerAddDetails { get; set; }
 
-        public virtual RbxBpmCifCustomDatum FkCustomerAddDetailsNavigation { get; set; }
+        public  RbxBpmCifCustomDatum FkCustomerAddDetailsNavigation { get; set; }
     }
 }

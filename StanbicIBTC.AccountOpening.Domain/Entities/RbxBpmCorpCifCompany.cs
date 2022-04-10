@@ -5,7 +5,7 @@ namespace StanbicIBTC.AccountOpening.Domain
 {
     public partial class RbxBpmCorpCifCompany
     {
-        public long CompanyId { get; set; }
+        public string CompanyId { get; set; } = Guid.NewGuid().ToString();
         public string BusinessAddress { get; set; }
         public string CountryOfIncorporation { get; set; }
         public string PrincipalOfficeCountry { get; set; }
@@ -17,8 +17,8 @@ namespace StanbicIBTC.AccountOpening.Domain
         public string RegisteredName { get; set; }
         public string RegistrationNumber { get; set; }
         public string TradeName { get; set; }
-        public long? FkCustomData { get; set; }
+        public string FkCustomData { get; set; }
 
-        public virtual RbxBpmCorpCifCustomDatum FkCustomDataNavigation { get; set; }
+        public  RbxBpmCorpCifCustomDatum FkCustomDataNavigation { get; set; }
     }
 }

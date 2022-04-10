@@ -5,7 +5,7 @@ namespace StanbicIBTC.AccountOpening.Domain;
 
 public partial class RbxRetailsUpdateCustomDatum
 {
-    public string CustomerId { get; set; }
+    public string CustomerId { get; set; } = Guid.NewGuid().ToString();
     public string BranchId { get; set; }
     public string IsCoreProfileActive { get; set; }
     public string IsCustomerMinor { get; set; }

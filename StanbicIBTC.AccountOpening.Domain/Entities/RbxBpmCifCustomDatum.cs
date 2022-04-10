@@ -10,7 +10,7 @@ namespace StanbicIBTC.AccountOpening.Domain
             RbxBpmNextOfKinDetails = new HashSet<RbxBpmNextOfKinDetail>();
         }
 
-        public long Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string AccomodationType { get; set; }
         public string AssetClassification { get; set; }
         public string Bvn { get; set; }
@@ -47,7 +47,7 @@ namespace StanbicIBTC.AccountOpening.Domain
         public string ValidateFnr { get; set; }
         public string WithHoldingTax { get; set; }
         public string NationalIdNumber { get; set; }
-        public DateTime? DateCreated { get; set; }
+        public DateTime? DateCreated { get; set; } 
         public string BaselIiIndicator { get; set; }
         public string InsiderToBank { get; set; }
         public string KycIndicator { get; set; }
@@ -74,6 +74,6 @@ namespace StanbicIBTC.AccountOpening.Domain
         public string WithholdingTax1 { get; set; }
         public string Zip { get; set; }
 
-        public virtual ICollection<RbxBpmNextOfKinDetail> RbxBpmNextOfKinDetails { get; set; }
+        public ICollection<RbxBpmNextOfKinDetail> RbxBpmNextOfKinDetails { get; set; }
     }
 }
