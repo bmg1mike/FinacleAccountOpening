@@ -249,4 +249,18 @@ public class Util
         }
         return status;
     }
+
+    public static bool IsBase64String(string input)
+    {
+        byte[] output = null;
+        try
+        {
+            output = Convert.FromBase64String(input);
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
 }

@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace StanbicIBTC.AccountOpening.Domain;
-    public class ChessAccountRequest
+public class ChessAccountRequest
     {
         public string ChildFirstName { get; set; }
         public string ChildLastName { get; set; }

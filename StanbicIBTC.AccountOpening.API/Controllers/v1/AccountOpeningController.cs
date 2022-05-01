@@ -13,6 +13,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpPost("OpenTierOneAccount/")]
+        [ProducesResponseType(200,Type = typeof(Result<string>))]
         public async Task<IActionResult> OpenTierOneAccount(TierOneAccountOpeningRequest request)
         {
             var result = new Result<string>();
@@ -23,6 +24,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpPost("OpenTierThreeAccount/")]
+        [ProducesResponseType(200, Type = typeof(Result<string>))]
         public async Task<IActionResult> OpenTierThreeAccount(TierThreeAccountOpeningRequest request)
         {
             var result = new Result<string>();
@@ -33,6 +35,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpPost("BulkTierOneAccountOpening/")]
+        [ProducesResponseType(200, Type = typeof(Result<List<string>>))]
         public async Task<IActionResult> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests)
         {
             var result = new Result<List<string>>();
@@ -42,6 +45,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpPost("OpenVirtualAccount/")]
+        [ProducesResponseType(200, Type = typeof(Result<VirtualAccountOpeningResponse>))]
         public async Task<IActionResult> OpenVirtualAccount(CreateVirtualAccountDto request)
         {
             var result = new Result<VirtualAccountOpeningResponse>();
@@ -53,6 +57,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpPost("AccountUpgrade/")]
+        [ProducesResponseType(200, Type = typeof(Result<string>))]
         public async Task<IActionResult> AccountUgrade(TierOneUgrade request)
         {
             var result = new Result<string>();
@@ -63,6 +68,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpPost("OpenChessAccount/")]
+        [ProducesResponseType(200, Type = typeof(Result<string>))]
         public async Task<IActionResult> OpenChessAccount(ChessAccountRequest request)
         {
             var result = new Result<string>();
@@ -72,7 +78,19 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(result);
         }
 
+        [HttpPost("OpenCurrentAccount/")]
+        [ProducesResponseType(200, Type = typeof(Result<string>))]
+        public async Task<IActionResult> OpenCurrentAccount(CurrentAccountRequest request)
+        {
+            var result = new Result<string>();
+            var response = await _accountOpeningService.OpenCurrentAccout(request);
+            result.Content = response.responseDescription;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
+        }
+
         [HttpGet("GetOccupations/")]
+        [ProducesResponseType(200, Type = typeof(Result<List<OccupationResult>>))]
         public IActionResult GetOccupations()
         {
             var result = new Result<List<OccupationResult>>();
@@ -83,12 +101,25 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpGet("GetEmploymentStatus/")]
+        [ProducesResponseType(200, Type = typeof(Result<List<EmploymentResult>>))]
         public IActionResult GetEmploymentStatus()
         {
             var result = new Result<List<EmploymentResult>>();
             var response = _accountOpeningService.GetEmploymentStatus();
             result.Content = response;
             result.ResponseCode = "000";
+            return Ok(result);
+        }
+
+        [HttpPost("GetAccountNameByAccountNumber/")]
+        [ProducesResponseType(200, Type = typeof(Result<string>))]
+        public IActionResult GetAccountNameByAccountNumber(AccountVerificationDto request)
+        {
+            var result = new Result<string>();
+            var response = _accountOpeningService.GetAccountNameByAccountNumber(request.AccountNumber);
+            result.Content = response.responseDescription;
+            result.ResponseCode = response.responseCode;
+            result.requestId = Guid.NewGuid().ToString();
             return Ok(result);
         }
 

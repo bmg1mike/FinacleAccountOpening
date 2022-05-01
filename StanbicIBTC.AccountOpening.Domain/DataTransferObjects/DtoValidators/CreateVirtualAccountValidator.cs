@@ -7,7 +7,7 @@ public class CreateVirtualAccountValidator : AbstractValidator<CreateVirtualAcco
         
         RuleFor(x => x.PhoneNumber).NotEmpty()
             .NotNull()
-            .Length(11,11);
+            .Length(11);
 
         RuleFor(x => x.SecretWord).NotEmpty()
             .NotNull();

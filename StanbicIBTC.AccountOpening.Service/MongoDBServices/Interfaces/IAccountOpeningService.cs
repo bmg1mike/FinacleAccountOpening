@@ -10,4 +10,6 @@ public interface IAccountOpeningService
     Task<ApiResult> OpenTierThreeAccount(TierThreeAccountOpeningRequest request);
     Task<ApiResult> UpgradeToTierThreeAccountOpening(TierOneUgrade request);
     Task<ApiResult> OpenChessAccount(ChessAccountRequest request);
+    Task<ApiResult> OpenCurrentAccout(CurrentAccountRequest request);
+    ApiResult GetAccountNameByAccountNumber(string accountNumber);
 }
