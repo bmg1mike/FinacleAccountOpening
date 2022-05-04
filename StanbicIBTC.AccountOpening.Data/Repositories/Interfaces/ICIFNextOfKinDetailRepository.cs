@@ -1,4 +1,4 @@
-namespace StanbicIBTC.AccountOpening.Core.Repositories;
+namespace StanbicIBTC.AccountOpening.Data;
 public partial interface ICIFNextOfKinDetailRepository
 {
     Task<List<CIFNextOfKinDetail>> GetCIFNextOfKinDetails();

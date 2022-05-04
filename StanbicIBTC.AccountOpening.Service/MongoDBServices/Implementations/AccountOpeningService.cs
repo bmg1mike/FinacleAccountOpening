@@ -19,7 +19,10 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly ISmsNotification _smsNotification;
     private readonly DataContext _modelContext;
 
-    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt, IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository, ISmsNotification smsNotification, DataContext modelContext)
+    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, 
+            ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt, 
+            IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository, 
+            ISmsNotification smsNotification, DataContext modelContext)
     {
         _logger = logger;
         _soapRequestHelper = soapRequestHelper;
@@ -877,7 +880,7 @@ public class AccountOpeningService : IAccountOpeningService
         try
         {
             var response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request));
-            //var response = await _soapRequestHelper.FinacleCall(TestPayload(request));
+            
 
             if (response.ResponseCode != "000")
             {

@@ -1,4 +1,3 @@
-using StanbicIBTC.AccountOpening.Core.Repositories;
 using StanbicIBTC.AccountOpening.Service;
 
 namespace StanbicIBTC.AccountOpening.WorkerService
@@ -27,14 +26,19 @@ namespace StanbicIBTC.AccountOpening.WorkerService
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
-                CheckCifRequest:
+                //CheckCifRequest:
                 var requests = await _cifrequestRepository.GetPendingCifRequests();
 
-                if (requests.Count == 0)
+                while(requests.Count == 0)
                 {
-                    Thread.Sleep(10000);
-                    goto CheckCifRequest;
+                    requests = await _cifrequestRepository.GetPendingCifRequests();
                 }
+
+                // if (requests.Count == 0)
+                // {
+                //     Thread.Sleep(10000);
+                //     goto CheckCifRequest;
+                // }
 
                 foreach (var item in requests)
                 {

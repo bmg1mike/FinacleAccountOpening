@@ -1,6 +1,6 @@
 using StanbicIBTC.AccountOpening.Domain;
 
-namespace StanbicIBTC.AccountOpening.Core.Repositories;
+namespace StanbicIBTC.AccountOpening.Data;
 public partial class CIFRequestRepository : ICIFRequestRepository
 {
 

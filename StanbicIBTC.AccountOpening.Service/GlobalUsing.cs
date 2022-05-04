@@ -14,6 +14,7 @@ global using MongoDB.Driver;
 
 global using Serilog;
 
+global using StanbicIBTC.AccountOpening.Data;
 
 global using StanbicIBTC.AccountOpening.Domain.Common;
 global using StanbicIBTC.AccountOpening.Domain.Entities;

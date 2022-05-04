@@ -1,4 +1,4 @@
-namespace StanbicIBTC.AccountOpening.Core.Repositories;
+namespace StanbicIBTC.AccountOpening.Data;
 public partial interface IOutboundLogRepository
 {
     Task<List<OutboundLog>> GetOutboundLogs();
