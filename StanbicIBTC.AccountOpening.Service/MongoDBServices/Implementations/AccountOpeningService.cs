@@ -153,7 +153,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             }
 
-            return new ApiResult { responseCode = "000", responseDescription = $"Your Account has been opened Successfully. Your Account Number Is {accountNumber}." };
+            return new ApiResult { responseCode = "000", responseDescription = $"{accountNumber}." };
 
         }
         catch (Exception ex)
@@ -613,12 +613,12 @@ public class AccountOpeningService : IAccountOpeningService
             if (string.IsNullOrEmpty(successDescription))
             {
                 accountOpeningAttempt.Response = $"Could not open account for CIF : {cif.cif}";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+               // await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return $"Could not open the account for CIF : {cif.cif}";
             }
-            var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
-            cifRequest.AccountOpeningStatus = AccountOpeningStatus.Completed.ToString();
-            await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+            //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
+            //cifRequest.AccountOpeningStatus = AccountOpeningStatus.Completed.ToString();
+            //await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
             var successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({successDescription}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
             await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
             return $"Account Number is {successDescription}";
@@ -756,7 +756,7 @@ public class AccountOpeningService : IAccountOpeningService
                 CustomerId = cif
             };
             await _modelContext.AddAsync(customData);
-            await _modelContext.SaveChangesAsync();
+            //await _modelContext.SaveChangesAsync();
             var bvnLinkageLog = new RbxTBvnLinkageLog
             {
                AcctName = cifRequest.FirstName + " " + cifRequest.LastName,
@@ -769,7 +769,7 @@ public class AccountOpeningService : IAccountOpeningService
             };
             await _modelContext.AddAsync(bvnLinkageLog);
 
-            var nextofkinId = await _modelContext.RbxBpmCifCustomData.FirstOrDefaultAsync(x => x.Bvn == cifRequest.CustomerBVN);
+            //var nextofkinId = await _modelContext.RbxBpmCifCustomData.FirstOrDefaultAsync(x => x.Bvn == cifRequest.CustomerBVN);
 
             var nextOfKin = new RbxBpmNextOfKinDetail
             {
@@ -780,10 +780,10 @@ public class AccountOpeningService : IAccountOpeningService
                 PhoneNumber = cifRequest.NextOfKinDetail.PhoneNumber,
                 MiddleName = cifRequest.NextOfKinDetail.MiddleName,
                 DateCreated = DateTime.UtcNow,
-                //FkCustomerAddDetails = customData.Id,
-                FkCustomerAddDetails = nextofkinId.Id,
+                FkCustomerAddDetails = customData.Id,
+                //FkCustomerAddDetails = nextofkinId.Id,
                 FkCustomerAddDetailsNavigation = customData,
-                Gender = cifRequest.Gender,
+                Gender = cifRequest.Gender
             };
 
             

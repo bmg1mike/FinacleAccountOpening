@@ -19,7 +19,7 @@ public static class DependencyInjection
         configuration.GetSection("MongoDbSettings:DatabaseName").Value));
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();
-        services.AddDbContext<DataContext>(x => x.UseOracle(configuration.GetConnectionString("AccountOpeningConnection")));
+        services.AddDbContext<DataContext>(x => x.UseSqlServer(configuration.GetSection("AccountOpeningConnection:ConnectionString").Value));
 
 
          services.AddTransient<ICIFRequestRepository, CIFRequestRepository>();

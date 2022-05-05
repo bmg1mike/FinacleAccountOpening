@@ -2,8 +2,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Oracle.EntityFrameworkCore.Metadata;
 using StanbicIBTC.AccountOpening.Data;
 
 #nullable disable
@@ -17,387 +17,387 @@ namespace StanbicIBTC.AccountOpening.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.1")
+                .HasAnnotation("ProductVersion", "6.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            OracleModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("StanbicIBTC.AccountOpening.Domain.RbxBpmCifCustomDatum", b =>
                 {
                     b.Property<string>("Id")
                         .HasPrecision(19)
-                        .HasColumnType("NVARCHAR2(450)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("ID");
 
                     b.Property<string>("AccomodationType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ACCOMODATION_TYPE");
 
                     b.Property<string>("AssetClassification")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ASSET_CLASSIFICATION");
 
                     b.Property<string>("Base2Indicator")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BASE2_INDICATOR");
 
                     b.Property<string>("BaselIiIndicator")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BASEL_II_INDICATOR");
 
                     b.Property<string>("BranchId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BRANCH_ID");
 
                     b.Property<string>("Bvn")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BVN");
 
                     b.Property<string>("CounterPartyInfo")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTER_PARTY_INFO");
 
                     b.Property<string>("CounterPartyInformation")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTER_PARTY_INFORMATION");
 
                     b.Property<string>("CountryOfBirth")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTRY_OF_BIRTH");
 
                     b.Property<string>("CountryOfTaxResidence")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTRY_OF_TAX_RESIDENCE");
 
                     b.Property<string>("CustomerId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("CUSTOMER_ID");
 
                     b.Property<DateTime?>("DateCreated")
                         .HasPrecision(6)
-                        .HasColumnType("TIMESTAMP(6)")
+                        .HasColumnType("datetime2(6)")
                         .HasColumnName("DATE_CREATED");
 
                     b.Property<string>("DefaultAddressType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("DEFAULT_ADDRESS_TYPE");
 
                     b.Property<string>("DistributionChannel")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("DISTRIBUTION_CHANNEL");
 
                     b.Property<string>("EmploymentType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("EMPLOYMENT_TYPE");
 
                     b.Property<string>("FnrClassification")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FNR_CLASSIFICATION");
 
                     b.Property<string>("FnrStatus")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FNR_STATUS");
 
                     b.Property<string>("ForeignCustomer")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FOREIGN_CUSTOMER");
 
                     b.Property<string>("IdentityNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IDENTITY_NUMBER");
 
                     b.Property<string>("IdentityType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IDENTITY_TYPE");
 
                     b.Property<string>("IndustryClassificationCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("INDUSTRY_CLASSIFICATION_CODE");
 
                     b.Property<string>("IndustrySarbCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("INDUSTRY_SARB_CODE");
 
                     b.Property<string>("InsiderToBank")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("INSIDER_TO_BANK");
 
                     b.Property<string>("IsCoreProfileActive")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_CORE_PROFILE_ACTIVE");
 
                     b.Property<string>("IsCustomerMinor")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_CUSTOMER_MINOR");
 
                     b.Property<string>("IsOnlyCountryOfNationality")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_ONLY_COUNTRY_OF_NATIONALITY");
 
                     b.Property<string>("IsOnlyCountryTaxResidence")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_ONLY_COUNTRY_TAX_RESIDENCE");
 
                     b.Property<string>("IsOnlyNationality")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_ONLY_NATIONALITY");
 
                     b.Property<string>("KeyContactPerson")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("KEY_CONTACT_PERSON");
 
                     b.Property<string>("KeyContactPersonName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("KEY_CONTACT_PERSON_NAME");
 
                     b.Property<string>("KycIndicator")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("KYC_INDICATOR");
 
                     b.Property<string>("LegalChallengeStatus")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LEGAL_CHALLENGE_STATUS");
 
                     b.Property<string>("LegalEntity")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LEGAL_ENTITY");
 
                     b.Property<string>("LocalIndicia")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LOCAL_INDICIA");
 
                     b.Property<string>("MaritalStatus")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("MARITAL_STATUS");
 
                     b.Property<string>("MonthlyNetIncome")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("MONTHLY_NET_INCOME");
 
                     b.Property<string>("NationalIdNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NATIONAL_ID_NUMBER");
 
                     b.Property<string>("Occupation")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("OCCUPATION");
 
                     b.Property<string>("OnlyCountryOfTaxResidence")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ONLY_COUNTRY_OF_TAX_RESIDENCE");
 
                     b.Property<string>("PoliticallyExposed")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("POLITICALLY_EXPOSED");
 
                     b.Property<string>("PortfolioNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PORTFOLIO_NUMBER");
 
                     b.Property<string>("PreferredName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PREFERRED_NAME");
 
                     b.Property<string>("PriCountryOfTaxResidence")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRI_COUNTRY_OF_TAX_RESIDENCE");
 
                     b.Property<string>("PrimaryNationality")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRIMARY_NATIONALITY");
 
                     b.Property<string>("PrimarySicCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRIMARY_SIC_CODE");
 
                     b.Property<string>("PrimaryTaxResidenceCountry")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRIMARY_TAX_RESIDENCE_COUNTRY");
 
                     b.Property<string>("Region")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("REGION");
 
                     b.Property<string>("Relationship")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RELATIONSHIP");
 
                     b.Property<string>("ReserveBankCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RESERVE_BANK_CODE");
 
                     b.Property<string>("ReturnsClassCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RETURNS_CLASS_CODE");
 
                     b.Property<string>("ReturnsClassificationCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RETURNS_CLASSIFICATION_CODE");
 
                     b.Property<string>("RsvBankCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RSV_BANK_CODE");
 
                     b.Property<string>("SecondaryRmId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("SECONDARY_RM_ID");
 
                     b.Property<string>("SecondarySicCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("SECONDARY_SIC_CODE");
 
                     b.Property<string>("ShortName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("SHORT_NAME");
 
                     b.Property<string>("TaxIdNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("TAX_ID_NUMBER");
 
                     b.Property<string>("TaxIdentificationNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("TAX_IDENTIFICATION_NUMBER");
 
                     b.Property<string>("TertiarySicCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("TERTIARY_SIC_CODE");
 
                     b.Property<string>("ValidateFnr")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("VALIDATE_FNR");
 
                     b.Property<string>("WithHoldingTax")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("WITH_HOLDING_TAX");
 
                     b.Property<string>("WithholdingTax1")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("WITHHOLDING_TAX");
 
                     b.Property<string>("Zip")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ZIP");
 
                     b.HasKey("Id");
@@ -409,77 +409,77 @@ namespace StanbicIBTC.AccountOpening.Data.Migrations
                 {
                     b.Property<string>("CompanyId")
                         .HasPrecision(19)
-                        .HasColumnType("NVARCHAR2(450)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("COMPANY_ID");
 
                     b.Property<string>("BusinessAddress")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BUSINESS_ADDRESS");
 
                     b.Property<string>("CountryOfIncorporation")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTRY_OF_INCORPORATION");
 
                     b.Property<string>("CountryOfRegistration")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTRY_OF_REGISTRATION");
 
                     b.Property<DateTime?>("DateCreated")
                         .HasPrecision(6)
-                        .HasColumnType("TIMESTAMP(6)")
+                        .HasColumnType("datetime2(6)")
                         .HasColumnName("DATE_CREATED");
 
                     b.Property<string>("FkCustomData")
                         .HasPrecision(19)
-                        .HasColumnType("NVARCHAR2(450)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("FK_CUSTOM_DATA");
 
                     b.Property<string>("HeadOfficeAddress")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("HEAD_OFFICE_ADDRESS");
 
                     b.Property<string>("IsForeignCompany")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_FOREIGN_COMPANY");
 
                     b.Property<string>("PrincipalOfficeCountry")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRINCIPAL_OFFICE_COUNTRY");
 
                     b.Property<string>("RegisteredAddress")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("REGISTERED_ADDRESS");
 
                     b.Property<string>("RegisteredName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("REGISTERED_NAME");
 
                     b.Property<string>("RegistrationNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("REGISTRATION_NUMBER");
 
                     b.Property<string>("TradeName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("TRADE_NAME");
 
                     b.HasKey("CompanyId")
@@ -494,300 +494,300 @@ namespace StanbicIBTC.AccountOpening.Data.Migrations
                 {
                     b.Property<string>("Id")
                         .HasPrecision(19)
-                        .HasColumnType("NVARCHAR2(450)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("ID");
 
                     b.Property<string>("BusinessType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BUSINESS_TYPE");
 
                     b.Property<string>("Bvn")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BVN");
 
                     b.Property<string>("CorporateType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("CORPORATE_TYPE");
 
                     b.Property<string>("CounterPartyInfo")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTER_PARTY_INFO");
 
                     b.Property<string>("CountryOfTaxResidence")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTRY_OF_TAX_RESIDENCE");
 
                     b.Property<string>("CustomerId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("CUSTOMER_ID");
 
                     b.Property<string>("CustomerType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("CUSTOMER_TYPE");
 
                     b.Property<DateTime?>("DateCreated")
                         .HasPrecision(6)
-                        .HasColumnType("TIMESTAMP(6)")
+                        .HasColumnType("datetime2(6)")
                         .HasColumnName("DATE_CREATED");
 
                     b.Property<string>("DistributionChannel")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("DISTRIBUTION_CHANNEL");
 
                     b.Property<string>("Earns50PercentGross")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("EARNS_50_PERCENT_GROSS");
 
                     b.Property<string>("EntityClass")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ENTITY_CLASS");
 
                     b.Property<string>("FatCaExempt")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FAT_CA_EXEMPT");
 
                     b.Property<string>("FinancialInstitution")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FINANCIAL_INSTITUTION");
 
                     b.Property<string>("FnrClassification")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FNR_CLASSIFICATION");
 
                     b.Property<string>("FnrStatus")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FNR_STATUS");
 
                     b.Property<string>("FundSource")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FUND_SOURCE");
 
                     b.Property<string>("Holds50PercentGross")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("HOLDS_50_PERCENT_GROSS");
 
                     b.Property<string>("IdIssuedOrganization")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ID_ISSUED_ORGANIZATION");
 
                     b.Property<string>("IncomeTaxNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("INCOME_TAX_NUMBER");
 
                     b.Property<string>("IndustryClassificationCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("INDUSTRY_CLASSIFICATION_CODE");
 
                     b.Property<string>("InsiderToBank")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("INSIDER_TO_BANK");
 
                     b.Property<string>("KeyContactPerson")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("KEY_CONTACT_PERSON");
 
                     b.Property<string>("KycIndicator")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("KYC_INDICATOR");
 
                     b.Property<string>("LegalChallengeStatus")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LEGAL_CHALLENGE_STATUS");
 
                     b.Property<string>("LegalEntityType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LEGAL_ENTITY_TYPE");
 
                     b.Property<string>("ListApprovedExchanges")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LIST_APPROVED_EXCHANGES");
 
                     b.Property<string>("MonthlyNetIncome")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("MONTHLY_NET_INCOME");
 
                     b.Property<string>("OnlyCountryOfTaxResidence")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ONLY_COUNTRY_OF_TAX_RESIDENCE");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PHONE_NUMBER");
 
                     b.Property<string>("PoliticallyExposed")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("POLITICALLY_EXPOSED");
 
                     b.Property<string>("PortfolioNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PORTFOLIO_NUMBER");
 
                     b.Property<string>("PreferredContactType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PREFERRED_CONTACT_TYPE");
 
                     b.Property<string>("PrimaryEmailType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRIMARY_EMAIL_TYPE");
 
                     b.Property<string>("PrimarySicCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRIMARY_SIC_CODE");
 
                     b.Property<string>("Region")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("REGION");
 
                     b.Property<string>("Relationship")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RELATIONSHIP");
 
                     b.Property<string>("ReturnsClassCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RETURNS_CLASS_CODE");
 
                     b.Property<string>("RsvBankCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RSV_BANK_CODE");
 
                     b.Property<string>("SbgMember")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("SBG_MEMBER");
 
                     b.Property<string>("ScumRegNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("SCUM_REG_NUMBER");
 
                     b.Property<string>("SecSicCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("SEC_SIC_CODE");
 
                     b.Property<string>("SecondaryRmId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("SECONDARY_RM_ID");
 
                     b.Property<string>("StateOfInc")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("STATE_OF_INC");
 
                     b.Property<string>("TertiarySicCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("TERTIARY_SIC_CODE");
 
                     b.Property<string>("UniqueId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("UNIQUE_ID");
 
                     b.Property<string>("UsRelatedParties")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("US_RELATED_PARTIES");
 
                     b.Property<string>("W8BenReceived")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("W8_BEN_RECEIVED");
 
                     b.Property<string>("Website")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("WEBSITE");
 
                     b.Property<string>("WithholdingTax")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("WITHHOLDING_TAX");
 
                     b.HasKey("Id");
@@ -799,24 +799,24 @@ namespace StanbicIBTC.AccountOpening.Data.Migrations
                 {
                     b.Property<string>("Id")
                         .HasPrecision(19)
-                        .HasColumnType("NVARCHAR2(450)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("ID");
 
                     b.Property<string>("Address")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ADDRESS");
 
                     b.Property<string>("AddressFormat")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ADDRESS_FORMAT");
 
                     b.Property<DateTime?>("DateCreated")
                         .HasPrecision(6)
-                        .HasColumnType("TIMESTAMP(6)")
+                        .HasColumnType("datetime2(6)")
                         .HasColumnName("DATE_CREATED");
 
                     b.Property<DateTime?>("DateOfBirth")
@@ -826,48 +826,48 @@ namespace StanbicIBTC.AccountOpening.Data.Migrations
                     b.Property<string>("EmailAddress")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("EMAIL_ADDRESS");
 
                     b.Property<string>("FirstName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FIRST_NAME");
 
                     b.Property<string>("FkCustomerAddDetails")
                         .HasPrecision(19)
-                        .HasColumnType("NVARCHAR2(450)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("FK_CUSTOMER_ADD_DETAILS");
 
                     b.Property<string>("Gender")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("GENDER");
 
                     b.Property<string>("LastName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LAST_NAME");
 
                     b.Property<string>("MiddleName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("MIDDLE_NAME");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PHONE_NUMBER");
 
                     b.Property<string>("RelationshipType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RELATIONSHIP_TYPE");
 
                     b.HasKey("Id");
@@ -882,331 +882,331 @@ namespace StanbicIBTC.AccountOpening.Data.Migrations
                     b.Property<string>("CustomerId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("CUSTOMER_ID");
 
                     b.Property<string>("AssetClassification")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ASSET_CLASSIFICATION");
 
                     b.Property<string>("BranchId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BRANCH_ID");
 
                     b.Property<string>("CounterPartyInformation")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTER_PARTY_INFORMATION");
 
                     b.Property<string>("CountryOfTaxResidence")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COUNTRY_OF_TAX_RESIDENCE");
 
                     b.Property<string>("DefaultAddressType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("DEFAULT_ADDRESS_TYPE");
 
                     b.Property<string>("DistributionChannel")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("DISTRIBUTION_CHANNEL");
 
                     b.Property<string>("EmploymentType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("EMPLOYMENT_TYPE");
 
                     b.Property<string>("FnrClassification")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FNR_CLASSIFICATION");
 
                     b.Property<string>("FnrStatus")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FNR_STATUS");
 
                     b.Property<string>("ForeignCustomer")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("FOREIGN_CUSTOMER");
 
                     b.Property<string>("IdentityNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IDENTITY_NUMBER");
 
                     b.Property<string>("IndustryClassificationCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("INDUSTRY_CLASSIFICATION_CODE");
 
                     b.Property<string>("IsCoreProfileActive")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_CORE_PROFILE_ACTIVE");
 
                     b.Property<string>("IsCustomerMinor")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_CUSTOMER_MINOR");
 
                     b.Property<string>("IsOnlyCountryOfNationality")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_ONLY_COUNTRY_OF_NATIONALITY");
 
                     b.Property<string>("IsOnlyCountryTaxResidence")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("IS_ONLY_COUNTRY_TAX_RESIDENCE");
 
                     b.Property<string>("KeyContactPersonName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("KEY_CONTACT_PERSON_NAME");
 
                     b.Property<string>("KycIndicator")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("KYC_INDICATOR");
 
                     b.Property<string>("LegalChallengeStatus")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LEGAL_CHALLENGE_STATUS");
 
                     b.Property<string>("LegalEntity")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LEGAL_ENTITY");
 
                     b.Property<string>("LocalIndicia")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("LOCAL_INDICIA");
 
                     b.Property<string>("MonthlyNetIncome")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("MONTHLY_NET_INCOME");
 
                     b.Property<string>("NokAddress")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_ADDRESS");
 
                     b.Property<string>("NokAddressCategory")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_ADDRESS_CATEGORY");
 
                     b.Property<string>("NokAddressFormat")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_ADDRESS_FORMAT");
 
                     b.Property<string>("NokAddressLine1")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_ADDRESS_LINE1");
 
                     b.Property<string>("NokAddressLine2")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_ADDRESS_LINE2");
 
                     b.Property<string>("NokAddressLine3")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_ADDRESS_LINE3");
 
                     b.Property<string>("NokCity")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_CITY");
 
                     b.Property<string>("NokCountry")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_COUNTRY");
 
                     b.Property<string>("NokDateOfBirth")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_DATE_OF_BIRTH");
 
                     b.Property<string>("NokEmail")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_EMAIL");
 
                     b.Property<string>("NokFirstName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_FIRST_NAME");
 
                     b.Property<string>("NokGender")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_GENDER");
 
                     b.Property<string>("NokLastName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_LAST_NAME");
 
                     b.Property<string>("NokLocalityName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_LOCALITY_NAME");
 
                     b.Property<string>("NokMiddleName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_MIDDLE_NAME");
 
                     b.Property<string>("NokPhoneNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_PHONE_NUMBER");
 
                     b.Property<string>("NokPostalCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_POSTAL_CODE");
 
                     b.Property<string>("NokPreferredAddress")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_PREFERRED_ADDRESS");
 
                     b.Property<string>("NokPreferredFormat")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_PREFERRED_FORMAT");
 
                     b.Property<string>("NokRelationshipType")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_RELATIONSHIP_TYPE");
 
                     b.Property<string>("NokStateCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_STATE_CODE");
 
                     b.Property<string>("NokStreetName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("NOK_STREET_NAME");
 
                     b.Property<string>("PoliticallyExposed")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("POLITICALLY_EXPOSED");
 
                     b.Property<string>("PrimaryNationality")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRIMARY_NATIONALITY");
 
                     b.Property<string>("PrimaryTaxResidenceCountry")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PRIMARY_TAX_RESIDENCE_COUNTRY");
 
                     b.Property<string>("Relationship")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RELATIONSHIP");
 
                     b.Property<string>("ReserveBankCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RESERVE_BANK_CODE");
 
                     b.Property<string>("ReturnsClassificationCode")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RETURNS_CLASSIFICATION_CODE");
 
                     b.Property<string>("TaxIdentificationNumber")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("TAX_IDENTIFICATION_NUMBER");
 
                     b.Property<string>("ValidateFnr")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("VALIDATE_FNR");
 
                     b.Property<string>("WithholdingTax")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("WITHHOLDING_TAX");
 
                     b.Property<string>("Zip")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ZIP");
 
                     b.HasKey("CustomerId")
@@ -1219,110 +1219,110 @@ namespace StanbicIBTC.AccountOpening.Data.Migrations
                 {
                     b.Property<string>("Id")
                         .HasPrecision(19)
-                        .HasColumnType("NVARCHAR2(450)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("ID");
 
                     b.Property<string>("AcctName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ACCT_NAME");
 
                     b.Property<string>("AcctNo")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("ACCT_NO");
 
                     b.Property<string>("BankEnrolled")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BANK_ENROLLED");
 
                     b.Property<string>("BranchEnrolled")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BRANCH_ENROLLED");
 
                     b.Property<string>("BranchName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BRANCH_NAME");
 
                     b.Property<string>("BranchNo")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BRANCH_NO");
 
                     b.Property<string>("BvnForm")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BVN_FORM");
 
                     b.Property<string>("BvnNumber")
                         .IsRequired()
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("BVN_NUMBER");
 
                     b.Property<string>("CifId")
                         .IsRequired()
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("CIF_ID");
 
                     b.Property<string>("ComponentServerIp")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("COMPONENT_SERVER_IP");
 
                     b.Property<DateTime?>("CreateDate")
                         .HasPrecision(6)
-                        .HasColumnType("TIMESTAMP(6)")
+                        .HasColumnType("datetime2(6)")
                         .HasColumnName("CREATE_DATE");
 
                     b.Property<string>("PhoneNo")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("PHONE_NO");
 
                     b.Property<string>("RecordDelFlag")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RECORD_DEL_FLAG");
 
                     b.Property<string>("RecordHash")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RECORD_HASH");
 
                     b.Property<string>("RecordIsFinalFlag")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RECORD_IS_FINAL_FLAG");
 
                     b.Property<string>("RecordSubmissionFlag")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("RECORD_SUBMISSION_FLAG");
 
                     b.Property<string>("Sapid")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("SAPID");
 
                     b.Property<DateTime?>("TranDate")
@@ -1331,19 +1331,19 @@ namespace StanbicIBTC.AccountOpening.Data.Migrations
 
                     b.Property<DateTime?>("TranTime")
                         .HasPrecision(6)
-                        .HasColumnType("TIMESTAMP(6)")
+                        .HasColumnType("datetime2(6)")
                         .HasColumnName("TRAN_TIME");
 
                     b.Property<string>("TransactionStatus")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("TRANSACTION_STATUS");
 
                     b.Property<string>("WkfId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("VARCHAR2(255)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("WKF_ID");
 
                     b.HasKey("Id");

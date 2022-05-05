@@ -5,7 +5,7 @@ namespace StanbicIBTC.AccountOpening.Domain
 {
     public partial class RbxBpmNextOfKinDetail
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Address { get; set; }
         public string AddressFormat { get; set; }
         public DateTime? DateCreated { get; set; }
