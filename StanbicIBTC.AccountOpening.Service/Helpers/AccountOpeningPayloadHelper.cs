@@ -345,4 +345,145 @@ public static class AccountOpeningPayloadHelper
 
         return payload;
     }
+
+    public static string RetailCifVerificationPayload(string cif)
+    {
+        var payloaad = $@"
+        <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <web:executeService>
+            <arg_0_0>
+                <![CDATA[
+        <FIXML xmlns:ns5=""http://soap.finacle.redbox.stanbic.com/"" xmlns:ns2=""http://webservice.fiusb.ci.infosys.com/"" xmlns:ns4=""http://www.finacle.com/fixml"">
+<Header>
+<RequestHeader>
+<MessageKey>
+<RequestUUID>2104212152533717</RequestUUID>
+<ServiceRequestId>verifyCustomerDetails</ServiceRequestId>
+<ServiceRequestVersion>10.2</ServiceRequestVersion>
+<ChannelId>RBX</ChannelId>
+</MessageKey>
+<RequestMessageInfo>
+<BankId>NG</BankId>
+<TimeZone>
+</TimeZone>
+<EntityId>
+</EntityId>
+<EntityType>
+</EntityType>
+<ArmCorrelationId>
+</ArmCorrelationId>
+<MessageDateTime>2021-04-21T21:52:53.193</MessageDateTime>
+</RequestMessageInfo>
+<Security>
+<Token>
+<PasswordToken>
+<UserId>
+</UserId>
+<Password>
+</Password>
+</PasswordToken>
+</Token>
+<FICertToken>
+</FICertToken>
+<RealUserLoginSessionId>
+</RealUserLoginSessionId>
+<RealUser>
+</RealUser>
+<RealUserPwd>
+</RealUserPwd>
+<SSOTransferToken>
+</SSOTransferToken>
+</Security>
+</RequestHeader>
+</Header>
+<Body>
+<verifyCustomerDetailsRequest>
+<CustomerVerifyRq>
+<cifId>100561069</cifId>
+<decision>Approve</decision>
+<entityName>RetailCustomer</entityName>
+</CustomerVerifyRq>
+</verifyCustomerDetailsRequest>
+</Body>
+</FIXML>
+ ]]>
+    </arg_0_0>
+    </web:executeService>
+    </soapenv:Body>
+    </soapenv:Envelope>";
+return payloaad;
+    }
+
+    public static string CorporateCifVerificationPayload(string cif)
+    {
+        var payload = @$"
+        <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <web:executeService>
+            <arg_0_0>
+                <![CDATA[
+        <FIXML xmlns:ns2=""http://webservice.fiusb.ci.infosys.com/"" xmlns:ns4=""http://www.finacle.com/fixml"">
+<Header>
+<RequestHeader>
+<MessageKey>
+<RequestUUID>2103071741411043</RequestUUID>
+<ServiceRequestId>verifyCustomerDetails</ServiceRequestId>
+<ServiceRequestVersion>10.2</ServiceRequestVersion>
+<ChannelId>RBX</ChannelId>
+</MessageKey>
+<RequestMessageInfo>
+<BankId>NG</BankId>
+<TimeZone>
+</TimeZone>
+<EntityId>
+</EntityId>
+<EntityType>
+</EntityType>
+<ArmCorrelationId>
+</ArmCorrelationId>
+<MessageDateTime>2021-03-07T17:41:41.016</MessageDateTime>
+</RequestMessageInfo>
+<Security>
+<Token>
+<PasswordToken>
+<UserId>
+</UserId>
+<Password>
+</Password>
+</PasswordToken>
+</Token>
+<FICertToken>
+</FICertToken>
+<RealUserLoginSessionId>
+</RealUserLoginSessionId>
+<RealUser>
+</RealUser>
+<RealUserPwd>
+</RealUserPwd>
+<SSOTransferToken>
+</SSOTransferToken>
+</Security>
+</RequestHeader>
+</Header>
+<Body>
+<verifyCustomerDetailsRequest>
+<CustomerVerifyRq>
+<cifId>200734778</cifId>
+<decision>Approve</decision>
+<entityName>CorporateCustomer</entityName>
+</CustomerVerifyRq>
+</verifyCustomerDetailsRequest>
+</Body>
+</FIXML>
+ ]]>
+    </arg_0_0>
+    </web:executeService>
+    </soapenv:Body>
+    </soapenv:Envelope>";
+
+    return payload;
+    }
 }
