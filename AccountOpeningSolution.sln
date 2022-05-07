@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StanbicIBTC.AccountOpening.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StanbicIBTC.AccountOpening.API", "StanbicIBTC.AccountOpening.API\StanbicIBTC.AccountOpening.API.csproj", "{3B81F5EF-B78A-4B29-82B2-297387DD3351}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StanbicIBTC.AccountOpening.WorkerService", "StanbicIBTC.AccountOpening.WorkerService\StanbicIBTC.AccountOpening.WorkerService.csproj", "{BDFCFA4C-2423-4EAF-9584-C27A3A6913A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StanbicIBTC.AccountOpening.WorkerService", "StanbicIBTC.AccountOpening.WorkerService\StanbicIBTC.AccountOpening.WorkerService.csproj", "{BDFCFA4C-2423-4EAF-9584-C27A3A6913A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StanbicIBTC.AccountOpening.CIFVerificationService", "StanbicIBTC.AccountOpening.CIFVerificationService\StanbicIBTC.AccountOpening.CIFVerificationService.csproj", "{CE467BFB-32DF-4059-8581-9C4E42B7B18A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{BDFCFA4C-2423-4EAF-9584-C27A3A6913A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDFCFA4C-2423-4EAF-9584-C27A3A6913A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDFCFA4C-2423-4EAF-9584-C27A3A6913A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE467BFB-32DF-4059-8581-9C4E42B7B18A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE467BFB-32DF-4059-8581-9C4E42B7B18A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE467BFB-32DF-4059-8581-9C4E42B7B18A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE467BFB-32DF-4059-8581-9C4E42B7B18A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
