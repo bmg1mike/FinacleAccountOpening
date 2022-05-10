@@ -8,6 +8,10 @@ public class TierOneAccountOpeningRequestValidator : AbstractValidator<TierOneAc
                             .NotEmpty()
                             .NotNull();
 
+        RuleFor(x => x.Nin).Length(11, 11)
+                            .NotEmpty()
+                            .NotNull();
+
         RuleFor(x => x.EmploymentStatusCode).NotEmpty()
                                             .NotNull()
                                             .Length(3,3);

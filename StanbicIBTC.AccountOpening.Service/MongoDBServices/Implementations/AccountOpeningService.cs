@@ -44,17 +44,22 @@ public class AccountOpeningService : IAccountOpeningService
             if (bvnDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
-                return new ApiResult { responseCode = "999", responseDescription = bvnDetailsResponse.responseDescription };
+                return new ApiResult { responseCode = "999", responseDescription = "Invalid Bvn" };
             }
 
             var bvnDetails = bvnDetailsResponse.data;
+
+            //if (bvnDetails.NIN != request.Nin)
+            //{
+            //    return new ApiResult { responseCode = "999", responseDescription = "NIN does not match BVN's NIN" };
+            //}
             
             var ninDetailsResponse = await GetNinDetails(request.Nin, request.DateOfBirth.ToString());
 
             if (ninDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
-                return new ApiResult { responseCode = "999", responseDescription = ninDetailsResponse.responseDescription };
+                return new ApiResult { responseCode = "999", responseDescription = "Invalid NIN" };
             }
 
             var ninDetails = ninDetailsResponse.data;
@@ -84,6 +89,11 @@ public class AccountOpeningService : IAccountOpeningService
                 await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
             }
+            var occupationCode = _finacleRepository.GetOccupations().FirstOrDefault(x=>x.OccupationCode == request.OccupationCode);
+            var employmentStatus = _finacleRepository.GetEmploymentStatus().FirstOrDefault(x => x.EmploymentStatusCode == request.EmploymentStatusCode);
+
+            if (occupationCode is null || employmentStatus is null)
+                return new ApiResult { responseCode = "999", responseDescription = "Invalid Occupation Code Or Employment status" };
 
             
             var nextOfKinDetails = new CIFNextOfKinDetail
@@ -598,6 +608,8 @@ public class AccountOpeningService : IAccountOpeningService
                 return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
             }
 
+            Thread.Sleep(120000);
+
             var openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif.cif, request));
 
             if (openSavingsAccount.ResponseCode != "000")
@@ -818,13 +830,13 @@ public class AccountOpeningService : IAccountOpeningService
                     bvns = new string[] { $"{bvn}" }
                 }
             };
-            // validate BVN
+            
             var headers = new Dictionary<string, string>()
             {
                 { "module_id",_config["BVN_service:moduleId"] }
             };
             var response = await _restRequestHelper.HttpAsync(Method.POST, _config["BVN_service:base_url"], headers, request);
-            if (response.Content is null)
+            if (string.IsNullOrEmpty(response.Content))
             {
                 _logger.LogInformation(response.ErrorMessage);
                 return ("9xx", "Error validating customer's BVN", null);
@@ -855,7 +867,7 @@ public class AccountOpeningService : IAccountOpeningService
             };
 
             var response = await _restRequestHelper.HttpAsync(Method.POST, _config["NIN_service:base_url"], null, request);
-            if (response.Content == null)
+            if (string.IsNullOrEmpty(response.Content))
             {
                 _logger.LogInformation(response.ErrorMessage);
                 return ("9xx", "Error validating customer's NIN", null);
