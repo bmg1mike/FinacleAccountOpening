@@ -12,4 +12,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StanbicIBTC.AccountOpening.Service\StanbicIBTC.AccountOpening.Service.csproj" />
+    <ProjectReference Include="..\StanbicIBTC.AccountOpening.data\StanbicIBTC.AccountOpening.Data.csproj" />
+    <ProjectReference Include="..\StanbicIBTC.AccountOpening.domain\StanbicIBTC.AccountOpening.Domain.csproj" />
+  </ItemGroup>
 </Project>
