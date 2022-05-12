@@ -374,7 +374,7 @@ public static class AccountOpeningPayloadHelper
 </EntityType>
 <ArmCorrelationId>
 </ArmCorrelationId>
-<MessageDateTime>2021-04-21T21:52:53.193</MessageDateTime>
+<MessageDateTime>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</MessageDateTime>
 </RequestMessageInfo>
 <Security>
 <Token>
@@ -401,7 +401,7 @@ public static class AccountOpeningPayloadHelper
 <Body>
 <verifyCustomerDetailsRequest>
 <CustomerVerifyRq>
-<cifId>100561069</cifId>
+<cifId>{cif}</cifId>
 <decision>Approve</decision>
 <entityName>RetailCustomer</entityName>
 </CustomerVerifyRq>
@@ -444,7 +444,7 @@ return payloaad;
 </EntityType>
 <ArmCorrelationId>
 </ArmCorrelationId>
-<MessageDateTime>2021-03-07T17:41:41.016</MessageDateTime>
+<MessageDateTime>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</MessageDateTime>
 </RequestMessageInfo>
 <Security>
 <Token>
@@ -471,7 +471,7 @@ return payloaad;
 <Body>
 <verifyCustomerDetailsRequest>
 <CustomerVerifyRq>
-<cifId>200734778</cifId>
+<cifId>{cif}</cifId>
 <decision>Approve</decision>
 <entityName>CorporateCustomer</entityName>
 </CustomerVerifyRq>
