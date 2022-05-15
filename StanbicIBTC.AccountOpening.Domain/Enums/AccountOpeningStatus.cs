@@ -1,6 +1,10 @@
 namespace StanbicIBTC.AccountOpening.Domain;
 public enum AccountOpeningStatus
 {
+    PendingApproval,
     Pending,
-    Completed
+    Approved,
+    Successful,
+    Rejected,
+    Failed,
 }

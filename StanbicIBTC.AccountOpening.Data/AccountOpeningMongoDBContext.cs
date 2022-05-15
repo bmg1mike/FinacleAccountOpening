@@ -1,3 +1,5 @@
+using StanbicIBTC.AccountOpening.Domain;
+
 namespace StanbicIBTC.AccountOpening.Core.Data;
 
 public partial class AccountOpeningMongoDBContext : IAccountOpeningMongoDBContext
@@ -7,6 +9,7 @@ public partial class AccountOpeningMongoDBContext : IAccountOpeningMongoDBContex
       public IMongoCollection<AccountOpeningAttempt> AccountOpeningAttempts { get; set; }
       public IMongoCollection<InboundLog> InboundLogs { get; set; }
       public IMongoCollection<OutboundLog> OutboundLogs { get; set; }
+    public IMongoCollection<BulkAccountRequest> BulkAccountRequests { get; set; }
 
     public AccountOpeningMongoDBContext(IMongoDbConfig config,IMongoClient mongoClient)
     {
@@ -18,7 +21,7 @@ public partial class AccountOpeningMongoDBContext : IAccountOpeningMongoDBContex
            AccountOpeningAttempts = database.GetCollection<AccountOpeningAttempt>("Account_Opening_Attempts");
            InboundLogs = database.GetCollection<InboundLog>("Inbound_Logs");
            OutboundLogs = database.GetCollection<OutboundLog>("Outbound_Logs");
-
+           BulkAccountRequests = database.GetCollection<BulkAccountRequest>("BulkAccountRequests");
 
     }
 

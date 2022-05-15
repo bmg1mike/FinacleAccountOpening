@@ -16,8 +16,8 @@ public static class DependencyInjection
                     .AddMongoDb(configuration.GetSection("MongoDbSettings:ConnectionString").Value, "MongoDb Health", HealthStatus.Degraded);
         services.AddHealthChecks()
                     .AddOracle(configuration.GetConnectionString("FinacleConnection"),"select * from v$version","Finacle Db Health",HealthStatus.Degraded);
-        services.AddHealthChecks()
-                    .AddOracle(configuration.GetConnectionString("AccountOpeningConnection"),"select * from v$version","RedBox Db Health",HealthStatus.Degraded);
+        // services.AddHealthChecks()
+        //             .AddOracle(configuration.GetConnectionString("AccountOpeningConnection"),"select * from v$version","RedBox Db Health",HealthStatus.Degraded);
         
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();

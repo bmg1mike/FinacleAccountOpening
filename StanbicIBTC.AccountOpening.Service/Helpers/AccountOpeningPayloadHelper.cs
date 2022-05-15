@@ -2,7 +2,7 @@ namespace StanbicIBTC.AccountOpening.Service;
 
 public static class AccountOpeningPayloadHelper
 {
-    public static string CifPayload(CIFRequest request)
+    public static string CifPayload(CIFRequest request,string solId = "999999",string manager = "CCC9676")
     {
         var dob = DateTime.Parse(request.DateOfBirthInY_M_D_Format);
         request.Gender = request.Gender.ToUpper().Trim() == "MALE" ? "M" : "F"; 
@@ -101,7 +101,7 @@ public static class AccountOpeningPayloadHelper
                 <IsCustNRE>N</IsCustNRE>
                 <DefaultAddrType>Home</DefaultAddrType>
                 <Gender>{request.Gender}</Gender>
-                <Manager>CCC9676</Manager>
+                <Manager>{manager}</Manager>
                 <Name>{request.FirstName.ToUpper() +" "+ request.MiddleName.ToUpper() +" "+ request.LastName.ToUpper()}</Name>
                 <NativeLanguageCode>INFENG</NativeLanguageCode>
                 <Occupation>{request.OccupationCode}</Occupation>
@@ -116,7 +116,7 @@ public static class AccountOpeningPayloadHelper
                 <PrefFlag>Y</PrefFlag>
                 </PhoneEmailDtls>
                 <PrefName>{request.FirstName.ToUpper().Trim()}</PrefName>
-                <PrimarySolId>999999</PrimarySolId>
+                <PrimarySolId>{solId}</PrimarySolId>
                 <Region>001</Region>
                 <RelationshipOpeningDt>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</RelationshipOpeningDt>
                 <RiskProfileScore>0</RiskProfileScore>
