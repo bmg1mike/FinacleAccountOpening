@@ -2,10 +2,10 @@ namespace StanbicIBTC.AccountOpening.Service;
 
 public static class AccountOpeningPayloadHelper
 {
-    public static string CifPayload(CIFRequest request,string solId = "999999",string manager = "CCC9676")
+    public static string CifPayload(CIFRequest request, string solId = "999999", string manager = "CCC9676")
     {
         var dob = DateTime.Parse(request.DateOfBirthInY_M_D_Format);
-        request.Gender = request.Gender.ToUpper().Trim() == "MALE" ? "M" : "F"; 
+        request.Gender = request.Gender.ToUpper().Trim() == "MALE" ? "M" : "F";
         var payloaad = @$"
         <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
     <soapenv:Header/>
@@ -102,7 +102,7 @@ public static class AccountOpeningPayloadHelper
                 <DefaultAddrType>Home</DefaultAddrType>
                 <Gender>{request.Gender}</Gender>
                 <Manager>{manager}</Manager>
-                <Name>{request.FirstName.ToUpper() +" "+ request.MiddleName.ToUpper() +" "+ request.LastName.ToUpper()}</Name>
+                <Name>{request.FirstName.ToUpper() + " " + request.MiddleName.ToUpper() + " " + request.LastName.ToUpper()}</Name>
                 <NativeLanguageCode>INFENG</NativeLanguageCode>
                 <Occupation>{request.OccupationCode}</Occupation>
                 <PassportNum>A233786892</PassportNum>
@@ -111,7 +111,7 @@ public static class AccountOpeningPayloadHelper
                 <PhoneNum>{request.PhoneNumber.AsNigerianPhoneNumber()}</PhoneNum>
                 <PhoneNumCityCode>0</PhoneNumCityCode>
                 <PhoneNumCountryCode>234</PhoneNumCountryCode>
-                <PhoneNumLocalCode>{request.PhoneNumber.AsNigerianPhoneNumber().Remove(0,3)}</PhoneNumLocalCode>
+                <PhoneNumLocalCode>{request.PhoneNumber.AsNigerianPhoneNumber().Remove(0, 3)}</PhoneNumLocalCode>
                 <PhoneOrEmail>PHONE</PhoneOrEmail>
                 <PrefFlag>Y</PrefFlag>
                 </PhoneEmailDtls>
@@ -144,7 +144,7 @@ public static class AccountOpeningPayloadHelper
                 <TypeCode>DT010</TypeCode>
                 <TypeDesc>ADDRESS PROOF INDIVIDUAL</TypeDesc>
                 <PlaceOfIssue>NG</PlaceOfIssue>
-                <ReferenceNum>{"0"+request.PhoneNumber.AsNigerianPhoneNumber().Remove(0,3)}</ReferenceNum>
+                <ReferenceNum>{"0" + request.PhoneNumber.AsNigerianPhoneNumber().Remove(0, 3)}</ReferenceNum>
                 <IDIssuedOrganisation>TELEPHONE COMPANY</IDIssuedOrganisation>
                 </EntityDoctData>
                 <PsychographicData>
@@ -170,7 +170,7 @@ public static class AccountOpeningPayloadHelper
         return payloaad;
     }
 
-    public static string AccountOpeningPayload(string cif,CIFRequest request,string schemeCode = "KYCL1", string currency = "NGN")
+    public static string AccountOpeningPayload(string cif, CIFRequest request, string schemeCode = "KYCL1", string currency = "NGN")
     {
         var payloaad = @$"
     <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
@@ -270,7 +270,7 @@ public static class AccountOpeningPayloadHelper
         return payloaad;
     }
 
-    public static string SchemeCodeModificationPayload(string newGlSubHeadCode, string oldGlSubHeadCode,string oldSchemeCode,string newSchemeCode,string accountNumber)
+    public static string SchemeCodeModificationPayload(string newGlSubHeadCode, string oldGlSubHeadCode, string oldSchemeCode, string newSchemeCode, string accountNumber)
     {
         var payload = @$"
         <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
@@ -413,7 +413,7 @@ public static class AccountOpeningPayloadHelper
     </web:executeService>
     </soapenv:Body>
     </soapenv:Envelope>";
-return payloaad;
+        return payloaad;
     }
 
     public static string CorporateCifVerificationPayload(string cif)
@@ -484,6 +484,50 @@ return payloaad;
     </soapenv:Body>
     </soapenv:Envelope>";
 
-    return payload;
+        return payload;
+    }
+
+    public static string AddressVerificationRequestPayload(string Address, string cif)
+    {
+        var payload = $@"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:tem=""http://tempuri.org/"">
+               <soapenv:Header />
+               <soapenv:Body>
+                  <tem:LogAddressVerificationRequest>
+                     <tem:Cif_Id>{cif}</tem:Cif_Id>
+                    <tem:RequestType>1</t8em:RequestType>
+                     <tem:Alias>neon</tem:Alias>
+                    <tem:Branchid>000001</tem:Branchid>
+                    <tem:LandMark>Conoil Gas Station</tem:LandMark>
+                     <tem:LoggedBy>A168357</tem:LoggedBy>
+                  </tem:LogAddressVerificationRequest>
+               </soapenv:Body>
+            </soapenv:Envelope>";
+        return payload;
+    }
+
+    public static string FetchAddressVerificationReportStatusPayload(string requestId)
+    {
+        var payload = $@"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:tem=""http://tempuri.org/"">
+            <soapenv:Header/>
+            <soapenv:Body>
+                <tem:GetCompleteAddressStatus>
+                    <tem:RequestID>{requestId}</tem:RequestID>
+                </tem:GetCompleteAddressStatus>
+            </soapenv:Body>
+            </soapenv:Envelope>";
+        return payload;
+    }
+
+    public static string DownloadAddressVerificationReport(string requestId)
+    {
+        var payload = $@"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:tem=""http://tempuri.org/"">
+            <soapenv:Header/>
+            <soapenv:Body>
+                <tem:DownloadPDFInBase64String>
+                    <tem:RequestID>{requestId}</tem:RequestID>
+                </tem:DownloadPDFInBase64String>
+            </soapenv:Body>
+            </soapenv:Envelope>";
+        return payload;
     }
 }

@@ -11,10 +11,10 @@ services:
     ports:
       - 5103:5103
 
-  stanbicibtcaccountopeningworkerservice:
-    image: stanbicibtcaccountopeningworkerservice
-    build:
-      context: .
-      dockerfile: StanbicIBTC.AccountOpening.WorkerService/Dockerfile
-    ports:
-      - 5104:5104
+  # stanbicibtcaccountopeningworkerservice:
+  #   image: stanbicibtcaccountopeningworkerservice
+  #   build:
+  #     context: .
+  #     dockerfile: StanbicIBTC.AccountOpening.WorkerService/Dockerfile
+  #   ports:
+  #     - 5104:5104

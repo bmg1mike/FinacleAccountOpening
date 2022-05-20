@@ -15,11 +15,13 @@ public class SoapRequestHelper : ISoapRequestHelper
 {
     private readonly ILogger<SoapRequestHelper> _logger;
     private readonly IConfiguration _configSettings;
+    private readonly HttpClient _client;
 
-    public SoapRequestHelper(ILogger<SoapRequestHelper> logger, IConfiguration settings)
+    public SoapRequestHelper(ILogger<SoapRequestHelper> logger, IConfiguration settings, HttpClient client)
     {
         _logger = logger;
         _configSettings = settings;
+        _client = client;
     }
 
     public async Task<OccupationResponse> FinacleCall(string soapRequest, string soapAction = "\"treat\"", string url = "", string moduleId = "", string authId = "")

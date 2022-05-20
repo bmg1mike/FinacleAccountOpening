@@ -70,7 +70,8 @@ public class AccountOpeningService : IAccountOpeningService
                 LastName = bvnDetails.LastName,
                 Bvn = request.Bvn,
                 Response = string.Empty,
-                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber()
+                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
+                AccountTypeRequested = "Tier 1"
             };
 
             if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
@@ -130,13 +131,13 @@ public class AccountOpeningService : IAccountOpeningService
                 NextOfKinDetail = nextOfKinDetails
             };
 
-            //var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
-            //if (saveCifRequest == null)
-            //{
-            //    _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
-            //    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again later");
-            //    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
-            //}
+            var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
+            if (saveCifRequest == null)
+            {
+               _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
+               await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again later");
+               return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
+            }
 
 
 
@@ -179,7 +180,7 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
-
+            
             var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(request.AccountNumber);
             if (accountDetails == null)
             {
@@ -192,6 +193,22 @@ public class AccountOpeningService : IAccountOpeningService
                 _logger.LogInformation($"{request.AccountNumber} is already a tier 3 account");
                 return new ApiResult { responseCode = "999", responseDescription = "Account is already a Tier 3 Account" };
             }
+
+            var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
+
+            if (bvnDetailsResponse.data is null)
+            {
+                _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
+                return new ApiResult { responseCode = "999", responseDescription = "Invalid Bvn" };
+            }
+
+            var accountAttempt = new AccountOpeningAttempt{
+                AccountTypeRequested = "Tier 3 Upgrade",
+                AccountNumber = request.AccountNumber,
+                FirstName = bvnDetailsResponse.data.FirstName,
+                LastName = bvnDetailsResponse.data.LastName,
+
+            };
 
 
             var upgradeDetails = new RbxRetailsUpdateCustomDatum
@@ -975,6 +992,12 @@ public class AccountOpeningService : IAccountOpeningService
             _logger.LogError(ex,ex.Message);
             return false;
         }
+    }
+
+    public async Task AddressVerificationRequest(AccountOpeningAttempt request)
+    {
+        var addressVerificationRequest = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.Address,request.Cif),null,_config["Address_Verification:base_url"]);
+        
     }
 
     public ApiResult GetAccountNameByAccountNumber(string accountNumber)

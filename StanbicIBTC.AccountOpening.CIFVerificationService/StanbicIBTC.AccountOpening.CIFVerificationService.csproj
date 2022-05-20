@@ -17,5 +17,6 @@
     <ProjectReference Include="..\StanbicIBTC.AccountOpening.Service\StanbicIBTC.AccountOpening.Service.csproj" />
     <ProjectReference Include="..\StanbicIBTC.AccountOpening.data\StanbicIBTC.AccountOpening.Data.csproj" />
     <ProjectReference Include="..\StanbicIBTC.AccountOpening.domain\StanbicIBTC.AccountOpening.Domain.csproj" />
+    <ProjectReference Include="..\StanbicIBTC.AccountOpening.API\StanbicIBTC.AccountOpening.API.csproj" />
   </ItemGroup>
 </Project>

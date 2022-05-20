@@ -4,12 +4,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Host.UseSerilog((context, config) => 
+builder.Host.UseSerilog((context, config) =>
 {
     config.Enrich.FromLogContext()
         .WriteTo.Console()
         .ReadFrom.Configuration(context.Configuration);
-    
+
 });
 
 builder.Services.AddControllers();
@@ -58,22 +58,22 @@ builder.Services.AddServiceDependencies(builder.Configuration);
 
 
 
-builder.Services.AddApiVersioning(x =>  
-            {  
-                x.DefaultApiVersion = new ApiVersion(1, 0);  
+builder.Services.AddApiVersioning(x =>
+            {
+                x.DefaultApiVersion = new ApiVersion(1, 0);
                 x.AssumeDefaultVersionWhenUnspecified = true;
-                x.ReportApiVersions = true;  
+                x.ReportApiVersions = true;
                 //x.ApiVersionReader = new HeaderApiVersionReader("x-api-version");  
-            });  
+            });
 
-builder.Services.AddHealthChecksUI(opt =>    
-{    
+builder.Services.AddHealthChecksUI(opt =>
+{
     opt.SetEvaluationTimeInSeconds(10); //time in seconds between check    
     opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
     opt.SetApiMaxActiveRequests(1); //api requests concurrency    
     opt.AddHealthCheckEndpoint("Acount Opening api", "health"); //map health check api    
-})    
-.AddInMemoryStorage();   
+})
+.AddInMemoryStorage();
 
 var app = builder.Build();
 
@@ -84,8 +84,8 @@ app.UseSwaggerUI();
 
 if (app.Environment.IsDevelopment())
 {
-   app.UseSwagger();
-   app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 
@@ -107,11 +107,11 @@ app.MapControllers();
 
 app.UseHealthChecksUI();
 
-app.MapHealthChecks("/health", new HealthCheckOptions()
-                {
-                    Predicate = _ => true,
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+app.MapHealthChecks("localhost:7215/health", new HealthCheckOptions()
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.Run();
 
