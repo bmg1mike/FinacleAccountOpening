@@ -65,4 +65,13 @@ public class FinacleRepository : IFinacleRepository
         return true;
     }
 
+    // public bool LogForSanctionScreening()
+    // {
+    //      var sql = $@"insert into coe_staff_companion_acc_opening_sanction_screening_bot_queue(Id,DATE_CREATED,DATE_LAST_MODIFIED,CUSTOMER_BVN,
+    //      CUSTOMER_FIRST_NAME,CUSTOMER_FULL_HOME_ADDRESS,
+    //      CUSTOMER_LAST_NAME,HAS_BEEN_TREATED_BY_BOT,
+    //      ACCOUNT_OPENING_REQUEST_ID,CUSTOMER_MIDDLE_NAME) Values()";
+    //      var result = db.Execute(sql, new {})
+    // }
+
 }
