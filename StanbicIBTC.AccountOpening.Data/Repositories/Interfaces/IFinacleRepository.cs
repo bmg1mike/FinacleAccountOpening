@@ -12,4 +12,6 @@ public interface IFinacleRepository
     FinacleAccountDetailResponse GetAccountDetailsByAccountNumber(string accountNumber);
     bool UpgradeToTierThree(string accountNumber);
     FinacleAccountDetailResponse GetAccountDetailsByCif(string cif);
+    bool LogForSanctionScreening(SanctionScreeningRequest request);
+    SanctionScreeningResult GetSanctionScreeningResult(string accountOpeningId);
 }

@@ -65,13 +65,28 @@ public class FinacleRepository : IFinacleRepository
         return true;
     }
 
-    // public bool LogForSanctionScreening()
-    // {
-    //      var sql = $@"insert into coe_staff_companion_acc_opening_sanction_screening_bot_queue(Id,DATE_CREATED,DATE_LAST_MODIFIED,CUSTOMER_BVN,
-    //      CUSTOMER_FIRST_NAME,CUSTOMER_FULL_HOME_ADDRESS,
-    //      CUSTOMER_LAST_NAME,HAS_BEEN_TREATED_BY_BOT,
-    //      ACCOUNT_OPENING_REQUEST_ID,CUSTOMER_MIDDLE_NAME) Values()";
-    //      var result = db.Execute(sql, new {})
-    // }
+    public bool LogForSanctionScreening(SanctionScreeningRequest request)
+    {
+         var sql = $@"insert into coe_staff_companion_acc_opening_sanction_screening_bot_queue(DATE_CREATED,DATE_LAST_MODIFIED,CUSTOMER_BVN,
+         CUSTOMER_FIRST_NAME,CUSTOMER_FULL_HOME_ADDRESS,
+         CUSTOMER_LAST_NAME,HAS_BEEN_TREATED_BY_BOT,
+         ACCOUNT_OPENING_REQUEST_ID,CUSTOMER_MIDDLE_NAME) 
+         Values(:DateCreated,:DateLastModified,:CustomerBvn,:CustomerFirstName,:CustomerFullHomeAddress,:CustomerLastName,:HasBeenTreatedByBot,:AccountOpeningRequestId,:CustomerMiddleName)";
+
+         var result = db.Execute(sql, request);
+
+        if (result < 1)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public SanctionScreeningResult GetSanctionScreeningResult(string accountOpeningId)
+    {
+        var sql = $@"select RESULT_SCREENSHOT_PDF_BASE64 as Pdf,SANCTION_SCREENING_PASSED as IsSuccessful from coe_staff_companion_acc_opening_sanction_screening_result where ACCOUNT_OPENING_REQUEST_ID = :accountOpeningId";
+        return db.Query<SanctionScreeningResult>(sql,new{ accountOpeningId = accountOpeningId}).SingleOrDefault();
+    }
 
 }

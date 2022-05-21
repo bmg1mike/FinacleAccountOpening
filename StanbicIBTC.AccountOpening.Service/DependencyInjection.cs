@@ -32,6 +32,8 @@ public static class DependencyInjection
          services.AddScoped<IRestRequestHelper,RestRequestHelper>();
          services.AddScoped<ISoapRequestHelper,SoapRequestHelper>();
          services.AddScoped<ISmsNotification, SmsNotification>();
+         services.AddHttpClient<ISoapRequestHelper,SoapRequestHelper>();
+            
 
         return services;
 

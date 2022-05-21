@@ -24,13 +24,13 @@ public class SoapRequestHelper : ISoapRequestHelper
         _client = client;
     }
 
-    public async Task<OccupationResponse> FinacleCall(string soapRequest, string soapAction = "\"treat\"", string url = "", string moduleId = "", string authId = "")
+    public async Task<SoapCallResponse> FinacleCall(string soapRequest, string soapAction = "\"treat\"", string url = "", string moduleId = "", string authId = "")
     {
         url = string.IsNullOrEmpty(url) ? _configSettings["Finacle:base_url"] : url;
         moduleId = string.IsNullOrEmpty(moduleId) ? _configSettings["Finacle:moduleId"] : moduleId;
         authId = string.IsNullOrEmpty(authId) ? _configSettings["Finacle:authorization"] : authId;
 
-        var responseResult = new OccupationResponse("99", "Init");
+        var responseResult = new SoapCallResponse("99", "Init");
         var reqId = $"{soapAction}_{Util.TimeStampCode()}";
         _logger.LogInformation($"{soapAction} API REQ: {reqId}\nModuleId:{moduleId}|AuthId:{authId}\n{soapRequest}:{url}");
         try
@@ -60,18 +60,18 @@ public class SoapRequestHelper : ISoapRequestHelper
             if (responseMessage.IsSuccessStatusCode)
             {
                 var resp = await responseMessage.Content.ReadAsStringAsync();
-                responseResult = new OccupationResponse("000", resp);
+                responseResult = new SoapCallResponse("000", resp);
             }
             else
             {
                 var resp = await responseMessage.Content.ReadAsStringAsync();
-                responseResult = new OccupationResponse("9XX", resp);
+                responseResult = new SoapCallResponse("9XX", resp);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            responseResult = new OccupationResponse("9XX", ex.Message);
+            responseResult = new SoapCallResponse("9XX", ex.Message);
         }
 
         var responseLogMsg = $"{soapAction} API RESP: {reqId} -> {JsonConvert.SerializeObject(responseResult)}";
@@ -138,6 +138,73 @@ public class SoapRequestHelper : ISoapRequestHelper
             }
             return (T)(object)null;
         }
+    }
+
+    public async Task<SoapCallResponse> LogAddressVerification(string payload)
+    {
+        try
+        {
+            var url = _configSettings["Address_Verification:base_url"];
+            HttpContent content = new StringContent(payload, Encoding.UTF8, "text/xml");
+            var response = await _client.PostAsync(url,content);
+            var result = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                return new SoapCallResponse("000", result);
+            }
+            return new SoapCallResponse("999",result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,ex.Message);
+            return new SoapCallResponse("999",ex.Message);
+        }
+        
+    } 
+
+    public async Task<SoapCallResponse> GetAddressVerificationStatus(string payload)
+    {
+        try
+        {
+            var url = _configSettings["Address_Verification:base_url"];
+            var content = new StringContent(payload,Encoding.UTF8,"text/xml");
+            var response = await _client.PostAsync(url,content);
+            var result = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                return new SoapCallResponse("000", result);
+            }
+            return new SoapCallResponse("999",result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,ex.Message);
+            return new SoapCallResponse("999",ex.Message);
+        }
+    }
+
+    public async Task<SoapCallResponse> DownloadAddressVerificationReport(string payload)
+    {
+        try
+        {
+            var url = _configSettings["Address_Verification:base_url"];
+            var content = new StringContent(payload, Encoding.UTF8, "text/xml");
+            var response = await _client.PostAsync(url, content);
+            var result = await response.Content.ReadAsStringAsync();
+
+        if (response.IsSuccessStatusCode)
+        {
+            return new SoapCallResponse("000", result);
+        }
+
+        return new SoapCallResponse("999", result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,ex.Message);
+            return new SoapCallResponse("999", ex.Message); 
+        }
+        
     }
 }
 

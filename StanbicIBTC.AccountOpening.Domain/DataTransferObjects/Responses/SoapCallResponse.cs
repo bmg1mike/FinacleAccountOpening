@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace StanbicIBTC.AccountOpening.Domain;
 
-public class OccupationResponse
+public class SoapCallResponse
 {
     public string ResponseCode { get; set; }
     public string ResponseDescription { get; set; }
     public string Details { get; set; }
 
-    public OccupationResponse()
+    public SoapCallResponse()
     {
 
     }
 
-    public OccupationResponse(string responseCode,string responseDescription)
+    public SoapCallResponse(string responseCode,string responseDescription)
     {
         ResponseCode = responseCode;
         ResponseDescription = responseDescription;

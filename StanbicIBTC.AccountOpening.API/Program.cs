@@ -107,7 +107,7 @@ app.MapControllers();
 
 app.UseHealthChecksUI();
 
-app.MapHealthChecks("localhost:7215/health", new HealthCheckOptions()
+app.MapHealthChecks("/health", new HealthCheckOptions()
 {
     Predicate = _ => true,
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
