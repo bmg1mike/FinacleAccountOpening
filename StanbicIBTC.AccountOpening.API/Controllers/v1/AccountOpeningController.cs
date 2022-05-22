@@ -13,7 +13,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpPost("OpenTierOneAccount/")]
-        [ProducesResponseType(200,Type = typeof(Result<string>))]
+        [ProducesResponseType(200, Type = typeof(Result<string>))]
         public async Task<IActionResult> OpenTierOneAccount(TierOneAccountOpeningRequest request)
         {
             var result = new Result<string>();
@@ -61,7 +61,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         public async Task<IActionResult> AccountUgrade(TierOneUgrade request)
         {
             var result = new Result<string>();
-            var response = await _accountOpeningService.UpgradeToTierThreeAccountOpening(request);
+            var response = await _accountOpeningService.UpgradeToTierThreeAccountOpeningRequest(request);
             result.Content = response.responseDescription;
             result.ResponseCode = response.responseCode;
             return Ok(result);

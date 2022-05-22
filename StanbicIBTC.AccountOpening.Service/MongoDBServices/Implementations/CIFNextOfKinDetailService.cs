@@ -2,10 +2,10 @@ namespace StanbicIBTC.AccountOpening.Core.Services;
 public partial class CIFNextOfKinDetailService : ICIFNextOfKinDetailService
 {
     private readonly ICIFNextOfKinDetailRepository cIFNextOfKinDetailRepository;
-    private readonly ILogger logger;
+    private readonly ILogger<CIFNextOfKinDetailService> logger;
 
 
-    public CIFNextOfKinDetailService(ICIFNextOfKinDetailRepository cIFNextOfKinDetailRepository, ILogger logger)
+    public CIFNextOfKinDetailService(ICIFNextOfKinDetailRepository cIFNextOfKinDetailRepository, ILogger<CIFNextOfKinDetailService> logger)
     {
         this.cIFNextOfKinDetailRepository = cIFNextOfKinDetailRepository;
         this.logger = logger;
@@ -20,7 +20,7 @@ public partial class CIFNextOfKinDetailService : ICIFNextOfKinDetailService
         }
         catch(Exception ex)
         {           
-            logger.Error(ex,"Error while creating CIFNextOfKinDetail");
+            logger.LogError(ex,"Error while creating CIFNextOfKinDetail");
             return "";
         }
     }
@@ -34,7 +34,7 @@ public partial class CIFNextOfKinDetailService : ICIFNextOfKinDetailService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving CIFNextOfKinDetails");
+            logger.LogError(ex,"Error while retrieving CIFNextOfKinDetails");
 
             return null;
         }
@@ -49,7 +49,7 @@ public partial class CIFNextOfKinDetailService : ICIFNextOfKinDetailService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving CIFNextOfKinDetails");
+            logger.LogError(ex,"Error while retrieving CIFNextOfKinDetails");
 
             return null;  
         }
@@ -64,7 +64,7 @@ public partial class CIFNextOfKinDetailService : ICIFNextOfKinDetailService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving CIFNextOfKinDetail");
+            logger.LogError(ex,"Error while retrieving CIFNextOfKinDetail");
 
             return null;  
         }
@@ -78,7 +78,7 @@ public partial class CIFNextOfKinDetailService : ICIFNextOfKinDetailService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while removing CIFNextOfKinDetail");
+            logger.LogError(ex,"Error while removing CIFNextOfKinDetail");
 
             return false;  
         }
@@ -92,7 +92,7 @@ public partial class CIFNextOfKinDetailService : ICIFNextOfKinDetailService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while Updating CIFNextOfKinDetail");
+            logger.LogError(ex,"Error while Updating CIFNextOfKinDetail");
 
             return false;  
         }   
@@ -116,7 +116,7 @@ public partial class CIFNextOfKinDetailService : ICIFNextOfKinDetailService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while updating CIFNextOfKinDetail");
+            logger.LogError(ex,"Error while updating CIFNextOfKinDetail");
 
             return false; 
         }

@@ -17,6 +17,6 @@ public class TierOneUgrade
     public string UtilityBill { get; set; }
     public string Signature { get; set; }
     public Platform Platform { get; set; }
-
+    public string Email { get; set; }
 }
 

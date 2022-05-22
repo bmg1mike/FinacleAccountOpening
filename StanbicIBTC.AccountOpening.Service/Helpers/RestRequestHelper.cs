@@ -80,7 +80,7 @@ public class RestRequestHelper : IRestRequestHelper
         return retryPolicy.Wrap(circuitBreakerPolicy).Execute(() => restClient.Execute(restRequest));
     }
 
-    private string JsonSerialize(object obj) => JsonSerializer.Serialize(obj, this.GetJsonSerializerOptions());
+    private string JsonSerialize(object obj) => System.Text.Json.JsonSerializer.Serialize(obj, this.GetJsonSerializerOptions());
 
     private JsonSerializerOptions GetJsonSerializerOptions() => new JsonSerializerOptions
     {

@@ -19,6 +19,7 @@ public partial class AccountOpeningAttempt
    public string AccountTypeRequested { get; set; }
    public bool AddressVerified { get; set; } = false;
    public bool SanctionScreeningVerified { get; set; } = false;
+   public string Platform { get; set; }
    
 }
 

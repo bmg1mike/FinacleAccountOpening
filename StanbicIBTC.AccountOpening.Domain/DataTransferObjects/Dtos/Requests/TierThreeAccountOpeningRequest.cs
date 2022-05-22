@@ -31,4 +31,6 @@ public class TierThreeAccountOpeningRequest
     public string EmploymentStatusCode { get; set; }
     public string OccupationCode { get; set; }
     public DateTime DateOfBirth { get; set; }
+    public string Signature { get; set; }
+    public string UtilityBill { get; set; }
 }

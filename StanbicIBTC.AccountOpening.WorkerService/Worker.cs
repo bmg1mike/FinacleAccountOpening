@@ -42,7 +42,13 @@ namespace StanbicIBTC.AccountOpening.WorkerService
 
                 foreach (var item in requests)
                 {
-                    var result = await _accountOpeningService.OpenAccount(item);
+                    var result = string.Empty;
+                    if (item.AccountTypeRequested == "Tier One")
+                    {
+                        result = await _accountOpeningService.OpenAccount(item);
+                    }
+
+                    //var result = await _accountOpeningService.OpenAccount(item);
                     _logger.LogInformation($"{result}");
                 }
 
