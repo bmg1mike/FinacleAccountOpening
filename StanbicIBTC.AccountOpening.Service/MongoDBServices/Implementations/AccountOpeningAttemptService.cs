@@ -2,10 +2,10 @@ namespace StanbicIBTC.AccountOpening.Core.Services;
 public partial class AccountOpeningAttemptService : IAccountOpeningAttemptService
 {
     private readonly IAccountOpeningAttemptRepository accountOpeningAttemptRepository;
-    private readonly ILogger logger;
+    private readonly ILogger<AccountOpeningAttemptService> logger;
 
 
-    public AccountOpeningAttemptService(IAccountOpeningAttemptRepository accountOpeningAttemptRepository, ILogger logger)
+    public AccountOpeningAttemptService(IAccountOpeningAttemptRepository accountOpeningAttemptRepository, ILogger<AccountOpeningAttemptService> logger)
     {
         this.accountOpeningAttemptRepository = accountOpeningAttemptRepository;
         this.logger = logger;
@@ -20,7 +20,7 @@ public partial class AccountOpeningAttemptService : IAccountOpeningAttemptServic
         }
         catch(Exception ex)
         {           
-            logger.Error(ex,"Error while creating AccountOpeningAttempt");
+            logger.LogError(ex,"Error while creating AccountOpeningAttempt");
             return "";
         }
     }
@@ -34,7 +34,7 @@ public partial class AccountOpeningAttemptService : IAccountOpeningAttemptServic
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving AccountOpeningAttempts");
+            logger.LogError(ex,"Error while retrieving AccountOpeningAttempts");
 
             return null;
         }
@@ -49,7 +49,7 @@ public partial class AccountOpeningAttemptService : IAccountOpeningAttemptServic
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving AccountOpeningAttempts");
+            logger.LogError(ex,"Error while retrieving AccountOpeningAttempts");
 
             return null;  
         }
@@ -64,7 +64,7 @@ public partial class AccountOpeningAttemptService : IAccountOpeningAttemptServic
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving AccountOpeningAttempt");
+            logger.LogError(ex,"Error while retrieving AccountOpeningAttempt");
 
             return null;  
         }
@@ -78,7 +78,7 @@ public partial class AccountOpeningAttemptService : IAccountOpeningAttemptServic
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while removing AccountOpeningAttempt");
+            logger.LogError(ex,"Error while removing AccountOpeningAttempt");
 
             return false;  
         }
@@ -92,7 +92,7 @@ public partial class AccountOpeningAttemptService : IAccountOpeningAttemptServic
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while Updating AccountOpeningAttempt");
+            logger.LogError(ex,"Error while Updating AccountOpeningAttempt");
 
             return false;  
         }   
@@ -116,7 +116,7 @@ public partial class AccountOpeningAttemptService : IAccountOpeningAttemptServic
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while updating AccountOpeningAttempt");
+            logger.LogError(ex,"Error while updating AccountOpeningAttempt");
 
             return false; 
         }

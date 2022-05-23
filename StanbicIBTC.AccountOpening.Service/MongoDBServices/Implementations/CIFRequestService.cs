@@ -2,10 +2,10 @@ namespace StanbicIBTC.AccountOpening.Core.Services;
 public partial class CIFRequestService : ICIFRequestService
 {
     private readonly ICIFRequestRepository cIFRequestRepository;
-    private readonly ILogger logger;
+    private readonly ILogger<CIFRequestService> logger;
 
 
-    public CIFRequestService(ICIFRequestRepository cIFRequestRepository, ILogger logger)
+    public CIFRequestService(ICIFRequestRepository cIFRequestRepository, ILogger<CIFRequestService> logger)
     {
         this.cIFRequestRepository = cIFRequestRepository;
         this.logger = logger;
@@ -20,7 +20,7 @@ public partial class CIFRequestService : ICIFRequestService
         }
         catch(Exception ex)
         {           
-            logger.Error(ex,"Error while creating CIFRequest");
+            logger.LogError(ex,"Error while creating CIFRequest");
             return "";
         }
     }
@@ -34,7 +34,7 @@ public partial class CIFRequestService : ICIFRequestService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving CIFRequests");
+            logger.LogError(ex,"Error while retrieving CIFRequests");
 
             return null;
         }
@@ -49,7 +49,7 @@ public partial class CIFRequestService : ICIFRequestService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving CIFRequests");
+            logger.LogError(ex,"Error while retrieving CIFRequests");
 
             return null;  
         }
@@ -64,7 +64,7 @@ public partial class CIFRequestService : ICIFRequestService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving CIFRequest");
+            logger.LogError(ex,"Error while retrieving CIFRequest");
 
             return null;  
         }
@@ -78,7 +78,7 @@ public partial class CIFRequestService : ICIFRequestService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while removing CIFRequest");
+            logger.LogError(ex,"Error while removing CIFRequest");
 
             return false;  
         }
@@ -92,7 +92,7 @@ public partial class CIFRequestService : ICIFRequestService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while Updating CIFRequest");
+            logger.LogError(ex,"Error while Updating CIFRequest");
 
             return false;  
         }   
@@ -116,7 +116,7 @@ public partial class CIFRequestService : ICIFRequestService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while updating CIFRequest");
+            logger.LogError(ex,"Error while updating CIFRequest");
 
             return false; 
         }

@@ -1,8 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using RestSharp;
-using StanbicIBTC.AccountOpening.Data;
+using System.Text;
 
 namespace StanbicIBTC.AccountOpening.Service;
 
@@ -19,9 +15,9 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly ISmsNotification _smsNotification;
     private readonly DataContext _modelContext;
 
-    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper, 
-            ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt, 
-            IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository, 
+    public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper,
+            ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt,
+            IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository,
             ISmsNotification smsNotification, DataContext modelContext)
     {
         _logger = logger;
@@ -53,7 +49,7 @@ public class AccountOpeningService : IAccountOpeningService
             //{
             //    return new ApiResult { responseCode = "999", responseDescription = "NIN does not match BVN's NIN" };
             //}
-            
+
             var ninDetailsResponse = await GetNinDetails(request.Nin, request.DateOfBirth.ToString());
 
             if (ninDetailsResponse.data is null)
@@ -90,13 +86,13 @@ public class AccountOpeningService : IAccountOpeningService
                 await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
             }
-            var occupationCode = _finacleRepository.GetOccupations().FirstOrDefault(x=>x.OccupationCode == request.OccupationCode);
+            var occupationCode = _finacleRepository.GetOccupations().FirstOrDefault(x => x.OccupationCode == request.OccupationCode);
             var employmentStatus = _finacleRepository.GetEmploymentStatus().FirstOrDefault(x => x.EmploymentStatusCode == request.EmploymentStatusCode);
 
             if (occupationCode is null || employmentStatus is null)
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid Occupation Code Or Employment status" };
 
-            
+
             var nextOfKinDetails = new CIFNextOfKinDetail
             {
                 FirstName = ninDetails.FullData.nok_firstname,
@@ -107,8 +103,23 @@ public class AccountOpeningService : IAccountOpeningService
                 Town = ninDetails.FullData.nok_town
             };
 
+            var secretQuestion = string.Empty;
+            var secretAnswer = string.Empty;
+            var password = string.Empty;
+            var confirmPassword = string.Empty;
+
+            if (request.WillOnboard)
+            {
+                secretQuestion = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.SecretQuestion));
+                secretAnswer = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.SecretAnswer));
+                password = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.Password));
+                confirmPassword = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.ConfirmPassword));
+            }
+
+
             var cifRequest = new CIFRequest
             {
+                AccountTypeRequested = "Tier One",
                 BvnEnrollmentBranch = bvnDetails.EnrollmentBranch,
                 BvnErollmentBank = bvnDetails.EnrollmentBank,
                 CustomerAddress = bvnDetails.ResidentialAddress,
@@ -128,60 +139,47 @@ public class AccountOpeningService : IAccountOpeningService
                 Gender = bvnDetails.Gender,
                 Platform = request.Platform.ToString(),
                 MiddleName = bvnDetails.MiddleName,
+                WillOnBoard = request.WillOnboard,
+                SecretQuestion = secretQuestion,
+                SecretAnswer = secretAnswer,
+                Password = password,
+                ConfirmPassword = confirmPassword,
                 NextOfKinDetail = nextOfKinDetails
             };
 
             var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
             if (saveCifRequest == null)
             {
-               _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
-               await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again later");
-               return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
+                _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
             }
 
 
 
             //accountOpeningAttempt.Response = "Request successfully stored in the database for processing";
             //var accountOpeningAttemptId = await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-            var accountNumber = await OpenAccount(cifRequest);
-            if (string.IsNullOrEmpty(accountNumber))
-            {
-                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
-            }
+            //var accountNumber = await OpenAccount(cifRequest);
 
-            if (request.WillOnboard && (request.Platform == Platform.WEB || request.Platform == Platform.MOBILE))
-            {
-                if (string.IsNullOrEmpty(request.SecretQuestion) && string.IsNullOrEmpty(request.SecretAnswer) && string.IsNullOrEmpty(request.Password))
-                {
-                    return new ApiResult { responseCode = "000", responseDescription = $"Your Account has been opened Successfully. Your Account Number Is {accountNumber}. Onboarding Failed for lack of adequate information " };
-                }
 
-                var isOnboarded = await MobileWebOnboarding(request, bvnDetails,accountNumber);
-                if (isOnboarded)
-                {
-                    return new ApiResult { responseCode = "000", responseDescription = $"Your Account has been opened Successfully. Your Account Number Is {accountNumber}. You can now use the Mobile App and Internet banking" };
-                }
-
-            }
-
-            return new ApiResult { responseCode = "000", responseDescription = $"{accountNumber}." };
+            return new ApiResult { responseCode = "000", responseDescription = $"Request successfully stored in the database for processing" };
 
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return new ApiResult { responseCode = "999", responseDescription=ex.Message };
+            return new ApiResult { responseCode = "999", responseDescription = ex.Message };
         }
     }
 
-    
 
-    public async Task<ApiResult> UpgradeToTierThreeAccountOpening(TierOneUgrade request)
+
+    public async Task<ApiResult> UpgradeToTierThreeAccountOpeningRequest(TierOneUgrade request)
     {
         try
         {
-            
+
             var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(request.AccountNumber);
+            
             if (accountDetails == null)
             {
                 _logger.LogInformation("Account number does not exist");
@@ -196,80 +194,108 @@ public class AccountOpeningService : IAccountOpeningService
 
             var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
 
+            if (!Util.IsBase64String(request.PassportPhotograph)
+                || !Util.IsBase64String(request.IdImage)
+                || !Util.IsBase64String(request.Signature) || !Util.IsBase64String(request.UtilityBill))
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "PassportPhotograph,IdImage and Signature must be Base 64 strings" };
+            }
+
             if (bvnDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid Bvn" };
             }
 
-            var accountAttempt = new AccountOpeningAttempt{
+            var cif = _finacleRepository.CheckCifForBvn(request.Bvn).Cif;
+
+            var sanctionScreeningRequest = new SanctionScreeningRequest
+            {
+                CustomerBvn = bvnDetailsResponse.data.BVN,
+                CustomerFirstName = bvnDetailsResponse.data.FirstName,
+                CustomerFullHomeAddress = bvnDetailsResponse.data.ResidentialAddress,
+                CustomerLastName = bvnDetailsResponse.data.LastName,
+                CustomerMiddleName = bvnDetailsResponse.data.MiddleName
+            };
+            
+            var sanctionScreening = _finacleRepository.LogForSanctionScreening(sanctionScreeningRequest);
+
+            if (!sanctionScreening)
+            {
+                _logger.LogInformation($"There was a problem logging for Sanction Screening");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Sanction Screening for BVN: {request.Bvn} Please try again later" };
+            
+            }
+
+            var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
+                AccountOpeningPayloadHelper.AddressVerificationRequestPayload(bvnDetailsResponse.data.ResidentialAddress,cif));
+
+                if (addressVerificationRequest.ResponseCode != "000")
+                {
+                    _logger.LogInformation($"There was a problem logging for Address Verification");
+                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Address Verification for BVN: {request.Bvn} Please try again later" };
+            
+                }
+
+                var addressverificationId =  _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription,"LogAddressVerificationRequestResult");
+
+            var cifRequest = new CIFRequest
+            {
+                AccountNumber = request.AccountNumber,
+                AccountTypeRequested = "Tier one Upgrade",
+                BvnEnrollmentBranch = bvnDetailsResponse.data.EnrollmentBranch,
+                BvnErollmentBank = bvnDetailsResponse.data.EnrollmentBank,
+                Cif = cif,
+                CustomerAddress = bvnDetailsResponse.data.ResidentialAddress,
+                CustomerBVN = request.Bvn,
+                Email = request.Email,
+                DateOfBirthInY_M_D_Format = bvnDetailsResponse.data.DateOfBirth,
+                EmployerAddress = request.EmployerAddress,
+                EmployerName = request.EmployerName,
+                IdentityType = request.IdentityType,
+                IdImage = request.IdImage,
+                IdExpiryDate = request.IdExpiryDate,
+                IdIssueDate = request.IdIssueDate,
+                IdNumber = request.IdNumber,
+                FirstName = bvnDetailsResponse.data.FirstName,
+                LastName = bvnDetailsResponse.data.LastName,
+                MonthlyIncome = request.MonthlyIncome,
+                PassportPhotograph = request.PassportPhotograph,
+                Signature = request.Signature,
+                UtilityBill = request.UtilityBill,
+                PhoneNumber = bvnDetailsResponse.data.PhoneNumber.AsNigerianPhoneNumber(),
+                SanctionScreeningAccountId = sanctionScreeningRequest.AccountOpeningRequestId,
+                AddressverificationId = addressverificationId,
+                AccountOpeningStatus = AccountOpeningStatus.Pending.ToString()
+
+            };
+            var accountAttempt = new AccountOpeningAttempt
+            {
                 AccountTypeRequested = "Tier 3 Upgrade",
                 AccountNumber = request.AccountNumber,
                 FirstName = bvnDetailsResponse.data.FirstName,
                 LastName = bvnDetailsResponse.data.LastName,
-
+                Bvn = request.Bvn,
+                Address = bvnDetailsResponse.data.ResidentialAddress,
+                Cif = cif,
+                PhoneNumber = bvnDetailsResponse.data.PhoneNumber,
+                Platform = request.Platform.ToString() 
             };
 
 
-            var upgradeDetails = new RbxRetailsUpdateCustomDatum
+            var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
+            if (saveCifRequest == null)
             {
-                MonthlyNetIncome = request.MonthlyIncome.ToString(),
-                NokAddress = request.NextOfKin.Address,
-                NokAddressLine1 = request.NextOfKin.Address,
-                NokCity = request.NextOfKin.Town,
-                NokDateOfBirth = request.NextOfKin.DateOfBirth.ToString("yyyy-MM-dd"),
-                NokFirstName = request.NextOfKin.FirstName,
-                NokLastName = request.NextOfKin.LastName,
-                NokGender = request.NextOfKin.Gender,
-                NokMiddleName = request.NextOfKin.MiddleName,
-                NokPhoneNumber = request.NextOfKin.PhoneNumber,
-                Relationship = request.NextOfKin.Relationship,
-                CustomerId = accountDetails.Cif,
-            };
-            await _modelContext.RbxRetailsUpdateCustomData.AddAsync(upgradeDetails);
-            if (await _modelContext.SaveChangesAsync() < 1)
-            {
-                _logger.LogInformation("There was a problem saving to redbox");
-                return new ApiResult { responseCode = "999", responseDescription = "There was a problem uprading your account. Please try again later" };
+                _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
             }
-            // save images
+
             
-            if (!Util.IsBase64String(request.PassportPhotograph) 
-                || !Util.IsBase64String(request.IdImage)
-                || !Util.IsBase64String(request.Signature))
-            {
-                return new ApiResult{responseCode = "999", responseDescription = "PassportPhotograph,IdImage and Signature must be Base 64 strings"};
-            }
-            var photographResponse = await SaveImage(accountDetails.Cif, request.PassportPhotograph);
-            var idImageResponse = await SaveImage(accountDetails.Cif, request.IdImage);
-            var signatureResponse = await SaveImage(accountDetails.Cif, request.Signature);
-            if (!string.IsNullOrEmpty(request.UtilityBill))
-            {
-                var utilityBillResponse = await SaveImage(accountDetails.Cif, request.UtilityBill);
-            }
+
             
-            var response =  await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.SchemeCodeModificationPayload(
-                accountDetails.GlSubHeadCode,accountDetails.GlSubHeadCode,accountDetails.SchemeCode, "SB001",request.AccountNumber)
-                );
 
-            if (response.ResponseCode != "000")
-            {
-                _logger.LogInformation("There was a problem connecting to finnacle");
-                return new ApiResult { responseCode = "999", responseDescription = "There was a problem uprading your account. Please try again later" };
-            }
-
-
-            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatus");
-
-            if (successDescription != "SUCCESS")
-            {
-                var errorDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatusDesc");
-                _logger.LogInformation(errorDescription);
-                return new ApiResult { responseCode = "999", responseDescription = "There was a problem uprading your account. Please try again later" };
-            }
-
-            return new ApiResult { responseCode = "000", responseDescription = "Your account has been ugraded successfully" };
-
+            return new ApiResult { responseCode = "000", responseDescription = $"Request successfully stored in the database for processing" };
+           
 
         }
         catch (Exception ex)
@@ -283,27 +309,29 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
-           var cifDetails = _finacleRepository.CheckCifForBvn(request.Bvn); 
-           if (cifDetails is null)
-           {
-               return new ApiResult{responseCode = "999", responseDescription = "You must have an account with us before you can open an account for your child"};
-           }
+            var cifDetails = _finacleRepository.CheckCifForBvn(request.Bvn);
+            if (cifDetails is null)
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "You must have an account with us before you can open an account for your child" };
+            }
 
-           var cifRequest = new CIFRequest{
-               FirstName = request.ChildFirstName,
-               LastName = request.ChildLastName
-           };
+            var cifRequest = new CIFRequest
+            {
+                FirstName = request.ChildFirstName,
+                LastName = request.ChildLastName,
+                
+            };
 
-           if (!Util.IsBase64String(request.ChildBirthCertificate))
-           {
-               return new ApiResult{responseCode = "999",responseDescription = "Birth Certificate must be a Base 64 string"};
-           }
-           var birthCertificate = await SaveImage(cifDetails.Cif,request.ChildBirthCertificate);
-           var photograph = await SaveImage(cifDetails.Cif,request.Photograph);
+            if (!Util.IsBase64String(request.ChildBirthCertificate))
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "Birth Certificate must be a Base 64 string" };
+            }
+            var birthCertificate = await SaveImage(cifDetails.Cif, request.ChildBirthCertificate);
+            var photograph = await SaveImage(cifDetails.Cif, request.Photograph);
 
-           var openAccount = await _soapRequestHelper.FinacleCall(
-               AccountOpeningPayloadHelper.AccountOpeningPayload(cifDetails.Cif,cifRequest,"CHESS"));
-            
+            var openAccount = await _soapRequestHelper.FinacleCall(
+                AccountOpeningPayloadHelper.AccountOpeningPayload(cifDetails.Cif, cifRequest, "CHESS"));
+
             var accountNumber = _soapRequestHelper.GetXmlTagValue<string>(openAccount.ResponseDescription, "AcctId");
             if (string.IsNullOrEmpty(accountNumber))
             {
@@ -314,8 +342,8 @@ public class AccountOpeningService : IAccountOpeningService
         }
         catch (Exception ex)
         {
-           _logger.LogError(ex,ex.Message);
-           return new ApiResult{responseCode = "999", responseDescription = "There was a problem opening your account, Please try again later"};
+            _logger.LogError(ex, ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription = "There was a problem opening your account, Please try again later" };
         }
     }
 
@@ -372,12 +400,12 @@ public class AccountOpeningService : IAccountOpeningService
             if (request.AccountNumber is not null)
             {
                 var cif = _finacleRepository.GetAccountDetailsByAccountNumber(request.AccountNumber).Cif;
-                if(cif is null)
+                if (cif is null)
                 {
                     return new ApiResult { responseCode = "999", responseDescription = "Invalid Account Number" };
                 }
 
-                
+
 
                 var openAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, cifRequest, "OD002"));
                 var accountNumber = _soapRequestHelper.GetXmlTagValue<string>(openAccount.ResponseDescription, "AcctId");
@@ -451,8 +479,49 @@ public class AccountOpeningService : IAccountOpeningService
                 return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
             }
 
+            if (!Util.IsBase64String(request.PassportPhotograph)
+                || !Util.IsBase64String(request.IdImage)
+                || !Util.IsBase64String(request.Signature) || !Util.IsBase64String(request.UtilityBill))
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "PassportPhotograph,IdImage and Signature must be Base 64 strings" };
+            }
+
+            var cif = _finacleRepository.CheckCifForBvn(request.Bvn).Cif;
+
+            var sanctionScreeningRequest = new SanctionScreeningRequest
+            {
+                CustomerBvn = bvnDetailsResponse.data.BVN,
+                CustomerFirstName = bvnDetailsResponse.data.FirstName,
+                CustomerFullHomeAddress = bvnDetailsResponse.data.ResidentialAddress,
+                CustomerLastName = bvnDetailsResponse.data.LastName,
+                CustomerMiddleName = bvnDetailsResponse.data.MiddleName
+            };
+
+            var sanctionScreening = _finacleRepository.LogForSanctionScreening(sanctionScreeningRequest);
+
+            if (!sanctionScreening)
+            {
+                _logger.LogInformation($"There was a problem logging for Sanction Screening");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Sanction Screening for BVN: {request.Bvn} Please try again later" };
+            
+            }
+
+            var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
+                AccountOpeningPayloadHelper.AddressVerificationRequestPayload(bvnDetailsResponse.data.ResidentialAddress,cif));
+
+                if (addressVerificationRequest.ResponseCode != "000")
+                {
+                    _logger.LogInformation($"There was a problem logging for Address Verification");
+                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Address Verification for BVN: {request.Bvn} Please try again later" };
+            
+                }
+
+                var addressverificationId =  _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription,"LogAddressVerificationRequestResult");
+
+
             var cifRequest = new CIFRequest
             {
+                AccountTypeRequested = "Tier Three",
                 BvnEnrollmentBranch = bvnDetails.EnrollmentBranch,
                 BvnErollmentBank = bvnDetails.EnrollmentBank,
                 CustomerAddress = bvnDetails.ResidentialAddress,
@@ -482,54 +551,34 @@ public class AccountOpeningService : IAccountOpeningService
                     PhoneNumber = request.NextOfKinDetails.PhoneNumber,
                     State = request.NextOfKinDetails.StateOfResidence,
                     Town = request.NextOfKinDetails.Town,
-                    
-                }
+
+                },
+                SanctionScreeningAccountId = sanctionScreeningRequest.AccountOpeningRequestId,
+                AddressverificationId = addressverificationId,
+                Signature = request.Signature,
+                PassportPhotograph = request.PassportPhotograph,
+                UtilityBill = request.UtilityBill,
+                IdentityType = request.IdentityType,
+                IdImage = request.IdImage,
+                IdExpiryDate = request.IdExpiryDate,
+                IdIssueDate = request.IdIssueDate,
+                IdNumber = request.IdNumber
+
             };
             // Check if CIF exist
 
-            var createCif = await CreateCIF(cifRequest);
-            if (createCif.cif == null)
+            var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
+            if (saveCifRequest == null)
             {
-                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-                _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.Bvn} ");
-                return new ApiResult { responseCode = "999", responseDescription = "We are unable to complete the account opening process, please try again" };
+                _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
             }
 
-            // save all images
-            var saveIdImage = await SaveImage(createCif.cif,request.IdImage);
-            var savePhotograph = await SaveImage(createCif.cif,request.PassportPhotograph);
-
-            //var saveToRedbox = await SaveTierOneCustomData(createCif.cif,cifRequest,request);
-
-            var openAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(createCif.cif, cifRequest, "SB001",request.CurrencyCode.ToUpper()));
-
-            if (openAccount.ResponseCode != "000")
-            {
-                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-                accountOpeningAttempt.Response = $"Could not open account for CIF : {createCif.cif}";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return null;
-            }
-
-
-            var accountNumber = _soapRequestHelper.GetXmlTagValue<string>(openAccount.ResponseDescription, "AcctId");
-            if (string.IsNullOrEmpty(accountNumber))
-            {
-                accountOpeningAttempt.Response = $"Could not open account for CIF : {createCif.cif}";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return new ApiResult { responseCode = "999", responseDescription = "Could not open the account, please try again later " };
-            }
-
-            accountOpeningAttempt.Response = "Account openned successfully";
-            accountOpeningAttempt.IsSuccessful = true;
-            await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-            return new ApiResult { responseCode = "000", responseDescription = $"Your Tier 3 Account number is :{accountNumber}" };
-
-
+            return new ApiResult { responseCode = "000", responseDescription = "Your details has been saved for processing"};
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
+            _logger.LogError(ex, ex.Message);
             return new ApiResult { responseCode = "999", responseDescription = "Could not open the account, please try again later" };
         }
     }
@@ -569,14 +618,8 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
-            var accountOpeningAttempt = new AccountOpeningAttempt
-            {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Bvn = request.CustomerBVN,
-                Response = string.Empty,
-                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber()
-            };
+            var accountOpeningAttempt = await _accountOpeningAttempt.GetAccountOpeningAttempt(request.AccountOpeningAttemptId);
+
 
             request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
             if (string.IsNullOrEmpty(request.StateOfResidence))
@@ -638,19 +681,40 @@ public class AccountOpeningService : IAccountOpeningService
             }
 
 
-            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(openSavingsAccount.ResponseDescription, "AcctId");
-            if (string.IsNullOrEmpty(successDescription))
+            var accountNumber = _soapRequestHelper.GetXmlTagValue<string>(openSavingsAccount.ResponseDescription, "AcctId");
+            if (string.IsNullOrEmpty(accountNumber))
             {
                 accountOpeningAttempt.Response = $"Could not open account for CIF : {cif.cif}";
-               // await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                // await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return $"Could not open the account for CIF : {cif.cif}";
             }
             //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
             //cifRequest.AccountOpeningStatus = AccountOpeningStatus.Completed.ToString();
             //await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
-            var successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({successDescription}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
+
+            var successMessage = string.Empty;
+            if (request.WillOnBoard && (request.Platform == Platform.WEB.ToString() || request.Platform == Platform.MOBILE.ToString()))
+            {
+                if (string.IsNullOrEmpty(request.SecretQuestion) && string.IsNullOrEmpty(request.SecretAnswer) && string.IsNullOrEmpty(request.Password))
+                {
+                    return $"Your Account has been opened Successfully. Your Account Number Is {accountNumber}. Onboarding Failed for lack of adequate information ";
+                }
+
+                var isOnboarded = await MobileWebOnboarding(request, accountNumber);
+                if (isOnboarded)
+                {
+                    successMessage = $"Your Account has been opened Successfully. Your Account Number Is {accountNumber}. You can now use the Mobile App and Internet banking";
+                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
+                    return $"Account Number is {accountNumber}";
+                }
+
+                successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
+                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
+                return $"Account Number is {accountNumber}";
+            }
+            successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
             await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
-            return $"Account Number is {successDescription}";
+            return $"Account Number is {accountNumber}";
         }
         catch (Exception ex)
         {
@@ -661,60 +725,60 @@ public class AccountOpeningService : IAccountOpeningService
 
     private VirtualAccountOpeningRequest CreateVirtualAccountWithoutBvn(CreateVirtualAccountDto request)
     {
-        if (string.IsNullOrEmpty(request.FirstName) && string.IsNullOrEmpty(request.LastName ) && string.IsNullOrEmpty(request.Gender)
-            && string.IsNullOrEmpty(request.Address) && string.IsNullOrEmpty(request.PhoneNumber) && 
-            string.IsNullOrEmpty(request.SecretWord) )
+        if (string.IsNullOrEmpty(request.FirstName) && string.IsNullOrEmpty(request.LastName) && string.IsNullOrEmpty(request.Gender)
+            && string.IsNullOrEmpty(request.Address) && string.IsNullOrEmpty(request.PhoneNumber) &&
+            string.IsNullOrEmpty(request.SecretWord))
         {
             return null;
         }
         return new VirtualAccountOpeningRequest
-            {
-                BankVerificationNumber = "",
-                Address = request.Address,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Gender = request.Gender.ToUpper() == "FEMALE" ? "F" : "M",
-                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
-                DateOfBirth = request.DateOfBirth,
-                SecretWord = request.SecretWord,
-                ReferralCode = request.ReferralCode ?? "HPP00",
-                RequestId = Util.GenerateRandomNumbers(15),
-                SessionId = Guid.NewGuid().ToString(),
-            };
-    } 
+        {
+            BankVerificationNumber = "",
+            Address = request.Address,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Gender = request.Gender.ToUpper() == "FEMALE" ? "F" : "M",
+            PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
+            DateOfBirth = request.DateOfBirth,
+            SecretWord = request.SecretWord,
+            ReferralCode = request.ReferralCode ?? "HPP00",
+            RequestId = Util.GenerateRandomNumbers(15),
+            SessionId = Guid.NewGuid().ToString(),
+        };
+    }
 
-    private async Task<VirtualAccountOpeningRequest>CreateVirtualAccountWithBvn(CreateVirtualAccountDto request)
+    private async Task<VirtualAccountOpeningRequest> CreateVirtualAccountWithBvn(CreateVirtualAccountDto request)
     {
         var bvnDetailsResponse = await GetBVNDetails(request.BankVerificationNumber);
 
-            if (bvnDetailsResponse.data is null)
-            {
-                _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
-                return null;
-            }
+        if (bvnDetailsResponse.data is null)
+        {
+            _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
+            return null;
+        }
 
-            var bvnDetails = bvnDetailsResponse.data;
+        var bvnDetails = bvnDetailsResponse.data;
 
-            if (request.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
-            {
-                _logger.LogInformation($"The phone number provided does not match the phone number in the BVN");
-                return null;
-            }
+        if (request.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
+        {
+            _logger.LogInformation($"The phone number provided does not match the phone number in the BVN");
+            return null;
+        }
 
-            return new VirtualAccountOpeningRequest
-            {
-                BankVerificationNumber = request.BankVerificationNumber,
-                Address = bvnDetails.ResidentialAddress,
-                FirstName = bvnDetails.FirstName,
-                LastName = bvnDetails.LastName,
-                Gender = bvnDetails.Gender.ToUpper() == "FEMALE" ? "F" : "M",
-                PhoneNumber = bvnDetails.PhoneNumber.AsNigerianPhoneNumber(),
-                DateOfBirth = DateTime.Parse(bvnDetails.DateOfBirth),
-                SecretWord = request.SecretWord,
-                ReferralCode = request.ReferralCode ?? "HPP00",
-                RequestId = Util.GenerateRandomNumbers(15),
-                SessionId = Guid.NewGuid().ToString(),
-            };
+        return new VirtualAccountOpeningRequest
+        {
+            BankVerificationNumber = request.BankVerificationNumber,
+            Address = bvnDetails.ResidentialAddress,
+            FirstName = bvnDetails.FirstName,
+            LastName = bvnDetails.LastName,
+            Gender = bvnDetails.Gender.ToUpper() == "FEMALE" ? "F" : "M",
+            PhoneNumber = bvnDetails.PhoneNumber.AsNigerianPhoneNumber(),
+            DateOfBirth = DateTime.Parse(bvnDetails.DateOfBirth),
+            SecretWord = request.SecretWord,
+            ReferralCode = request.ReferralCode ?? "HPP00",
+            RequestId = Util.GenerateRandomNumbers(15),
+            SessionId = Guid.NewGuid().ToString(),
+        };
 
     }
     public async Task<VirtualAccountOpeningResponse> OpenVirtualAccount(CreateVirtualAccountDto request)
@@ -727,7 +791,7 @@ public class AccountOpeningService : IAccountOpeningService
                 rubyRequest = CreateVirtualAccountWithoutBvn(request);
                 if (rubyRequest is null)
                 {
-                    return new VirtualAccountOpeningResponse{ ResponseCode = "999", ResponseDescription = "Incomplete request sent", ResponseFriendlyMessage = "Incomplete request sent"};
+                    return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = "Incomplete request sent", ResponseFriendlyMessage = "Incomplete request sent" };
                 }
             }
             else
@@ -735,10 +799,10 @@ public class AccountOpeningService : IAccountOpeningService
                 rubyRequest = await CreateVirtualAccountWithBvn(request);
                 if (rubyRequest is null)
                 {
-                    return new VirtualAccountOpeningResponse{ ResponseCode = "999", ResponseDescription = "Incomplete request sent", ResponseFriendlyMessage = "Incomplete request sent"};
+                    return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = "Incomplete request sent", ResponseFriendlyMessage = "Incomplete request sent" };
                 }
             }
-            
+
             var rubyHeaders = new Dictionary<string, string>();
 
             rubyHeaders.Add("client_id", _config["RubyConnection:client_id"]);
@@ -752,7 +816,7 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 _logger.LogInformation(rubyResponse.ErrorMessage);
                 return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = rubyResponse.ErrorMessage, ResponseFriendlyMessage = rubyResponse.ErrorMessage };
-                
+
             }
 
             var result = JsonConvert.DeserializeObject<VirtualAccountOpeningResponse>(rubyResponse.Content);
@@ -760,7 +824,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             return result;
         }
-        catch ( Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
             return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = ex.Message, ResponseFriendlyMessage = ex.Message };
@@ -771,7 +835,7 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
-            
+
             var customData = new RbxBpmCifCustomDatum
             {
                 Bvn = cifRequest.CustomerBVN,
@@ -788,13 +852,13 @@ public class AccountOpeningService : IAccountOpeningService
             //await _modelContext.SaveChangesAsync();
             var bvnLinkageLog = new RbxTBvnLinkageLog
             {
-               AcctName = cifRequest.FirstName + " " + cifRequest.LastName,
-               BankEnrolled = cifRequest.BvnErollmentBank,
-               BranchEnrolled = cifRequest.BvnEnrollmentBranch,
-               BvnNumber = cifRequest.CustomerBVN,
-               PhoneNo = cifRequest.PhoneNumber,
-               RecordDelFlag = "N",
-               CifId = cif
+                AcctName = cifRequest.FirstName + " " + cifRequest.LastName,
+                BankEnrolled = cifRequest.BvnErollmentBank,
+                BranchEnrolled = cifRequest.BvnEnrollmentBranch,
+                BvnNumber = cifRequest.CustomerBVN,
+                PhoneNo = cifRequest.PhoneNumber,
+                RecordDelFlag = "N",
+                CifId = cif
             };
             await _modelContext.AddAsync(bvnLinkageLog);
 
@@ -815,7 +879,7 @@ public class AccountOpeningService : IAccountOpeningService
                 Gender = cifRequest.Gender
             };
 
-            
+
             await _modelContext.AddAsync(nextOfKin);
 
             if (await _modelContext.SaveChangesAsync() < 1)
@@ -828,11 +892,11 @@ public class AccountOpeningService : IAccountOpeningService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
+            _logger.LogError(ex, ex.Message);
 
             return false;
         }
-       
+
     }
 
     private async Task<(string responseCode, string responseDescription, VerifyBVNResponseModel data)> GetBVNDetails(string bvn)
@@ -847,7 +911,7 @@ public class AccountOpeningService : IAccountOpeningService
                     bvns = new string[] { $"{bvn}" }
                 }
             };
-            
+
             var headers = new Dictionary<string, string>()
             {
                 { "module_id",_config["BVN_service:moduleId"] }
@@ -909,24 +973,24 @@ public class AccountOpeningService : IAccountOpeningService
         try
         {
             var response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request));
-            
+
 
             if (response.ResponseCode != "000")
             {
                 return (response.ResponseCode, response.ResponseDescription, null);
             }
 
-            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription,"CustId");
+            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CustId");
             if (String.IsNullOrEmpty(successDescription))
             {
-                return ("999","Finacle Responded with an error",successDescription);
+                return ("999", "Finacle Responded with an error", successDescription);
             }
-            return ("000","CIF was created successfully", successDescription);
+            return ("000", "CIF was created successfully", successDescription);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return ("999","Finacle Responded with an error",ex.Message);
+            return ("999", "Finacle Responded with an error", ex.Message);
         }
     }
 
@@ -946,27 +1010,32 @@ public class AccountOpeningService : IAccountOpeningService
         if (response.Content == null)
         {
             _logger.LogInformation(response.ErrorMessage);
-            return  null;
+            return null;
         }
         var result = JsonConvert.DeserializeObject<SaveImageResponse>(response.Content);
         return result;
 
     }
 
-    private async Task<bool> MobileWebOnboarding(TierOneAccountOpeningRequest request, VerifyBVNResponseModel bvnDetails, string accountNumber)
+    private async Task<bool> MobileWebOnboarding(CIFRequest request, string accountNumber)
     {
         try
         {
+            var password = Encoding.UTF8.GetString(Convert.FromBase64String(request.Password));
+            var confirmPassword = Encoding.UTF8.GetString(Convert.FromBase64String(request.ConfirmPassword));
+            var secretQuestion = Encoding.UTF8.GetString(Convert.FromBase64String(request.SecretQuestion));
+            var secretAnswer = Encoding.UTF8.GetString(Convert.FromBase64String(request.SecretAnswer));
+
             var onboardingRequest = new MobileWebOnboarding
             {
-                FirstName = bvnDetails.FirstName,
-                LastName = bvnDetails.LastName,
-                PhoneNumber = bvnDetails.PhoneNumber,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                PhoneNumber = request.PhoneNumber,
                 AccountNumber = accountNumber,
-                Password = request.Password,
-                ConfirmPassword = request.ConfirmPassword,
-                SecretQuestion = request.SecretQuestion,
-                SecretAnswer = request.SecretAnswer,
+                Password = password,
+                ConfirmPassword = confirmPassword,
+                SecretQuestion = secretQuestion,
+                SecretAnswer = secretAnswer,
                 Email = request.Email
             };
             var response = await _restRequestHelper.HttpAsync(Method.POST, _config["WebAndMobileOnboarding"], null, onboardingRequest);
@@ -989,26 +1058,104 @@ public class AccountOpeningService : IAccountOpeningService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
+            _logger.LogError(ex, ex.Message);
             return false;
         }
     }
 
     public async Task AddressVerificationRequest(AccountOpeningAttempt request)
     {
-        var addressVerificationRequest = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.Address,request.Cif),null,_config["Address_Verification:base_url"]);
-        
+        var addressVerificationRequest = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.Address, request.Cif), null, _config["Address_Verification:base_url"]);
+
     }
 
     public ApiResult GetAccountNameByAccountNumber(string accountNumber)
     {
         var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(accountNumber);
-        if(accountDetails == null)
+        if (accountDetails == null)
         {
             return new ApiResult { responseCode = "999", responseDescription = "Account number does not exist" };
         }
 
         return new ApiResult { responseCode = "000", responseDescription = $"{accountDetails.AccountName}" };
+    }
+
+    public async Task<string> UpgradeToTierThree(CIFRequest request)
+    {
+        var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(request.AccountNumber);
+        var upgradeDetails = new RbxRetailsUpdateCustomDatum
+            {
+                MonthlyNetIncome = request.MonthlyIncome.ToString(),
+                // NokAddress = request.NextOfKin.Address,
+                // NokAddressLine1 = request.NextOfKin.Address,
+                // NokCity = request.NextOfKin.Town,
+                // NokDateOfBirth = request.NextOfKin.DateOfBirth.ToString("yyyy-MM-dd"),
+                // NokFirstName = request.NextOfKin.FirstName,
+                // NokLastName = request.NextOfKin.LastName,
+                // NokGender = request.NextOfKin.Gender,
+                // NokMiddleName = request.NextOfKin.MiddleName,
+                // NokPhoneNumber = request.NextOfKin.PhoneNumber,
+                // Relationship = request.NextOfKin.Relationship,
+                CustomerId = request.Cif,
+            };
+            await _modelContext.RbxRetailsUpdateCustomData.AddAsync(upgradeDetails);
+            if (await _modelContext.SaveChangesAsync() < 1)
+            {
+                _logger.LogInformation("There was a problem saving to redbox");
+                return "There was a problem uprading your account. Please try again later";
+            }
+            // save images
+
+            
+            var photographResponse = await SaveImage(request.Cif, request.PassportPhotograph);
+            var idImageResponse = await SaveImage(request.Cif, request.IdImage);
+            var signatureResponse = await SaveImage(request.Cif, request.Signature);
+
+            
+            // log for address verification
+            if (!string.IsNullOrEmpty(request.UtilityBill))
+            {
+                var utilityBillResponse = await SaveImage(request.Cif, request.UtilityBill);
+            }
+
+            var response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.SchemeCodeModificationPayload(
+                accountDetails.GlSubHeadCode, accountDetails.GlSubHeadCode, accountDetails.SchemeCode, "SB001", request.AccountNumber)
+                );
+
+            if (response.ResponseCode != "000")
+            {
+                _logger.LogInformation("There was a problem connecting to finnacle");
+                return "There was a problem uprading your account. Please try again later";
+            }
+
+
+            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatus");
+
+            if (successDescription != "SUCCESS")
+            {
+                var errorDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatusDesc");
+                _logger.LogInformation(errorDescription);
+                return "There was a problem uprading your account. Please try again later";
+            }
+
+            return "Your account has been ugraded successfully";
+
+    }
+
+    public async Task<string> CheckAddressVerificationStatus(string addressVerificationId)
+    {
+        var status = await _soapRequestHelper.GetAddressVerificationStatus(
+            AccountOpeningPayloadHelper.FetchAddressVerificationReportStatusPayload(addressVerificationId));
+
+        return string.Empty;
+    }
+
+    public async Task<string> DownloadAddressVerificationReport(string addressVerificationId)
+    {
+        var response = await _soapRequestHelper.DownloadAddressVerificationReport(
+            AccountOpeningPayloadHelper.DownloadAddressVerificationReport(addressVerificationId));
+        
+        return string.Empty;
     }
 
 

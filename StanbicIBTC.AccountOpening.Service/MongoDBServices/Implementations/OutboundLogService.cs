@@ -2,10 +2,10 @@ namespace StanbicIBTC.AccountOpening.Core.Services;
 public partial class OutboundLogService : IOutboundLogService
 {
     private readonly IOutboundLogRepository outboundLogRepository;
-    private readonly ILogger logger;
+    private readonly ILogger<OutboundLogService> logger;
 
 
-    public OutboundLogService(IOutboundLogRepository outboundLogRepository, ILogger logger)
+    public OutboundLogService(IOutboundLogRepository outboundLogRepository, ILogger<OutboundLogService> logger)
     {
         this.outboundLogRepository = outboundLogRepository;
         this.logger = logger;
@@ -20,7 +20,7 @@ public partial class OutboundLogService : IOutboundLogService
         }
         catch(Exception ex)
         {           
-            logger.Error(ex,"Error while creating OutboundLog");
+            logger.LogError(ex,"Error while creating OutboundLog");
             return "";
         }
     }
@@ -34,7 +34,7 @@ public partial class OutboundLogService : IOutboundLogService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving OutboundLogs");
+            logger.LogError(ex,"Error while retrieving OutboundLogs");
 
             return null;
         }
@@ -49,7 +49,7 @@ public partial class OutboundLogService : IOutboundLogService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving OutboundLogs");
+            logger.LogError(ex,"Error while retrieving OutboundLogs");
 
             return null;  
         }
@@ -64,7 +64,7 @@ public partial class OutboundLogService : IOutboundLogService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while retrieving OutboundLog");
+            logger.LogError(ex,"Error while retrieving OutboundLog");
 
             return null;  
         }
@@ -78,7 +78,7 @@ public partial class OutboundLogService : IOutboundLogService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while removing OutboundLog");
+            logger.LogError(ex,"Error while removing OutboundLog");
 
             return false;  
         }
@@ -92,7 +92,7 @@ public partial class OutboundLogService : IOutboundLogService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while Updating OutboundLog");
+            logger.LogError(ex,"Error while Updating OutboundLog");
 
             return false;  
         }   
@@ -116,7 +116,7 @@ public partial class OutboundLogService : IOutboundLogService
         }
         catch(Exception ex)
         {
-            logger.Error(ex,"Error while updating OutboundLog");
+            logger.LogError(ex,"Error while updating OutboundLog");
 
             return false; 
         }
