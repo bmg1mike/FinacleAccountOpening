@@ -23,11 +23,15 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IFinacleRepository, FinacleRepository>();
         services.AddSingleton<ISmsNotification, SmsNotification>();
         services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(builder.Configuration.GetSection("MongoDbSettings:ConnectionString").Value));
-        services.AddDbContext<DataContext>(options => options.UseOracle(builder.Configuration.GetConnectionString("RedBoxConnection")),ServiceLifetime.Singleton);
+        services.AddDbContext<DataContext>(options => options.UseSqlServer(builder.Configuration["AccountOpeningConnection:ConnectionString"]),ServiceLifetime.Singleton);
         
         services.AddSingleton<IMongoDbConfig, MongoDbConfig>(
             sp => new MongoDbConfig(builder.Configuration.GetSection("MongoDbSettings:ConnectionString").Value,
         builder.Configuration.GetSection("MongoDbSettings:DatabaseName").Value));
+
+        services.AddHttpClient<ISoapRequestHelper,SoapRequestHelper>();
+        services.AddSingleton<IOutboundLogRepository, OutboundLogRepository>();
+        services.AddSingleton<IInboundLogRepository, InboundLogRepository>();
 
         services.AddHostedService<Worker>();
         

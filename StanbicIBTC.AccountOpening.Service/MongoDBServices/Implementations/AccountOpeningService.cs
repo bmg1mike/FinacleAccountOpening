@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace StanbicIBTC.AccountOpening.Service;
 
@@ -14,11 +15,13 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly IFinacleRepository _finacleRepository;
     private readonly ISmsNotification _smsNotification;
     private readonly DataContext _modelContext;
+    private readonly IOutboundLogRepository _outboundLogRepository;
+    private readonly IInboundLogRepository _inboundLogRepository;
 
     public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper,
             ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt,
             IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository,
-            ISmsNotification smsNotification, DataContext modelContext)
+            ISmsNotification smsNotification, DataContext modelContext, IOutboundLogRepository outboundLogRepository, IInboundLogRepository inboundLogRepository)
     {
         _logger = logger;
         _soapRequestHelper = soapRequestHelper;
@@ -29,6 +32,8 @@ public class AccountOpeningService : IAccountOpeningService
         _finacleRepository = finacleRepository;
         _smsNotification = smsNotification;
         _modelContext = modelContext;
+        _outboundLogRepository = outboundLogRepository;
+        _inboundLogRepository = inboundLogRepository;
     }
 
     public async Task<ApiResult> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request)
@@ -36,6 +41,17 @@ public class AccountOpeningService : IAccountOpeningService
         try
         {
             var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
+
+            var outboundBvn = new OutboundLog
+            {
+                APICalled = "BVN Api",
+                APIMethod = "GetBvnDetails",
+                LogDate = DateTime.Now,
+                RequestDateTime = DateTime.Now,
+                ResponseDateTIme = DateTime.Now,
+                SystemCalledName = "Account Opening Microservice",
+                RequestDetails = String.Empty
+            };
 
             if (bvnDetailsResponse.data is null)
             {
@@ -57,6 +73,17 @@ public class AccountOpeningService : IAccountOpeningService
                 _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid NIN" };
             }
+
+            var outboundNin = new OutboundLog
+            {
+                APICalled = "NIN Api",
+                APIMethod = "GetNinDetails",
+                LogDate = DateTime.Now,
+                RequestDateTime = DateTime.Now,
+                ResponseDateTIme = DateTime.Now,
+                SystemCalledName = "Account Opening Microservice",
+                RequestDetails = String.Empty
+            };
 
             var ninDetails = ninDetailsResponse.data;
 
@@ -92,6 +119,8 @@ public class AccountOpeningService : IAccountOpeningService
             if (occupationCode is null || employmentStatus is null)
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid Occupation Code Or Employment status" };
 
+            
+
 
             var nextOfKinDetails = new CIFNextOfKinDetail
             {
@@ -116,6 +145,19 @@ public class AccountOpeningService : IAccountOpeningService
                 confirmPassword = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.ConfirmPassword));
             }
 
+            var inbound = new InboundLog
+            {
+                LogDate = DateTime.Now,
+                APICalled = "OpenTierOneAccount",
+                APIMethod = "ValidateTierOneAccountOpeningRequest",
+                OutboundLogs = new List<OutboundLog> { outboundBvn, outboundNin },
+                RequestDateTime = DateTime.Now,
+                RequestSystem = Environment.MachineName.ToString(),
+                ImpactUniqueIdentifier = Guid.NewGuid().ToString(),
+                AlternateUniqueIdentifier = Guid.NewGuid().ToString(),
+
+            };
+            await _inboundLogRepository.CreateInboundLog(inbound);
 
             var cifRequest = new CIFRequest
             {
@@ -618,14 +660,16 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
-            var accountOpeningAttempt = await _accountOpeningAttempt.GetAccountOpeningAttempt(request.AccountOpeningAttemptId);
+            //var accountOpeningAttempt = await _accountOpeningAttempt.GetAccountOpeningAttempt(request.AccountOpeningAttemptId);
 
-
+            var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
             request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
             if (string.IsNullOrEmpty(request.StateOfResidence))
             {
-                accountOpeningAttempt.Response = "The state in the BVN is not available in the finacle Database";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                cifRequest.IsAccountOpenedSuccessfully = false;
+                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                cifRequest.Response = "The state in the BVN is not available in the finacle Database";
+                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
                 return null;
             }
@@ -633,8 +677,11 @@ public class AccountOpeningService : IAccountOpeningService
             request.LgaOfResidence = _finacleRepository.GetCityCode(request.LgaOfResidence.ToUpper().Trim());
             if (string.IsNullOrEmpty(request.LgaOfResidence))
             {
-                accountOpeningAttempt.Response = "The City in the BVN is not available in the finacle Database";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                cifRequest.IsAccountOpenedSuccessfully = false;
+                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                cifRequest.Response = "The City in the BVN is not available in the finacle Database";
+                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
                 return null;
             }
@@ -654,6 +701,10 @@ public class AccountOpeningService : IAccountOpeningService
 
             if (cif.cif == null)
             {
+                cifRequest.IsAccountOpenedSuccessfully = false;
+                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                cifRequest.Response = "Couldn't create Cif from Finacle( Finacle not reachable )";
+                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
                 _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
                 return null;
@@ -662,8 +713,11 @@ public class AccountOpeningService : IAccountOpeningService
             var redboxResult = await SaveTierOneCustomData(cif.cif, request);
             if (!redboxResult)
             {
-                accountOpeningAttempt.Response = "There was a problem saving the request to the redbox database";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                cifRequest.IsAccountOpenedSuccessfully = false;
+                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                cifRequest.Response = "There was a problem saving the request to the redbox database";
+                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
                 return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
             }
@@ -675,8 +729,10 @@ public class AccountOpeningService : IAccountOpeningService
             if (openSavingsAccount.ResponseCode != "000")
             {
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-                accountOpeningAttempt.Response = $"Could not open account for CIF : {cif.cif}";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                cifRequest.IsAccountOpenedSuccessfully = false;
+                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                cifRequest.Response = "There was a problem saving the request to the Sql Server Db database";
+                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
                 return null;
             }
 
@@ -684,7 +740,7 @@ public class AccountOpeningService : IAccountOpeningService
             var accountNumber = _soapRequestHelper.GetXmlTagValue<string>(openSavingsAccount.ResponseDescription, "AcctId");
             if (string.IsNullOrEmpty(accountNumber))
             {
-                accountOpeningAttempt.Response = $"Could not open account for CIF : {cif.cif}";
+                
                 // await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return $"Could not open the account for CIF : {cif.cif}";
             }
@@ -705,13 +761,32 @@ public class AccountOpeningService : IAccountOpeningService
                 {
                     successMessage = $"Your Account has been opened Successfully. Your Account Number Is {accountNumber}. You can now use the Mobile App and Internet banking";
                     await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
+
+                    cifRequest.IsAccountOpenedSuccessfully = true;
+                    cifRequest.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
+                    cifRequest.Response = "Tier One Account Opened Successfully and Onboarding was Successful";
+                    cifRequest.Cif = cif.cif;
+                    cifRequest.AccountNumber = accountNumber;
+                    await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
                     return $"Account Number is {accountNumber}";
                 }
 
                 successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
+                cifRequest.IsAccountOpenedSuccessfully = true;
+                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
+                cifRequest.Response = "Tier One Account Opened Successfully but Onboarding Failed";
+                cifRequest.Cif = cif.cif;
+                cifRequest.AccountNumber = accountNumber;
+                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
                 return $"Account Number is {accountNumber}";
             }
+            cifRequest.IsAccountOpenedSuccessfully = true;
+            cifRequest.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
+            cifRequest.Response = "Tier One Account Opened Successfully";
+            cifRequest.Cif = cif.cif;
+            cifRequest.AccountNumber = accountNumber;
+            await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
             successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
             await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
             return $"Account Number is {accountNumber}";
@@ -725,19 +800,41 @@ public class AccountOpeningService : IAccountOpeningService
 
     private VirtualAccountOpeningRequest CreateVirtualAccountWithoutBvn(CreateVirtualAccountDto request)
     {
-        if (string.IsNullOrEmpty(request.FirstName) && string.IsNullOrEmpty(request.LastName) && string.IsNullOrEmpty(request.Gender)
-            && string.IsNullOrEmpty(request.Address) && string.IsNullOrEmpty(request.PhoneNumber) &&
+        if (string.IsNullOrEmpty(request.FirstName) || string.IsNullOrEmpty(request.LastName) || string.IsNullOrEmpty(request.Gender)
+            || string.IsNullOrEmpty(request.Address) || string.IsNullOrEmpty(request.PhoneNumber) ||
             string.IsNullOrEmpty(request.SecretWord))
         {
             return null;
         }
+
+        if (request.Gender.ToUpper().Trim() == "FEMALE")
+        {
+            request.Gender = "F";
+        }
+        else if (request.Gender.ToUpper().Trim() == "MALE")
+        {
+            request.Gender="M";
+        }
+        else
+        {
+            return null;
+        }
+        
+        //if (request.Gender.ToUpper() != "FEMALE" || request.Gender.ToUpper() != "MALE")
+        //{
+        //    return null;
+        //}
+
+        bool isValidPhoneNumber = Regex.IsMatch(request.PhoneNumber, @"^\d+$");
+        if (!isValidPhoneNumber) return null;
+
         return new VirtualAccountOpeningRequest
         {
             BankVerificationNumber = "",
             Address = request.Address,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            Gender = request.Gender.ToUpper() == "FEMALE" ? "F" : "M",
+            Gender = request.Gender,
             PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
             DateOfBirth = request.DateOfBirth,
             SecretWord = request.SecretWord,
@@ -759,7 +856,10 @@ public class AccountOpeningService : IAccountOpeningService
 
         var bvnDetails = bvnDetailsResponse.data;
 
-        if (request.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
+        bool isValidPhoneNumber = Regex.IsMatch(request.PhoneNumber, @"^\d+$");
+        if (!isValidPhoneNumber) return null;
+
+        if (request.PhoneNumber.AsNigerianPhoneNumber() != bvnDetails.PhoneNumber.AsNigerianPhoneNumber())
         {
             _logger.LogInformation($"The phone number provided does not match the phone number in the BVN");
             return null;
@@ -799,7 +899,7 @@ public class AccountOpeningService : IAccountOpeningService
                 rubyRequest = await CreateVirtualAccountWithBvn(request);
                 if (rubyRequest is null)
                 {
-                    return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = "Incomplete request sent", ResponseFriendlyMessage = "Incomplete request sent" };
+                    return new VirtualAccountOpeningResponse { ResponseCode = "999", ResponseDescription = "Your Details does not match", ResponseFriendlyMessage = "Your Details does not match" };
                 }
             }
 

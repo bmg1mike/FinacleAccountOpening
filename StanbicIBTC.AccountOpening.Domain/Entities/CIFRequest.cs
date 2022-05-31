@@ -55,5 +55,6 @@ public partial class CIFRequest
    public long? AddressVerificationId { get; set; }
     public string AddressverificationId { get; set; }
     public bool IsAccountOpenedSuccessfully { get; set; } = false;
+    public bool IsTierThree { get; set; } = false;
 }
 

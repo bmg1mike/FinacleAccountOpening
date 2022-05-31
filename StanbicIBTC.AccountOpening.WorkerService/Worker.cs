@@ -34,21 +34,19 @@ namespace StanbicIBTC.AccountOpening.WorkerService
                     requests = await _cifrequestRepository.GetPendingCifRequests();
                 }
 
-                // if (requests.Count == 0)
-                // {
-                //     Thread.Sleep(10000);
-                //     goto CheckCifRequest;
-                // }
+                
 
                 foreach (var item in requests)
                 {
                     var result = string.Empty;
-                    if (item.AccountTypeRequested == "Tier One")
+                    if ((item.AccountTypeRequested == "Tier One" || item.AccountTypeRequested == "Tier Three") && string.IsNullOrEmpty(item.AccountNumber))
                     {
                         result = await _accountOpeningService.OpenAccount(item);
                     }
-
-                    //var result = await _accountOpeningService.OpenAccount(item);
+                    if((item.AccountTypeRequested == "Tier Three" || item.AccountTypeRequested == "Tier 3 Upgrade") && string.IsNullOrEmpty(item.AccountNumber) && item.IsTierThree == false)
+                    {
+                        result = await _accountOpeningService.UpgradeToTierThree(item);
+                    }
                     _logger.LogInformation($"{result}");
                 }
 
