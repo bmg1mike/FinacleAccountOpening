@@ -281,6 +281,43 @@ public class AccountOpeningService : IAccountOpeningService
 
                 var addressverificationId =  _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription,"LogAddressVerificationRequestResult");
 
+               
+                
+                    var photographResponse = await SaveDocumentToDataStore(cif, request.PassportPhotograph,"Customer Photograph");
+                    if (photographResponse.OutCome.Status != "SUCCESS")
+                    {
+                        _logger.LogInformation($"There was a problem saving Customer's photo to Data Store");
+                        return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+                    }
+                
+                
+                    var idImageResponse = await SaveDocumentToDataStore(cif, request.IdImage,"Custormer's ID Card");
+                    if (idImageResponse.OutCome.Status != "SUCCESS")
+                    {
+                        _logger.LogInformation($"There was a problem saving Customer's regulatory Id to Data Store");
+                        return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+                    }
+                
+
+                
+                    var signatureResponse = await SaveDocumentToDataStore(cif, request.Signature,"Customer's Signature");
+                    if (signatureResponse.OutCome.Status != "SUCCESS")
+                    {
+                        
+                        _logger.LogInformation($"There was a problem saving Customer's signature to Data Store");
+                        return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+                    }
+                
+                
+                    var utilityBillResponse = await SaveDocumentToDataStore(cif, request.UtilityBill,"Customer's Utility Bill");
+                    if (utilityBillResponse.OutCome.Status != "SUCCESS")
+                    {
+                        _logger.LogInformation($"There was a problem saving Customer's Utility Bill to Data Store");
+                        return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+                    }
+                
+            
+
             var cifRequest = new CIFRequest
             {
                 AccountNumber = request.AccountNumber,
@@ -295,33 +332,21 @@ public class AccountOpeningService : IAccountOpeningService
                 EmployerAddress = request.EmployerAddress,
                 EmployerName = request.EmployerName,
                 IdentityType = request.IdentityType,
-                IdImage = request.IdImage,
                 IdExpiryDate = request.IdExpiryDate,
                 IdIssueDate = request.IdIssueDate,
                 IdNumber = request.IdNumber,
                 FirstName = bvnDetailsResponse.data.FirstName,
                 LastName = bvnDetailsResponse.data.LastName,
                 MonthlyIncome = request.MonthlyIncome,
-                PassportPhotograph = request.PassportPhotograph,
-                Signature = request.Signature,
-                UtilityBill = request.UtilityBill,
                 PhoneNumber = bvnDetailsResponse.data.PhoneNumber.AsNigerianPhoneNumber(),
                 SanctionScreeningAccountId = sanctionScreeningRequest.AccountOpeningRequestId,
                 AddressverificationId = addressverificationId,
-                AccountOpeningStatus = AccountOpeningStatus.Pending.ToString()
+                AccountOpeningStatus = AccountOpeningStatus.Pending.ToString(),
+                IsKycDocumentsUploaded = true,
+                IsAddressVerificationLogged = true,
+                IsSanctionScreeningLogged = true,
+                Platform = request.Platform.ToString()
 
-            };
-            var accountAttempt = new AccountOpeningAttempt
-            {
-                AccountTypeRequested = "Tier 3 Upgrade",
-                AccountNumber = request.AccountNumber,
-                FirstName = bvnDetailsResponse.data.FirstName,
-                LastName = bvnDetailsResponse.data.LastName,
-                Bvn = request.Bvn,
-                Address = bvnDetailsResponse.data.ResidentialAddress,
-                Cif = cif,
-                PhoneNumber = bvnDetailsResponse.data.PhoneNumber,
-                Platform = request.Platform.ToString() 
             };
 
 
@@ -368,8 +393,8 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 return new ApiResult { responseCode = "999", responseDescription = "Birth Certificate must be a Base 64 string" };
             }
-            var birthCertificate = await SaveImage(cifDetails.Cif, request.ChildBirthCertificate);
-            var photograph = await SaveImage(cifDetails.Cif, request.Photograph);
+            var birthCertificate = await SaveDocumentToDataStore(cifDetails.Cif, request.ChildBirthCertificate,"Birth Certificate");
+            var photograph = await SaveDocumentToDataStore(cifDetails.Cif, request.Photograph,"Customer Photograph");
 
             var openAccount = await _soapRequestHelper.FinacleCall(
                 AccountOpeningPayloadHelper.AccountOpeningPayload(cifDetails.Cif, cifRequest, "CHESS"));
@@ -548,18 +573,7 @@ public class AccountOpeningService : IAccountOpeningService
             
             }
 
-            var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
-                AccountOpeningPayloadHelper.AddressVerificationRequestPayload(bvnDetailsResponse.data.ResidentialAddress,cif));
-
-                if (addressVerificationRequest.ResponseCode != "000")
-                {
-                    _logger.LogInformation($"There was a problem logging for Address Verification");
-                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Address Verification for BVN: {request.Bvn} Please try again later" };
             
-                }
-
-                var addressverificationId =  _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription,"LogAddressVerificationRequestResult");
-
 
             var cifRequest = new CIFRequest
             {
@@ -596,12 +610,7 @@ public class AccountOpeningService : IAccountOpeningService
 
                 },
                 SanctionScreeningAccountId = sanctionScreeningRequest.AccountOpeningRequestId,
-                AddressverificationId = addressverificationId,
-                Signature = request.Signature,
-                PassportPhotograph = request.PassportPhotograph,
-                UtilityBill = request.UtilityBill,
                 IdentityType = request.IdentityType,
-                IdImage = request.IdImage,
                 IdExpiryDate = request.IdExpiryDate,
                 IdIssueDate = request.IdIssueDate,
                 IdNumber = request.IdNumber
@@ -662,14 +671,14 @@ public class AccountOpeningService : IAccountOpeningService
         {
             //var accountOpeningAttempt = await _accountOpeningAttempt.GetAccountOpeningAttempt(request.AccountOpeningAttemptId);
 
-            var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
+            //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
             request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
             if (string.IsNullOrEmpty(request.StateOfResidence))
             {
-                cifRequest.IsAccountOpenedSuccessfully = false;
-                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                cifRequest.Response = "The state in the BVN is not available in the finacle Database";
-                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                request.IsAccountOpenedSuccessfully = false;
+                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                request.Response = "The state in the BVN is not available in the finacle Database";
+                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
                 return null;
             }
@@ -677,10 +686,10 @@ public class AccountOpeningService : IAccountOpeningService
             request.LgaOfResidence = _finacleRepository.GetCityCode(request.LgaOfResidence.ToUpper().Trim());
             if (string.IsNullOrEmpty(request.LgaOfResidence))
             {
-                cifRequest.IsAccountOpenedSuccessfully = false;
-                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                cifRequest.Response = "The City in the BVN is not available in the finacle Database";
-                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                request.IsAccountOpenedSuccessfully = false;
+                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                request.Response = "The City in the BVN is not available in the finacle Database";
+                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                 
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
                 return null;
@@ -697,42 +706,58 @@ public class AccountOpeningService : IAccountOpeningService
             //    return "This Customer already has an account";
             //}
 
-            var cif = await CreateCIF(request);
+            var cifResponse = await CreateCIF(request);
 
-            if (cif.cif == null)
+            if (cifResponse.cif == null)
             {
-                cifRequest.IsAccountOpenedSuccessfully = false;
-                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                cifRequest.Response = "Couldn't create Cif from Finacle( Finacle not reachable )";
-                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                request.IsAccountOpenedSuccessfully = false;
+                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                request.Response = "Couldn't create Cif from Finacle( Finacle not reachable )";
+                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
                 _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
                 return null;
             }
 
-            var redboxResult = await SaveTierOneCustomData(cif.cif, request);
+            var redboxResult = await SaveTierOneCustomData(cifResponse.cif, request);
             if (!redboxResult)
             {
-                cifRequest.IsAccountOpenedSuccessfully = false;
-                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                cifRequest.Response = "There was a problem saving the request to the redbox database";
-                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                request.IsAccountOpenedSuccessfully = false;
+                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                request.Response = "There was a problem saving the request to the redbox database";
+                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                 
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
                 return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
             }
 
+            if(request.AccountTypeRequested == "Tier Three")
+            {
+                var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
+                AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.CustomerAddress,cifResponse.cif));
+
+                if (addressVerificationRequest.ResponseCode != "000")
+                {
+                    _logger.LogInformation($"There was a problem logging for Address Verification");
+                    return null;
+            
+                }
+
+                var addressverificationId =  _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription,"LogAddressVerificationRequestResult");
+                request.AddressverificationId = addressverificationId;
+            }
+
             Thread.Sleep(120000);
 
-            var openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif.cif, request));
+            var openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cifResponse.cif, request));
 
             if (openSavingsAccount.ResponseCode != "000")
             {
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-                cifRequest.IsAccountOpenedSuccessfully = false;
-                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                cifRequest.Response = "There was a problem saving the request to the Sql Server Db database";
-                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                request.IsAccountOpenedSuccessfully = false;
+                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                request.Response = "There was a problem saving the request to the Sql Server Db database";
+                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                 return null;
             }
 
@@ -742,7 +767,7 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 
                 // await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return $"Could not open the account for CIF : {cif.cif}";
+                return $"Could not open the account for CIF : {cifResponse.cif}";
             }
             //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
             //cifRequest.AccountOpeningStatus = AccountOpeningStatus.Completed.ToString();
@@ -762,31 +787,31 @@ public class AccountOpeningService : IAccountOpeningService
                     successMessage = $"Your Account has been opened Successfully. Your Account Number Is {accountNumber}. You can now use the Mobile App and Internet banking";
                     await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
 
-                    cifRequest.IsAccountOpenedSuccessfully = true;
-                    cifRequest.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
-                    cifRequest.Response = "Tier One Account Opened Successfully and Onboarding was Successful";
-                    cifRequest.Cif = cif.cif;
-                    cifRequest.AccountNumber = accountNumber;
-                    await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                    request.IsAccountOpenedSuccessfully = true;
+                    request.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
+                    request.Response = "Tier One Account Opened Successfully and Onboarding was Successful";
+                    request.Cif = cifResponse.cif;
+                    request.AccountNumber = accountNumber;
+                    await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                     return $"Account Number is {accountNumber}";
                 }
 
                 successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
                 await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
-                cifRequest.IsAccountOpenedSuccessfully = true;
-                cifRequest.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
-                cifRequest.Response = "Tier One Account Opened Successfully but Onboarding Failed";
-                cifRequest.Cif = cif.cif;
-                cifRequest.AccountNumber = accountNumber;
-                await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+                request.IsAccountOpenedSuccessfully = true;
+                request.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
+                request.Response = "Tier One Account Opened Successfully but Onboarding Failed";
+                request.Cif = cifResponse.cif;
+                request.AccountNumber = accountNumber;
+                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                 return $"Account Number is {accountNumber}";
             }
-            cifRequest.IsAccountOpenedSuccessfully = true;
-            cifRequest.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
-            cifRequest.Response = "Tier One Account Opened Successfully";
-            cifRequest.Cif = cif.cif;
-            cifRequest.AccountNumber = accountNumber;
-            await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
+            request.IsAccountOpenedSuccessfully = true;
+            request.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
+            request.Response = "Tier One Account Opened Successfully";
+            request.Cif = cifResponse.cif;
+            request.AccountNumber = accountNumber;
+            await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
             successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
             await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
             return $"Account Number is {accountNumber}";
@@ -1094,16 +1119,16 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
-    private async Task<SaveImageResponse> SaveImage(string cif, string image)
+    private async Task<SaveImageResponse> SaveDocumentToDataStore(string cif, string document,string documentType)
     {
         var metadataDetails = new Dictionary<string, List<object>>();
         metadataDetails.Add("CIF Number", new List<object> { cif });
-        metadataDetails.Add("Document Type", new List<object> { "Account Administration" });
+        metadataDetails.Add("Document Type", new List<object> { documentType });
         var request = new
         {
             dataDefinitionName = "Know Your Customer - (KYC)",
             metadataDefinition = metadataDetails,
-            documentContent = image
+            documentContent = document
         };
 
         var response = await _restRequestHelper.HttpAsync(Method.POST, _config["DSX_ENDPOINT"], null, request);
@@ -1207,19 +1232,10 @@ public class AccountOpeningService : IAccountOpeningService
             // save images
 
             
-            var photographResponse = await SaveImage(request.Cif, request.PassportPhotograph);
-            var idImageResponse = await SaveImage(request.Cif, request.IdImage);
-            var signatureResponse = await SaveImage(request.Cif, request.Signature);
 
             
-            // log for address verification
-            if (!string.IsNullOrEmpty(request.UtilityBill))
-            {
-                var utilityBillResponse = await SaveImage(request.Cif, request.UtilityBill);
-            }
-
             // check address verification status
-            var AddressVerificationResult = await _soapRequestHelper.GetAddressVerificationStatus(
+            var AddressVerificationResultCheck = await _soapRequestHelper.GetAddressVerificationStatus(
                     AccountOpeningPayloadHelper.FetchAddressVerificationReportStatusPayload(request.AddressverificationId));
             
             // check sanction screening status
@@ -1236,7 +1252,7 @@ public class AccountOpeningService : IAccountOpeningService
                 return null;
             }
 
-            var sanctionScreeningReport = await SaveImage(request.Cif,sanctionScreeningResult.Pdf);
+            var sanctionScreeningReport = await SaveDocumentToDataStore(request.Cif,sanctionScreeningResult.Pdf,"Sanction Screening Report");
 
             var response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.SchemeCodeModificationPayload(
                 accountDetails.GlSubHeadCode, accountDetails.GlSubHeadCode, accountDetails.SchemeCode, "SB001", request.AccountNumber)

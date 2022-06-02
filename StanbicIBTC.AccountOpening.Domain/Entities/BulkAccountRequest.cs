@@ -2,10 +2,14 @@ namespace StanbicIBTC.AccountOpening.Domain;
 
 public class BulkAccountRequest
 {
-    public IFormFile File { get; set; }
+   [BsonId]
+   [BsonRepresentation(BsonType.ObjectId)]
+    public string BulkAccountRequestId { get; set; }
+    public string File { get; set; }
     public string CreatedBy { get; set; }
     public string ApprovedBy { get; set; }
-    public int MyProperty { get; set; }
+    public string BranchId { get; set; }
+    public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
     public DateTime DateCreated { get; set; } = DateTime.Now;
     public DateTime DateModified { get; set; } = DateTime.Now;
     public bool IsDeleted { get; set; } = false;

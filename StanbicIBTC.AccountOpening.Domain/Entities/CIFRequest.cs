@@ -24,7 +24,7 @@ public partial class CIFRequest
     public string NIN { get; set; }
     public string MaritalStatus { get; set; }
     public CIFNextOfKinDetail NextOfKinDetail { get; set; }
-    public string AccountOpeningStatus { get; set; } 
+    public string AccountOpeningStatus { get; set; }
     public string DateCreated { get; set; } = DateTime.Now.ToString();
     public string DateModified { get; set; } = DateTime.Now.ToString();
     public string Platform { get; set; }
@@ -38,22 +38,21 @@ public partial class CIFRequest
     public string EmployerName { get; set; }
     public string EmployerAddress { get; set; }
     public string IdentityType { get; set; }
-    public string  PassportPhotograph { get; set; }
     public string IdNumber { get; set; }
-    public string IdImage { get; set; }
     public DateTime IdIssueDate { get; set; }
     public DateTime? IdExpiryDate { get; set; }
-    public string UtilityBill { get; set; }
-    public string Signature { get; set; }
     public string AccountNumber { get; set; }
     public string AccountTypeRequested { get; set; }
     public bool AddressVerified { get; set; } = false;
-   public bool SanctionScreeningVerified { get; set; } = false;
-   public string Cif { get; set; }
-   public string Response { get; set; }
-   public string SanctionScreeningAccountId { get; set; } 
+    public bool SanctionScreeningVerified { get; set; } = false;
+    public string Cif { get; set; }
+    public string Response { get; set; }
+    public string SanctionScreeningAccountId { get; set; }
     public string AddressverificationId { get; set; }
     public bool IsAccountOpenedSuccessfully { get; set; } = false;
-    public bool IsTierThree { get; set; } = false;
+    public bool IsTierThreeAccount { get; set; } = false;
+    public bool IsKycDocumentsUploaded { get; set; } = false;
+    public bool IsSanctionScreeningLogged { get; set; } = false;
+    public bool IsAddressVerificationLogged { get; set; } = false;
 }
 

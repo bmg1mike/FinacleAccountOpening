@@ -29,12 +29,12 @@ namespace StanbicIBTC.AccountOpening.WorkerService
                 
                 var requests = await _cifrequestRepository.GetPendingCifRequests();
 
-                while(requests.Count == 0)
+                while (requests.Count == 0)
                 {
                     requests = await _cifrequestRepository.GetPendingCifRequests();
                 }
 
-                
+
 
                 foreach (var item in requests)
                 {
@@ -43,7 +43,7 @@ namespace StanbicIBTC.AccountOpening.WorkerService
                     {
                         result = await _accountOpeningService.OpenAccount(item);
                     }
-                    if((item.AccountTypeRequested == "Tier Three" || item.AccountTypeRequested == "Tier 3 Upgrade") && string.IsNullOrEmpty(item.AccountNumber) && item.IsTierThree == false)
+                    if ((item.AccountTypeRequested == "Tier Three" || item.AccountTypeRequested == "Tier 3 Upgrade") && string.IsNullOrEmpty(item.AccountNumber) && item.IsTierThreeAccount == false)
                     {
                         result = await _accountOpeningService.UpgradeToTierThree(item);
                     }

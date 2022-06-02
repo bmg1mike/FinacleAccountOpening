@@ -31,6 +31,7 @@ public static class DependencyInjection
          services.AddTransient<IInboundLogService, InboundLogService>();
          services.AddTransient<IOutboundLogService, OutboundLogService>();
          services.AddScoped<IAccountOpeningService,AccountOpeningService>();
+         services.AddTransient<IBulkAccountOpeningService,BulkAccountOpeningService>();
          services.AddScoped<IRestRequestHelper,RestRequestHelper>();
          services.AddScoped<ISoapRequestHelper,SoapRequestHelper>();
          services.AddScoped<ISmsNotification, SmsNotification>();
