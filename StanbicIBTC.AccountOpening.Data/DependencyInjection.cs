@@ -10,7 +10,7 @@ public static class DependencyInjection
     {
         services.AddControllers()
             .AddFluentValidation(x => x.RegisterValidatorsFromAssemblyContaining<AccountOpeningAttemptDtoValidator>());
-        
+
 
         services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(configuration.GetConnectionString("MongoDb")));
 
@@ -22,12 +22,13 @@ public static class DependencyInjection
         services.AddDbContext<DataContext>(x => x.UseSqlServer(configuration.GetSection("AccountOpeningConnection:ConnectionString").Value));
 
 
-         services.AddTransient<ICIFRequestRepository, CIFRequestRepository>();
-         services.AddTransient<ICIFNextOfKinDetailRepository, CIFNextOfKinDetailRepository>();
-         services.AddTransient<IAccountOpeningAttemptRepository, AccountOpeningAttemptRepository>();
-         services.AddTransient<IInboundLogRepository, InboundLogRepository>();
-         services.AddTransient<IOutboundLogRepository, OutboundLogRepository>();
-         services.AddScoped<IFinacleRepository,FinacleRepository>();
+        services.AddTransient<ICIFRequestRepository, CIFRequestRepository>();
+        services.AddTransient<ICIFNextOfKinDetailRepository, CIFNextOfKinDetailRepository>();
+        services.AddTransient<IAccountOpeningAttemptRepository, AccountOpeningAttemptRepository>();
+        services.AddTransient<IInboundLogRepository, InboundLogRepository>();
+        services.AddTransient<IOutboundLogRepository, OutboundLogRepository>();
+        services.AddTransient<IBulkAccountRequestRepository, BulkAccountRequestRepository>();
+        services.AddScoped<IFinacleRepository, FinacleRepository>();
 
 
         return services;
