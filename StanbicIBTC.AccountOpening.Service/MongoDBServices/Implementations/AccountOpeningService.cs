@@ -1218,6 +1218,26 @@ public class AccountOpeningService : IAccountOpeningService
                 var utilityBillResponse = await SaveImage(request.Cif, request.UtilityBill);
             }
 
+            // check address verification status
+            var AddressVerificationResult = await _soapRequestHelper.GetAddressVerificationStatus(
+                    AccountOpeningPayloadHelper.FetchAddressVerificationReportStatusPayload(request.AddressverificationId));
+            
+            // check sanction screening status
+            var sanctionScreeningResult = _finacleRepository.GetSanctionScreeningResult(request.SanctionScreeningAccountId);
+            if (sanctionScreeningResult is null)
+            {
+                return null;
+            }
+            if (!sanctionScreeningResult.IsSuccessful)
+            {
+                request.Response = "This Customer did not pass Sanction Screening";
+                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                await _cifRepository.UpdateCIFRequest(request.CIFRequestId,request);
+                return null;
+            }
+
+            var sanctionScreeningReport = await SaveImage(request.Cif,sanctionScreeningResult.Pdf);
+
             var response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.SchemeCodeModificationPayload(
                 accountDetails.GlSubHeadCode, accountDetails.GlSubHeadCode, accountDetails.SchemeCode, "SB001", request.AccountNumber)
                 );

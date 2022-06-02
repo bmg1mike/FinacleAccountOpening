@@ -52,7 +52,6 @@ public partial class CIFRequest
    public string Cif { get; set; }
    public string Response { get; set; }
    public string SanctionScreeningAccountId { get; set; } 
-   public long? AddressVerificationId { get; set; }
     public string AddressverificationId { get; set; }
     public bool IsAccountOpenedSuccessfully { get; set; } = false;
     public bool IsTierThree { get; set; } = false;
