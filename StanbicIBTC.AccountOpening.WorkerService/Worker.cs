@@ -26,7 +26,7 @@ namespace StanbicIBTC.AccountOpening.WorkerService
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
-                //CheckCifRequest:
+                
                 var requests = await _cifrequestRepository.GetPendingCifRequests();
 
                 while(requests.Count == 0)
