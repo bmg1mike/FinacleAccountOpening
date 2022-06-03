@@ -672,80 +672,84 @@ public class AccountOpeningService : IAccountOpeningService
             //var accountOpeningAttempt = await _accountOpeningAttempt.GetAccountOpeningAttempt(request.AccountOpeningAttemptId);
 
             //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
-            request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
-            if (string.IsNullOrEmpty(request.StateOfResidence))
-            {
-                request.IsAccountOpenedSuccessfully = false;
-                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                request.Response = "The state in the BVN is not available in the finacle Database";
-                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
-                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-                return null;
-            }
-
-            request.LgaOfResidence = _finacleRepository.GetCityCode(request.LgaOfResidence.ToUpper().Trim());
-            if (string.IsNullOrEmpty(request.LgaOfResidence))
-            {
-                request.IsAccountOpenedSuccessfully = false;
-                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                request.Response = "The City in the BVN is not available in the finacle Database";
-                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
-                
-                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-                return null;
-            }
-
-            //var existingCif = _finacleRepository.CheckCifForBvn(request.CustomerBVN);
-            //FinacleAccountDetailResponse checkAccount = null;
-            //if (existingCif.Cif is not null)
-            //{
-            //    checkAccount = _finacleRepository.GetAccountDetailsByCif(existingCif.Cif);
-            //}
-            //if (checkAccount is not null)
-            //{
-            //    return "This Customer already has an account";
-            //}
-
-            var cifResponse = await CreateCIF(request);
-
-            if (cifResponse.cif == null)
-            {
-                request.IsAccountOpenedSuccessfully = false;
-                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                request.Response = "Couldn't create Cif from Finacle( Finacle not reachable )";
-                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
-                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-                _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
-                return null;
-            }
-
-            var redboxResult = await SaveTierOneCustomData(cifResponse.cif, request);
-            if (!redboxResult)
-            {
-                request.IsAccountOpenedSuccessfully = false;
-                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                request.Response = "There was a problem saving the request to the redbox database";
-                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
-                
-                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
-                return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
-            }
-
-            if(request.AccountTypeRequested == "Tier Three")
-            {
-                var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
-                AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.CustomerAddress,cifResponse.cif));
-
-                if (addressVerificationRequest.ResponseCode != "000")
-                {
-                    _logger.LogInformation($"There was a problem logging for Address Verification");
-                    return null;
             
+                request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
+                if (string.IsNullOrEmpty(request.StateOfResidence))
+                {
+                    request.IsAccountOpenedSuccessfully = false;
+                    request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                    request.Response = "The state in the BVN is not available in the finacle Database";
+                    await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                    return null;
                 }
 
-                var addressverificationId =  _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription,"LogAddressVerificationRequestResult");
-                request.AddressverificationId = addressverificationId;
-            }
+                request.LgaOfResidence = _finacleRepository.GetCityCode(request.LgaOfResidence.ToUpper().Trim());
+                if (string.IsNullOrEmpty(request.LgaOfResidence))
+                {
+                    request.IsAccountOpenedSuccessfully = false;
+                    request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                    request.Response = "The City in the BVN is not available in the finacle Database";
+                    await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+
+                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                    return null;
+                }
+
+                //var existingCif = _finacleRepository.CheckCifForBvn(request.CustomerBVN);
+                //FinacleAccountDetailResponse checkAccount = null;
+                //if (existingCif.Cif is not null)
+                //{
+                //    checkAccount = _finacleRepository.GetAccountDetailsByCif(existingCif.Cif);
+                //}
+                //if (checkAccount is not null)
+                //{
+                //    return "This Customer already has an account";
+                //}
+
+                var cifResponse = await CreateCIF(request);
+
+                if (cifResponse.cif == null)
+                {
+                    request.IsAccountOpenedSuccessfully = false;
+                    request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                    request.Response = "Couldn't create Cif from Finacle( Finacle not reachable )";
+                    await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                    _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
+                    return null;
+                }
+
+                var redboxResult = await SaveTierOneCustomData(cifResponse.cif, request);
+                if (!redboxResult)
+                {
+                    request.IsAccountOpenedSuccessfully = false;
+                    request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                    request.Response = "There was a problem saving the request to the redbox database";
+                    await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+
+                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                    return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
+                }
+
+                if (request.AccountTypeRequested == "Tier Three")
+                {
+                    var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
+                    AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.CustomerAddress, cifResponse.cif));
+
+                    if (addressVerificationRequest.ResponseCode != "000")
+                    {
+                        _logger.LogInformation($"There was a problem logging for Address Verification");
+                        return null;
+
+                    }
+
+                    var addressverificationId = _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription, "LogAddressVerificationRequestResult");
+                    request.AddressverificationId = addressverificationId;
+                }
+                
+                request.Cif = cifResponse.cif;
+            await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
 
             Thread.Sleep(120000);
 

@@ -42,4 +42,14 @@ public class BulkAccountRequestRepository : IBulkAccountRequestRepository
         var result = await context.BulkAccountRequests.ReplaceOneAsync(x => x.BulkAccountRequestId == id, request);
         return result.ModifiedCount == 1;
     }
+
+    public async Task<List<BulkAccountRequest>> GetPendingBulkAccountRequests(string branchId)
+    {
+        var filter = Builders<BulkAccountRequest>.Filter.Eq(m => m.ApprovalStatus, ApprovalStatus.Pending) & 
+            Builders<BulkAccountRequest>.Filter.Eq(x => x.BranchId,branchId);
+
+        var bulkAccountRequests = await context.BulkAccountRequests.Find(filter).ToListAsync();
+
+        return bulkAccountRequests;
+    }
 }

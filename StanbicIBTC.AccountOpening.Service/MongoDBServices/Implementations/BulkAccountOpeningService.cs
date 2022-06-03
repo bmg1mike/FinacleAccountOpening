@@ -1,4 +1,5 @@
 using OfficeOpenXml;
+using StanbicIBTC.AccountOpening.Domain.Common;
 
 namespace StanbicIBTC.AccountOpening.Service;
 
@@ -7,6 +8,7 @@ public interface IBulkAccountOpeningService
     Task<ApiResult> ApproveOrRejectFile(BulkAccountDto request);
     List<BulkAccount> ReadFromExcel(string filePath);
     ApiResult UploadFile(BulkAccountRequestDto request);
+    Task<Result<List<BulkAccountDto>>> GetBulkAccountRequestsByBranchId(string branchId);
 }
 
 public class BulkAccountOpeningService : IBulkAccountOpeningService
@@ -98,6 +100,27 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             _logger.LogError(ex, ex.Message);
             return new ApiResult { responseCode = "999", responseDescription = "There was a problem processing your request, try again later" };
         }
+    }
+
+    public async Task<Result<List<BulkAccountDto>>> GetBulkAccountRequestsByBranchId(string branchId)
+    {
+        var requests = await _requestRepo.GetPendingBulkAccountRequests(branchId);
+        
+        var requestsdto = new List<BulkAccountDto>();
+        foreach (var item in requests)
+        {
+            requestsdto.Add(new BulkAccountDto
+            {
+                BranchId = item.BranchId,
+                ApprovalStatus = item.ApprovalStatus,
+                ApprovedBy = item.ApprovedBy,
+                BulkAccountRequestId = item.BulkAccountRequestId,
+                CreatedBy = item.CreatedBy,
+                File = item.File,
+            });
+        }
+
+        return new Result<List<BulkAccountDto>> { Content = requestsdto, ResponseCode = "000"};
     }
     public List<BulkAccount> ReadFromExcel(string filePath)
     {

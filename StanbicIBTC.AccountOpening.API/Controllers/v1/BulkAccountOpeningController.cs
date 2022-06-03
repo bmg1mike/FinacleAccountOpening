@@ -32,4 +32,12 @@ public class BulkAccountOpeningController : BaseController
         result.ResponseCode = response.responseCode;
         return Ok(result);
     }
+
+    [HttpGet("GetPendingBulkAccountRequests/")]
+    [ProducesResponseType(200, Type = typeof(Result<List<BulkAccountDto>>))]
+    public async Task<IActionResult> GetPendingBulkAccountRequestsByBranchId(string branchId)
+    {
+        var requests = await _service.GetBulkAccountRequestsByBranchId(branchId);
+        return Ok(requests);
+    }
 }
