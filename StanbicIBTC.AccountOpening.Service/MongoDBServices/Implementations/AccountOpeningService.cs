@@ -159,6 +159,25 @@ public class AccountOpeningService : IAccountOpeningService
             };
             await _inboundLogRepository.CreateInboundLog(inbound);
 
+            switch (ninDetails.FullData.title.ToUpper())
+            {
+                case "MR":
+                    bvnDetails.Title = "041";
+                    break;
+                case "MRS":
+                    bvnDetails.Title = "042";
+                    break;
+                case "MISS":
+                    bvnDetails.Title = "043";
+                    break;
+                case "MS":
+                    bvnDetails.Title = "040";
+                    break;
+                default:
+                    bvnDetails.Title = "175";
+                    break;
+            }
+
             var cifRequest = new CIFRequest
             {
                 AccountTypeRequested = "Tier One",
@@ -186,7 +205,8 @@ public class AccountOpeningService : IAccountOpeningService
                 SecretAnswer = secretAnswer,
                 Password = password,
                 ConfirmPassword = confirmPassword,
-                NextOfKinDetail = nextOfKinDetails
+                NextOfKinDetail = nextOfKinDetails,
+                Title = bvnDetails.Title
             };
 
             var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
@@ -573,7 +593,25 @@ public class AccountOpeningService : IAccountOpeningService
             
             }
 
-            
+
+            switch (bvnDetails.Title.ToUpper())
+            {
+                case "MR":
+                    bvnDetails.Title = "041";
+                    break;
+                case "MRS":
+                    bvnDetails.Title = "042";
+                    break;
+                case "MISS":
+                    bvnDetails.Title = "043";
+                    break;
+                case "MS":
+                    bvnDetails.Title = "040";
+                    break;
+                default:
+                    bvnDetails.Title = "175";
+                    break;
+            }
 
             var cifRequest = new CIFRequest
             {
@@ -607,13 +645,14 @@ public class AccountOpeningService : IAccountOpeningService
                     PhoneNumber = request.NextOfKinDetails.PhoneNumber,
                     State = request.NextOfKinDetails.StateOfResidence,
                     Town = request.NextOfKinDetails.Town,
-
+                    Relationship = request.NextOfKinDetails.Relationship
                 },
                 SanctionScreeningAccountId = sanctionScreeningRequest.AccountOpeningRequestId,
                 IdentityType = request.IdentityType,
                 IdExpiryDate = request.IdExpiryDate,
                 IdIssueDate = request.IdIssueDate,
-                IdNumber = request.IdNumber
+                IdNumber = request.IdNumber,
+                Title = bvnDetails.Title
 
             };
             // Check if CIF exist
@@ -672,7 +711,11 @@ public class AccountOpeningService : IAccountOpeningService
             //var accountOpeningAttempt = await _accountOpeningAttempt.GetAccountOpeningAttempt(request.AccountOpeningAttemptId);
 
             //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
-            
+            var cif = request.Cif;
+            if (string.IsNullOrEmpty(cif))
+            {
+
+
                 request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
                 if (string.IsNullOrEmpty(request.StateOfResidence))
                 {
@@ -747,13 +790,15 @@ public class AccountOpeningService : IAccountOpeningService
                     var addressverificationId = _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription, "LogAddressVerificationRequestResult");
                     request.AddressverificationId = addressverificationId;
                 }
-                
+
                 request.Cif = cifResponse.cif;
-            await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+                await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+                cif = cifResponse.cif;
+            }
 
-            Thread.Sleep(120000);
+            //Thread.Sleep(120000);
 
-            var openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cifResponse.cif, request));
+            var openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request));
 
             if (openSavingsAccount.ResponseCode != "000")
             {
@@ -771,7 +816,7 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 
                 // await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return $"Could not open the account for CIF : {cifResponse.cif}";
+                return $"Could not open the account for CIF : {cif}";
             }
             //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
             //cifRequest.AccountOpeningStatus = AccountOpeningStatus.Completed.ToString();
@@ -794,7 +839,7 @@ public class AccountOpeningService : IAccountOpeningService
                     request.IsAccountOpenedSuccessfully = true;
                     request.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
                     request.Response = "Tier One Account Opened Successfully and Onboarding was Successful";
-                    request.Cif = cifResponse.cif;
+                    request.Cif = cif;
                     request.AccountNumber = accountNumber;
                     await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                     return $"Account Number is {accountNumber}";
@@ -805,7 +850,7 @@ public class AccountOpeningService : IAccountOpeningService
                 request.IsAccountOpenedSuccessfully = true;
                 request.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
                 request.Response = "Tier One Account Opened Successfully but Onboarding Failed";
-                request.Cif = cifResponse.cif;
+                request.Cif = cif;
                 request.AccountNumber = accountNumber;
                 await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                 return $"Account Number is {accountNumber}";
@@ -813,7 +858,7 @@ public class AccountOpeningService : IAccountOpeningService
             request.IsAccountOpenedSuccessfully = true;
             request.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
             request.Response = "Tier One Account Opened Successfully";
-            request.Cif = cifResponse.cif;
+            request.Cif = cif;
             request.AccountNumber = accountNumber;
             await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
             successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";

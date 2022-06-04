@@ -120,7 +120,7 @@ public static class AccountOpeningPayloadHelper
                 <Region>001</Region>
                 <RelationshipOpeningDt>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</RelationshipOpeningDt>
                 <RiskProfileScore>0</RiskProfileScore>
-                <Salutation>040</Salutation>
+                <Salutation>{request.Title}</Salutation>
                 <Sector>96</Sector>
                 <SegmentationClass>001</SegmentationClass>
                 <StaffEmployeeId></StaffEmployeeId>

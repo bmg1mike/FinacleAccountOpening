@@ -18,6 +18,6 @@ public partial class CIFNextOfKinDetail
    public string Email { get; set;}
    public string DateCreated { get; set;}
    public string DateModified { get; set;}
-
+   public string Relationship { get; set; }
 }
 
