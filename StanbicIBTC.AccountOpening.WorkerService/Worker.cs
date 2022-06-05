@@ -1,3 +1,4 @@
+using StanbicIBTC.AccountOpening.Domain.Enums;
 using StanbicIBTC.AccountOpening.Service;
 
 namespace StanbicIBTC.AccountOpening.WorkerService
@@ -39,11 +40,11 @@ namespace StanbicIBTC.AccountOpening.WorkerService
                 foreach (var item in requests)
                 {
                     var result = string.Empty;
-                    if ((item.AccountTypeRequested == "Tier One" || item.AccountTypeRequested == "Tier Three") && string.IsNullOrEmpty(item.AccountNumber))
+                    if ((item.AccountTypeRequested == AccountTypeRequested.Tier_One.ToString() || item.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString()) && string.IsNullOrEmpty(item.AccountNumber))
                     {
                         result = await _accountOpeningService.OpenAccount(item);
                     }
-                    if ((item.AccountTypeRequested == "Tier Three" || item.AccountTypeRequested == "Tier 3 Upgrade") && string.IsNullOrEmpty(item.AccountNumber) && item.IsTierThreeAccount == false)
+                    if ((item.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString() || item.AccountTypeRequested == AccountTypeRequested.Tier_One_Upgrade.ToString()) && !string.IsNullOrEmpty(item.AccountNumber) && item.IsTierThreeAccount == false)
                     {
                         result = await _accountOpeningService.UpgradeToTierThree(item);
                     }

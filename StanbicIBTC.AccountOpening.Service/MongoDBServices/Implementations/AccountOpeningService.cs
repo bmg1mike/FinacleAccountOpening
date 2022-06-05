@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 namespace StanbicIBTC.AccountOpening.Service;
 
 
+
 public class AccountOpeningService : IAccountOpeningService
 {
     private readonly ISoapRequestHelper _soapRequestHelper;
@@ -119,7 +120,7 @@ public class AccountOpeningService : IAccountOpeningService
             if (occupationCode is null || employmentStatus is null)
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid Occupation Code Or Employment status" };
 
-            
+
 
 
             var nextOfKinDetails = new CIFNextOfKinDetail
@@ -180,7 +181,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             var cifRequest = new CIFRequest
             {
-                AccountTypeRequested = "Tier One",
+                AccountTypeRequested = AccountTypeRequested.Tier_One.ToString(),
                 BvnEnrollmentBranch = bvnDetails.EnrollmentBranch,
                 BvnErollmentBank = bvnDetails.EnrollmentBank,
                 CustomerAddress = bvnDetails.ResidentialAddress,
@@ -241,7 +242,7 @@ public class AccountOpeningService : IAccountOpeningService
         {
 
             var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(request.AccountNumber);
-            
+
             if (accountDetails == null)
             {
                 _logger.LogInformation("Account number does not exist");
@@ -279,69 +280,69 @@ public class AccountOpeningService : IAccountOpeningService
                 CustomerLastName = bvnDetailsResponse.data.LastName,
                 CustomerMiddleName = bvnDetailsResponse.data.MiddleName
             };
-            
+
             var sanctionScreening = _finacleRepository.LogForSanctionScreening(sanctionScreeningRequest);
 
             if (!sanctionScreening)
             {
                 _logger.LogInformation($"There was a problem logging for Sanction Screening");
                 return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Sanction Screening for BVN: {request.Bvn} Please try again later" };
-            
+
             }
 
             var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
-                AccountOpeningPayloadHelper.AddressVerificationRequestPayload(bvnDetailsResponse.data.ResidentialAddress,cif));
+                AccountOpeningPayloadHelper.AddressVerificationRequestPayload(bvnDetailsResponse.data.ResidentialAddress, cif));
 
-                if (addressVerificationRequest.ResponseCode != "000")
-                {
-                    _logger.LogInformation($"There was a problem logging for Address Verification");
-                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Address Verification for BVN: {request.Bvn} Please try again later" };
-            
-                }
+            if (addressVerificationRequest.ResponseCode != "000")
+            {
+                _logger.LogInformation($"There was a problem logging for Address Verification");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Address Verification for BVN: {request.Bvn} Please try again later" };
 
-                var addressverificationId =  _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription,"LogAddressVerificationRequestResult");
+            }
 
-               
-                
-                    var photographResponse = await SaveDocumentToDataStore(cif, request.PassportPhotograph,"Customer Photograph");
-                    if (photographResponse.OutCome.Status != "SUCCESS")
-                    {
-                        _logger.LogInformation($"There was a problem saving Customer's photo to Data Store");
-                        return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
-                    }
-                
-                
-                    var idImageResponse = await SaveDocumentToDataStore(cif, request.IdImage,"Custormer's ID Card");
-                    if (idImageResponse.OutCome.Status != "SUCCESS")
-                    {
-                        _logger.LogInformation($"There was a problem saving Customer's regulatory Id to Data Store");
-                        return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
-                    }
-                
+            var addressverificationId = _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription, "LogAddressVerificationRequestResult");
 
-                
-                    var signatureResponse = await SaveDocumentToDataStore(cif, request.Signature,"Customer's Signature");
-                    if (signatureResponse.OutCome.Status != "SUCCESS")
-                    {
-                        
-                        _logger.LogInformation($"There was a problem saving Customer's signature to Data Store");
-                        return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
-                    }
-                
-                
-                    var utilityBillResponse = await SaveDocumentToDataStore(cif, request.UtilityBill,"Customer's Utility Bill");
-                    if (utilityBillResponse.OutCome.Status != "SUCCESS")
-                    {
-                        _logger.LogInformation($"There was a problem saving Customer's Utility Bill to Data Store");
-                        return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
-                    }
-                
-            
+
+
+            var photographResponse = await SaveDocumentToDataStore(cif, request.PassportPhotograph, "Customer Photograph");
+            if (photographResponse.OutCome.Status != "SUCCESS")
+            {
+                _logger.LogInformation($"There was a problem saving Customer's photo to Data Store");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+            }
+
+
+            var idImageResponse = await SaveDocumentToDataStore(cif, request.IdImage, "Custormer's ID Card");
+            if (idImageResponse.OutCome.Status != "SUCCESS")
+            {
+                _logger.LogInformation($"There was a problem saving Customer's regulatory Id to Data Store");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+            }
+
+
+
+            var signatureResponse = await SaveDocumentToDataStore(cif, request.Signature, "Customer's Signature");
+            if (signatureResponse.OutCome.Status != "SUCCESS")
+            {
+
+                _logger.LogInformation($"There was a problem saving Customer's signature to Data Store");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+            }
+
+
+            var utilityBillResponse = await SaveDocumentToDataStore(cif, request.UtilityBill, "Customer's Utility Bill");
+            if (utilityBillResponse.OutCome.Status != "SUCCESS")
+            {
+                _logger.LogInformation($"There was a problem saving Customer's Utility Bill to Data Store");
+                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+            }
+
+
 
             var cifRequest = new CIFRequest
             {
                 AccountNumber = request.AccountNumber,
-                AccountTypeRequested = "Tier one Upgrade",
+                AccountTypeRequested = AccountTypeRequested.Tier_One_Upgrade.ToString(),
                 BvnEnrollmentBranch = bvnDetailsResponse.data.EnrollmentBranch,
                 BvnErollmentBank = bvnDetailsResponse.data.EnrollmentBank,
                 Cif = cif,
@@ -377,12 +378,12 @@ public class AccountOpeningService : IAccountOpeningService
                 return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
             }
 
-            
 
-            
+
+
 
             return new ApiResult { responseCode = "000", responseDescription = $"Request successfully stored in the database for processing" };
-           
+
 
         }
         catch (Exception ex)
@@ -406,15 +407,15 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 FirstName = request.ChildFirstName,
                 LastName = request.ChildLastName,
-                
+
             };
 
             if (!Util.IsBase64String(request.ChildBirthCertificate))
             {
                 return new ApiResult { responseCode = "999", responseDescription = "Birth Certificate must be a Base 64 string" };
             }
-            var birthCertificate = await SaveDocumentToDataStore(cifDetails.Cif, request.ChildBirthCertificate,"Birth Certificate");
-            var photograph = await SaveDocumentToDataStore(cifDetails.Cif, request.Photograph,"Customer Photograph");
+            var birthCertificate = await SaveDocumentToDataStore(cifDetails.Cif, request.ChildBirthCertificate, "Birth Certificate");
+            var photograph = await SaveDocumentToDataStore(cifDetails.Cif, request.Photograph, "Customer Photograph");
 
             var openAccount = await _soapRequestHelper.FinacleCall(
                 AccountOpeningPayloadHelper.AccountOpeningPayload(cifDetails.Cif, cifRequest, "CHESS"));
@@ -590,7 +591,7 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 _logger.LogInformation($"There was a problem logging for Sanction Screening");
                 return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Sanction Screening for BVN: {request.Bvn} Please try again later" };
-            
+
             }
 
 
@@ -615,7 +616,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             var cifRequest = new CIFRequest
             {
-                AccountTypeRequested = "Tier Three",
+                AccountTypeRequested = AccountTypeRequested.Tier_Three.ToString(),
                 BvnEnrollmentBranch = bvnDetails.EnrollmentBranch,
                 BvnErollmentBank = bvnDetails.EnrollmentBank,
                 CustomerAddress = bvnDetails.ResidentialAddress,
@@ -664,7 +665,7 @@ public class AccountOpeningService : IAccountOpeningService
                 return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
             }
 
-            return new ApiResult { responseCode = "000", responseDescription = "Your details has been saved for processing"};
+            return new ApiResult { responseCode = "000", responseDescription = "Your details has been saved for processing" };
         }
         catch (Exception ex)
         {
@@ -739,16 +740,16 @@ public class AccountOpeningService : IAccountOpeningService
                     return null;
                 }
 
-                //var existingCif = _finacleRepository.CheckCifForBvn(request.CustomerBVN);
-                //FinacleAccountDetailResponse checkAccount = null;
-                //if (existingCif.Cif is not null)
-                //{
+                // var existingCif = _finacleRepository.CheckCifForBvn(request.CustomerBVN);
+                // FinacleAccountDetailResponse checkAccount = null;
+                // if (existingCif.Cif is not null)
+                // {
                 //    checkAccount = _finacleRepository.GetAccountDetailsByCif(existingCif.Cif);
-                //}
-                //if (checkAccount is not null)
-                //{
+                // }
+                // if (checkAccount is not null)
+                // {
                 //    return "This Customer already has an account";
-                //}
+                // }
 
                 var cifResponse = await CreateCIF(request);
 
@@ -814,7 +815,7 @@ public class AccountOpeningService : IAccountOpeningService
             var accountNumber = _soapRequestHelper.GetXmlTagValue<string>(openSavingsAccount.ResponseDescription, "AcctId");
             if (string.IsNullOrEmpty(accountNumber))
             {
-                
+
                 // await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return $"Could not open the account for CIF : {cif}";
             }
@@ -887,13 +888,13 @@ public class AccountOpeningService : IAccountOpeningService
         }
         else if (request.Gender.ToUpper().Trim() == "MALE")
         {
-            request.Gender="M";
+            request.Gender = "M";
         }
         else
         {
             return null;
         }
-        
+
         //if (request.Gender.ToUpper() != "FEMALE" || request.Gender.ToUpper() != "MALE")
         //{
         //    return null;
@@ -1073,7 +1074,7 @@ public class AccountOpeningService : IAccountOpeningService
 
     }
 
-    private async Task<(string responseCode, string responseDescription, VerifyBVNResponseModel data)> GetBVNDetails(string bvn)
+    public async Task<(string responseCode, string responseDescription, VerifyBVNResponseModel data)> GetBVNDetails(string bvn)
     {
         try
         {
@@ -1106,7 +1107,7 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
-    private async Task<(string responseCode, string responseDescription, AccountNINResponseModel data)> GetNinDetails(string nin, string dob)
+    public async Task<(string responseCode, string responseDescription, AccountNINResponseModel data)> GetNinDetails(string nin, string dob)
     {
         var bvnDob = DateTime.Parse(dob).ToString("yyyy-MM-dd");
         try
@@ -1146,7 +1147,16 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
-            var response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request));
+            SoapCallResponse response;
+            if (request.AccountTypeRequested == AccountTypeRequested.Bulk_Tier_One.ToString())
+            {
+                response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request,request.SolId,request.BranchManagerSapId));
+            }
+            else
+            {
+                response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request));
+            }
+            
 
 
             if (response.ResponseCode != "000")
@@ -1168,7 +1178,7 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
-    private async Task<SaveImageResponse> SaveDocumentToDataStore(string cif, string document,string documentType)
+    private async Task<SaveImageResponse> SaveDocumentToDataStore(string cif, string document, string documentType)
     {
         var metadataDetails = new Dictionary<string, List<object>>();
         metadataDetails.Add("CIF Number", new List<object> { cif });
@@ -1258,72 +1268,75 @@ public class AccountOpeningService : IAccountOpeningService
     {
         var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(request.AccountNumber);
         var upgradeDetails = new RbxRetailsUpdateCustomDatum
-            {
-                MonthlyNetIncome = request.MonthlyIncome.ToString(),
-                // NokAddress = request.NextOfKin.Address,
-                // NokAddressLine1 = request.NextOfKin.Address,
-                // NokCity = request.NextOfKin.Town,
-                // NokDateOfBirth = request.NextOfKin.DateOfBirth.ToString("yyyy-MM-dd"),
-                // NokFirstName = request.NextOfKin.FirstName,
-                // NokLastName = request.NextOfKin.LastName,
-                // NokGender = request.NextOfKin.Gender,
-                // NokMiddleName = request.NextOfKin.MiddleName,
-                // NokPhoneNumber = request.NextOfKin.PhoneNumber,
-                // Relationship = request.NextOfKin.Relationship,
-                CustomerId = request.Cif,
-            };
-            await _modelContext.RbxRetailsUpdateCustomData.AddAsync(upgradeDetails);
-            if (await _modelContext.SaveChangesAsync() < 1)
-            {
-                _logger.LogInformation("There was a problem saving to redbox");
-                return "There was a problem uprading your account. Please try again later";
-            }
-            // save images
+        {
+            MonthlyNetIncome = request.MonthlyIncome.ToString(),
+            // NokAddress = request.NextOfKin.Address,
+            // NokAddressLine1 = request.NextOfKin.Address,
+            // NokCity = request.NextOfKin.Town,
+            // NokDateOfBirth = request.NextOfKin.DateOfBirth.ToString("yyyy-MM-dd"),
+            // NokFirstName = request.NextOfKin.FirstName,
+            // NokLastName = request.NextOfKin.LastName,
+            // NokGender = request.NextOfKin.Gender,
+            // NokMiddleName = request.NextOfKin.MiddleName,
+            // NokPhoneNumber = request.NextOfKin.PhoneNumber,
+            // Relationship = request.NextOfKin.Relationship,
+            CustomerId = request.Cif,
+        };
+        await _modelContext.RbxRetailsUpdateCustomData.AddAsync(upgradeDetails);
+        if (await _modelContext.SaveChangesAsync() < 1)
+        {
+            _logger.LogInformation("There was a problem saving to redbox");
+            return "There was a problem uprading your account. Please try again later";
+        }
 
-            
+        // check address verification status
+        var AddressVerificationResultCheck = await _soapRequestHelper.GetAddressVerificationStatus(
+                AccountOpeningPayloadHelper.FetchAddressVerificationReportStatusPayload(request.AddressverificationId));
 
-            
-            // check address verification status
-            var AddressVerificationResultCheck = await _soapRequestHelper.GetAddressVerificationStatus(
-                    AccountOpeningPayloadHelper.FetchAddressVerificationReportStatusPayload(request.AddressverificationId));
-            
-            // check sanction screening status
-            var sanctionScreeningResult = _finacleRepository.GetSanctionScreeningResult(request.SanctionScreeningAccountId);
-            if (sanctionScreeningResult is null)
-            {
-                return null;
-            }
-            if (!sanctionScreeningResult.IsSuccessful)
-            {
-                request.Response = "This Customer did not pass Sanction Screening";
-                request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                await _cifRepository.UpdateCIFRequest(request.CIFRequestId,request);
-                return null;
-            }
+        // check sanction screening status
+        var sanctionScreeningResult = _finacleRepository.GetSanctionScreeningResult(request.SanctionScreeningAccountId);
+        if (sanctionScreeningResult is null)
+        {
+            return null;
+        }
+        if (!sanctionScreeningResult.IsSuccessful)
+        {
+            request.Response = "This Customer did not pass Sanction Screening";
+            request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+            await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+            return null;
+        }
 
-            var sanctionScreeningReport = await SaveDocumentToDataStore(request.Cif,sanctionScreeningResult.Pdf,"Sanction Screening Report");
+        var sanctionScreeningReport = await SaveDocumentToDataStore(request.Cif, sanctionScreeningResult.Pdf, "Sanction Screening Report");
 
-            var response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.SchemeCodeModificationPayload(
-                accountDetails.GlSubHeadCode, accountDetails.GlSubHeadCode, accountDetails.SchemeCode, "SB001", request.AccountNumber)
-                );
+        if (sanctionScreeningReport.OutCome.Status != "SUCCESS")
+        {
+            request.Response = "There was a problem saving sanction screening report to DSX";
+            await _cifRepository.UpdateCIFRequest(request.CIFRequestId,request);
+            return "There was a problem saving sanction screening report to DSX";
+        }
 
-            if (response.ResponseCode != "000")
-            {
-                _logger.LogInformation("There was a problem connecting to finnacle");
-                return "There was a problem uprading your account. Please try again later";
-            }
+        var response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.SchemeCodeModificationPayload(
+            accountDetails.GlSubHeadCode, accountDetails.GlSubHeadCode, accountDetails.SchemeCode, "SB001", request.AccountNumber)
+            );
+
+        if (response.ResponseCode != "000")
+        {
+            _logger.LogInformation("There was a problem connecting to finnacle");
+            return "There was a problem uprading your account. Please try again later";
+        }
 
 
-            var successDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatus");
+        var successDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatus");
 
-            if (successDescription != "SUCCESS")
-            {
-                var errorDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatusDesc");
-                _logger.LogInformation(errorDescription);
-                return "There was a problem uprading your account. Please try again later";
-            }
+        if (successDescription != "SUCCESS")
+        {
+            var errorDescription = _soapRequestHelper.GetXmlTagValue<string>(response.ResponseDescription, "CoreStatusDesc");
+            _logger.LogInformation(errorDescription);
+            return "There was a problem uprading your account. Please try again later";
+        }
 
-            return "Your account has been ugraded successfully";
+        return "Your account has been ugraded successfully";
 
     }
 
@@ -1339,9 +1352,8 @@ public class AccountOpeningService : IAccountOpeningService
     {
         var response = await _soapRequestHelper.DownloadAddressVerificationReport(
             AccountOpeningPayloadHelper.DownloadAddressVerificationReport(addressVerificationId));
-        
+
         return string.Empty;
     }
-
 
 }

@@ -1,25 +1,22 @@
-using OfficeOpenXml;
-using StanbicIBTC.AccountOpening.Domain.Common;
-
 namespace StanbicIBTC.AccountOpening.Service;
-
-public interface IBulkAccountOpeningService
-{
-    Task<ApiResult> ApproveOrRejectFile(BulkAccountDto request);
-    List<BulkAccount> ReadFromExcel(string filePath);
-    ApiResult UploadFile(BulkAccountRequestDto request);
-    Task<Result<List<BulkAccountDto>>> GetBulkAccountRequestsByBranchId(string branchId);
-}
 
 public class BulkAccountOpeningService : IBulkAccountOpeningService
 {
     private readonly ILogger<BulkAccountOpeningService> _logger;
     private readonly IBulkAccountRequestRepository _requestRepo;
+    private readonly IAccountOpeningService _accountOpeningService;
+    private readonly IFinacleRepository _finacleRepository;
+    private readonly ICIFRequestRepository _cifRepository;
+    private readonly IInboundLogRepository _inboundLogRepository;
 
-    public BulkAccountOpeningService(ILogger<BulkAccountOpeningService> logger, IBulkAccountRequestRepository requestRepo)
+    public BulkAccountOpeningService(ILogger<BulkAccountOpeningService> logger, IBulkAccountRequestRepository requestRepo, IAccountOpeningService accountOpeningService, IFinacleRepository finacleRepository, ICIFRequestRepository cifRepository, IInboundLogRepository inboundLogRepository)
     {
         _logger = logger;
         _requestRepo = requestRepo;
+        _accountOpeningService = accountOpeningService;
+        _finacleRepository = finacleRepository;
+        _cifRepository = cifRepository;
+        _inboundLogRepository = inboundLogRepository;
     }
 
     public ApiResult UploadFile(BulkAccountRequestDto request)
@@ -105,7 +102,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     public async Task<Result<List<BulkAccountDto>>> GetBulkAccountRequestsByBranchId(string branchId)
     {
         var requests = await _requestRepo.GetPendingBulkAccountRequests(branchId);
-        
+
         var requestsdto = new List<BulkAccountDto>();
         foreach (var item in requests)
         {
@@ -120,7 +117,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             });
         }
 
-        return new Result<List<BulkAccountDto>> { Content = requestsdto, ResponseCode = "000"};
+        return new Result<List<BulkAccountDto>> { Content = requestsdto, ResponseCode = "000" };
     }
     public List<BulkAccount> ReadFromExcel(string filePath)
     {
@@ -157,4 +154,214 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         }
         return list;
     }
+
+    public async Task<string> OpenBulkAccounts(BulkAccountRequest request)
+    {
+        try
+        {
+            var path = $"{Directory.GetCurrentDirectory()}/Files/{request.File}";
+            var accounts = ReadFromExcel(path);
+            if (accounts is null)
+            {
+                return "Could not read Excel file successfully";
+            }
+            foreach (var item in accounts)
+            {
+                var savedData = await SaveBulkAccountRequest(item);
+            }
+
+            return "Excel data saved for processing successfully";
+        }
+        catch (System.Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<string> SaveBulkAccountRequest(BulkAccount request)
+    {
+        try
+        {
+            var bvnDetailsResponse = await _accountOpeningService.GetBVNDetails(request.Bvn);
+
+            var outboundBvn = new OutboundLog
+            {
+                APICalled = "BVN Api",
+                APIMethod = "GetBvnDetails",
+                LogDate = DateTime.Now,
+                RequestDateTime = DateTime.Now,
+                ResponseDateTIme = DateTime.Now,
+                SystemCalledName = "Account Opening Microservice",
+                RequestDetails = String.Empty
+            };
+
+            if (bvnDetailsResponse.data is null)
+            {
+                _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
+                return "Invalid Bvn";
+            }
+
+            var bvnDetails = bvnDetailsResponse.data;
+
+            //if (bvnDetails.NIN != request.Nin)
+            //{
+            //    return new ApiResult { responseCode = "999", responseDescription = "NIN does not match BVN's NIN" };
+            //}
+
+            var ninDetailsResponse = await _accountOpeningService.GetNinDetails(bvnDetails.NIN, request.DateOfBirth.ToString());
+
+            if (ninDetailsResponse.data is null)
+            {
+                _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
+                return "Invalid NIN";
+            }
+
+            var outboundNin = new OutboundLog
+            {
+                APICalled = "NIN Api",
+                APIMethod = "GetNinDetails",
+                LogDate = DateTime.Now,
+                RequestDateTime = DateTime.Now,
+                ResponseDateTIme = DateTime.Now,
+                SystemCalledName = "Account Opening Microservice",
+                RequestDetails = String.Empty
+            };
+
+            var ninDetails = ninDetailsResponse.data;
+
+            var accountOpeningAttempt = new AccountOpeningAttempt
+            {
+                FirstName = bvnDetails.FirstName,
+                LastName = bvnDetails.LastName,
+                Bvn = request.Bvn,
+                Response = string.Empty,
+                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
+                AccountTypeRequested = "Tier 1"
+            };
+
+            if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
+            {
+                _logger.LogInformation($"The Phone number provided is not the same with the Bvn phone number. BVN : {bvnDetails.BVN}");
+                accountOpeningAttempt.Response = "The Phone number provided is not the same with the Bvn phone number";
+                //await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return "Details given does not match with your BVN details";
+            }
+
+            var bvnDob = DateTime.Parse(bvnDetails.DateOfBirth);
+            if (bvnDob.ToString("dd-MM-yyyy") != request.DateOfBirth)
+            {
+                _logger.LogInformation($"BVN Date Of Birth does not match the supplied Date Of Birth");
+                accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
+                //await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return "Details given does not match with your BVN details";
+            }
+
+
+
+            var nextOfKinDetails = new CIFNextOfKinDetail
+            {
+                FirstName = ninDetails.FullData.nok_firstname,
+                LastName = ninDetails.FullData.nok_lastname,
+                Address1 = ninDetails.FullData.nok_address1,
+                Address2 = ninDetails.FullData.nok_address2,
+                State = ninDetails.FullData.nok_state,
+                Town = ninDetails.FullData.nok_town
+            };
+
+            var secretQuestion = string.Empty;
+            var secretAnswer = string.Empty;
+            var password = string.Empty;
+            var confirmPassword = string.Empty;
+
+            var inbound = new InboundLog
+            {
+                LogDate = DateTime.Now,
+                APICalled = "OpenTierOneAccount",
+                APIMethod = "ValidateTierOneAccountOpeningRequest",
+                OutboundLogs = new List<OutboundLog> { outboundBvn, outboundNin },
+                RequestDateTime = DateTime.Now,
+                RequestSystem = Environment.MachineName.ToString(),
+                ImpactUniqueIdentifier = Guid.NewGuid().ToString(),
+                AlternateUniqueIdentifier = Guid.NewGuid().ToString(),
+
+            };
+            await _inboundLogRepository.CreateInboundLog(inbound);
+
+            switch (ninDetails.FullData.title.ToUpper())
+            {
+                case "MR":
+                    bvnDetails.Title = "041";
+                    break;
+                case "MRS":
+                    bvnDetails.Title = "042";
+                    break;
+                case "MISS":
+                    bvnDetails.Title = "043";
+                    break;
+                case "MS":
+                    bvnDetails.Title = "040";
+                    break;
+                default:
+                    bvnDetails.Title = "175";
+                    break;
+            }
+
+            var cifRequest = new CIFRequest
+            {
+                AccountTypeRequested = AccountTypeRequested.Bulk_Tier_One.ToString(),
+                BvnEnrollmentBranch = bvnDetails.EnrollmentBranch,
+                BvnErollmentBank = bvnDetails.EnrollmentBank,
+                CustomerAddress = bvnDetails.ResidentialAddress,
+                AccountOpeningStatus = AccountOpeningStatus.Pending.ToString(),
+                EmploymentStatus = "009",
+                OccupationCode = "999",
+                FirstName = bvnDetails.FirstName,
+                LastName = bvnDetails.LastName,
+                CustomerBVN = bvnDetails.BVN,
+                DateOfBirthInY_M_D_Format = bvnDetails.DateOfBirth,
+                Email = bvnDetails.Email,
+                StateOfResidence = bvnDetails.StateOfResidence,
+                MaritalStatus = Util.MaritalStatusCode(bvnDetails.MaritalStatus),
+                LgaOfResidence = bvnDetails.LgaOfResidence,
+                NIN = bvnDetails.NIN,
+                PhoneNumber = bvnDetails.PhoneNumber,
+                Gender = bvnDetails.Gender,
+                Platform = Platform.WEB.ToString(),
+                MiddleName = bvnDetails.MiddleName,
+                SecretQuestion = secretQuestion,
+                SecretAnswer = secretAnswer,
+                Password = password,
+                ConfirmPassword = confirmPassword,
+                NextOfKinDetail = nextOfKinDetails,
+                Title = bvnDetails.Title,
+                SolId = request.SolId,
+                Category = request.Category,
+                BranchManagerSapId = request.BranchManagerSapId
+            };
+
+            var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
+            if (saveCifRequest == null)
+            {
+                _logger.LogInformation($"There was a problem saving the CIF Request for BVN: {request.Bvn}");
+                return "There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later";
+            }
+
+
+
+            //accountOpeningAttempt.Response = "Request successfully stored in the database for processing";
+            //var accountOpeningAttemptId = await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+            //var accountNumber = await OpenAccount(cifRequest);
+
+
+            return $"Request successfully stored in the database for processing";
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return ex.Message;
+        }
+    }
+
 }

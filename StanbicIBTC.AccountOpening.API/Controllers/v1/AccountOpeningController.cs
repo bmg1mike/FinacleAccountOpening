@@ -34,15 +34,15 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(result);
         }
 
-        [HttpPost("BulkTierOneAccountOpening/")]
-        [ProducesResponseType(200, Type = typeof(Result<List<string>>))]
-        public async Task<IActionResult> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests)
-        {
-            var result = new Result<List<string>>();
-            var response = await _accountOpeningService.BulkTierOneAccountOpening(requests);
-            result.Content = response.Select(x => x.responseDescription).ToList();
-            return Ok(result);
-        }
+        // [HttpPost("BulkTierOneAccountOpening/")]
+        // [ProducesResponseType(200, Type = typeof(Result<List<string>>))]
+        // public async Task<IActionResult> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests)
+        // {
+        //     var result = new Result<List<string>>();
+        //     var response = await _accountOpeningService.BulkTierOneAccountOpening(requests);
+        //     result.Content = response.Select(x => x.responseDescription).ToList();
+        //     return Ok(result);
+        // }
 
         [HttpPost("OpenVirtualAccount/")]
         [ProducesResponseType(200, Type = typeof(Result<VirtualAccountOpeningResponse>))]

@@ -54,5 +54,8 @@ public partial class CIFRequest
     public bool IsKycDocumentsUploaded { get; set; } = false;
     public bool IsSanctionScreeningLogged { get; set; } = false;
     public bool IsAddressVerificationLogged { get; set; } = false;
+    public string SolId { get; set; }
+    public string Category { get; set; }
+    public string BranchManagerSapId { get; set; }
 }
 
