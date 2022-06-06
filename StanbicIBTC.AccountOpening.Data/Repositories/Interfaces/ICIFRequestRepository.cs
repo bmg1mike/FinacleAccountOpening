@@ -7,6 +7,7 @@ public partial interface ICIFRequestRepository
     Task<bool> UpdateCIFRequest(string id, CIFRequest cIFRequest);
     Task<bool> RemoveCIFRequest(string id);
     Task<List<CIFRequest>> GetPendingCifRequests();
+    Task<List<CIFRequest>> GetSuccessfullyOpenedAccountsByBranchId(string branchId);
 
     //Task<List<CIFRequest>> GetByFieldName(string fieldName) --Template
     //Task<bool> UpdateSpecificFields(string cIFRequestId, CIFRequest cIFRequest) --Template

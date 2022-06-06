@@ -364,4 +364,34 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         }
     }
 
+    public async Task<Result<List<BulkRecentActivities>>> GetSuccessfullyOpenedAccountByBranchId(string branchId)
+    {
+        try
+        {
+            var accounts = await _cifRepository.GetSuccessfullyOpenedAccountsByBranchId(branchId);
+
+            var bulkAccountActivities = new List<BulkRecentActivities>();
+            foreach (var item in accounts)
+            {
+                bulkAccountActivities.Add(new BulkRecentActivities
+                {
+                    
+                    AccountOpeningStatus = item.AccountOpeningStatus,
+                    Bvn = item.CustomerBVN,
+                    ManagerSapId = item.BranchManagerSapId,
+                    PhoneNumber = item.PhoneNumber,
+                    SolId = item.SolId
+                }
+                );
+            }
+            
+            return new Result<List<BulkRecentActivities>> { Content = bulkAccountActivities, ResponseCode = "000" };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new Result<List<BulkRecentActivities>> { Content = null, ResponseCode = "999" };
+        }
+    }
+
 }

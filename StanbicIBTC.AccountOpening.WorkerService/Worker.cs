@@ -40,7 +40,7 @@ namespace StanbicIBTC.AccountOpening.WorkerService
                 foreach (var item in requests)
                 {
                     var result = string.Empty;
-                    if ((item.AccountTypeRequested == AccountTypeRequested.Tier_One.ToString() || item.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString()) && string.IsNullOrEmpty(item.AccountNumber))
+                    if ((item.AccountTypeRequested == AccountTypeRequested.Tier_One.ToString() || item.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString() || item.AccountTypeRequested == AccountTypeRequested.Bulk_Tier_One.ToString()) && string.IsNullOrEmpty(item.AccountNumber))
                     {
                         result = await _accountOpeningService.OpenAccount(item);
                     }

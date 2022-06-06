@@ -47,7 +47,17 @@ public partial class CIFRequestRepository : ICIFRequestRepository
 
         return cIFRequests ;
     } */
-
+    public async Task<List<CIFRequest>> GetSuccessfullyOpenedAccountsByBranchId(string branchId)
+    {
+        var filter = Builders<CIFRequest>.Filter.Eq(x => x.SolId, branchId) & Builders<CIFRequest>.Filter.Eq(x => x.IsAccountOpenedSuccessfully,true);
+        var cifRequests = await context.CIFRequests.Find(filter)
+            .SortByDescending(x => x.DateCreated)
+            //.Skip((pageNumber -1) * pageSize)
+            //.Limit(pageSize)
+            .ToListAsync();
+        //var count = await context.CIFRequests.CountDocumentsAsync(filter);
+        return cifRequests;
+    }
     public async Task<List<CIFRequest>> GetPendingCifRequests()
     {
         var filter = Builders<CIFRequest>.Filter.Eq(m => m.AccountOpeningStatus, AccountOpeningStatus.Pending.ToString());

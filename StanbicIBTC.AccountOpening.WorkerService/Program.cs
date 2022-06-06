@@ -14,6 +14,7 @@ IHost host = Host.CreateDefaultBuilder(args)
     .UseWindowsService()
     .ConfigureServices((hostContext,services) =>
     {
+        
         services.AddSingleton<IAccountOpeningService,AccountOpeningService>();
         services.AddSingleton<ICIFRequestRepository, CIFRequestRepository>();
         services.AddSingleton<ISoapRequestHelper, SoapRequestHelper>();
