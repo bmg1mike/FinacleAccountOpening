@@ -8,4 +8,5 @@ public class BulkAccountDto
     public string ApprovedBy { get; set; }
     public string BranchId { get; set; }
     public ApprovalStatus ApprovalStatus { get; set; }
+    public string Comment { get; set; }
 }

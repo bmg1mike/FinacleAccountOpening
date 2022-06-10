@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace StanbicIBTC.AccountOpening.Core.Services;
@@ -21,6 +22,7 @@ public static class DependencyInjection
         //services.AddHealthChecks()
         //             .AddOracle(configuration.GetConnectionString("AccountOpeningConnection"),"select * from v$version","RedBox Db Health",HealthStatus.Degraded);
         
+        services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();
 

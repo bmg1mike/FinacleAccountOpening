@@ -85,6 +85,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             requestInDb.ApprovalStatus = request.ApprovalStatus;
             requestInDb.ApprovedBy = request.ApprovedBy;
             requestInDb.DateModified = DateTime.Now;
+            requestInDb.Comment = request.Comment;
             var isSaved = await _requestRepo.UpdateBulkAccountRequest(request.BulkAccountRequestId, requestInDb);
             if (!isSaved)
             {
@@ -364,6 +365,20 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         }
     }
 
+    //public async Task<Result<List<BulkAccountDto>>> UploadHistory(string branchId)
+    //{
+    //    try
+    //    {
+
+    //    }
+    //    catch (Exception)
+    //    {
+
+    //        throw;
+    //    }
+    //}
+
+
     public async Task<Result<List<BulkRecentActivities>>> GetSuccessfullyOpenedAccountByBranchId(string branchId)
     {
         try
@@ -375,7 +390,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             {
                 bulkAccountActivities.Add(new BulkRecentActivities
                 {
-                    
+
                     AccountOpeningStatus = item.AccountOpeningStatus,
                     Bvn = item.CustomerBVN,
                     ManagerSapId = item.BranchManagerSapId,
@@ -384,7 +399,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 }
                 );
             }
-            
+
             return new Result<List<BulkRecentActivities>> { Content = bulkAccountActivities, ResponseCode = "000" };
         }
         catch (Exception ex)

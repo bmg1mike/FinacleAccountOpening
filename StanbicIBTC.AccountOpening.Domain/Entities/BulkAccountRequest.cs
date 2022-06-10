@@ -10,6 +10,7 @@ public class BulkAccountRequest
     public string ApprovedBy { get; set; }
     public string BranchId { get; set; }
     public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
+    public string Comment { get; set; }
     public DateTime DateCreated { get; set; } = DateTime.Now;
     public DateTime DateModified { get; set; } = DateTime.Now;
     public bool IsDeleted { get; set; } = false;
