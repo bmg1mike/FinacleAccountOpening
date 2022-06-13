@@ -1,9 +1,0 @@
-global using StanbicIBTC.AccountOpening.CIFVerificationService;
-global using StanbicIBTC.AccountOpening.Core.Data;
-global using StanbicIBTC.AccountOpening.Core.Repositories;
-global using StanbicIBTC.AccountOpening.Data;
-global using StanbicIBTC.AccountOpening.Service;
-global using MongoDB.Driver;
-global using Microsoft.EntityFrameworkCore;
-global using Microsoft.AspNetCore.Builder;
-global using StanbicIBTC.AccountOpening.Domain.Config;

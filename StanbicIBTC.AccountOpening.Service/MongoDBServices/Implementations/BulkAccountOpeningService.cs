@@ -46,7 +46,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
             }
 
-            var uniqueFileName = batchId + "_" + request.File.FileName;
+            var uniqueFileName = $"{batchId}_{request.File.FileName}";
 
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Files");
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -56,7 +56,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             {
                 BranchId = request.BranchId,
                 CreatedBy = request.CreatedBy,
-                File = filePath
+                File = uniqueFileName
             };
 
             var requestId = _requestRepo.CreateBulkAccountRequest(bulkRequest);
@@ -180,7 +180,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         }
     }
 
-    public async Task<string> SaveBulkAccountRequest(BulkAccount request)
+    private async Task<string> SaveBulkAccountRequest(BulkAccount request)
     {
         try
         {
@@ -328,7 +328,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 NIN = bvnDetails.NIN,
                 PhoneNumber = bvnDetails.PhoneNumber,
                 Gender = bvnDetails.Gender,
-                Platform = Platform.WEB.ToString(),
+                Platform = Platform.Bulk.ToString(),
                 MiddleName = bvnDetails.MiddleName,
                 SecretQuestion = secretQuestion,
                 SecretAnswer = secretAnswer,
@@ -365,18 +365,19 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         }
     }
 
-    //public async Task<Result<List<BulkAccountDto>>> UploadHistory(string branchId)
-    //{
-    //    try
-    //    {
-
-    //    }
-    //    catch (Exception)
-    //    {
-
-    //        throw;
-    //    }
-    //}
+    public async Task<Result<PaginatedList<BulkAccountDto>>> UploadHistory(UploadHistoryDto history)
+    {
+        try
+        {
+            var requests = await _requestRepo.GetAllAccountRequests(history);
+            return new Result<PaginatedList<BulkAccountDto>> { Content = requests, ResponseCode = "000" };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new Result<PaginatedList<BulkAccountDto>> { Content = null, ResponseCode = "999" };
+        }
+    }
 
 
     public async Task<Result<List<BulkRecentActivities>>> GetSuccessfullyOpenedAccountByBranchId(string branchId)
@@ -406,6 +407,20 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         {
             _logger.LogError(ex, ex.Message);
             return new Result<List<BulkRecentActivities>> { Content = null, ResponseCode = "999" };
+        }
+    }
+
+    public async Task<List<BulkAccountRequest>> GetApprovedRequests()
+    {
+        try 
+        {
+            var requests = await _requestRepo.GetApprovedRequests();
+            return requests;
+        } 
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex,ex.Message);
+            return null;
         }
     }
 

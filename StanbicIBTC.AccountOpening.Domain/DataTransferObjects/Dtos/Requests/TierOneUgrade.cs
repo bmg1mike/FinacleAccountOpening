@@ -3,12 +3,12 @@
 public class TierOneUgrade
 {
     public string AccountNumber { get; set; }
-    public decimal  MonthlyIncome { get; set; }
+    public decimal MonthlyIncome { get; set; }
     public string Bvn { get; set; }
     public string EmployerName { get; set; }
     public string EmployerAddress { get; set; }
     public string IdentityType { get; set; }
-    public string  PassportPhotograph { get; set; }
+    public string PassportPhotograph { get; set; }
     public string IdNumber { get; set; }
     public string IdImage { get; set; }
     public DateTime IdIssueDate { get; set; }
@@ -18,5 +18,6 @@ public class TierOneUgrade
     public string Signature { get; set; }
     public Platform Platform { get; set; }
     public string Email { get; set; }
+    public string PoliticallyExposed { get; set; }
 }
 

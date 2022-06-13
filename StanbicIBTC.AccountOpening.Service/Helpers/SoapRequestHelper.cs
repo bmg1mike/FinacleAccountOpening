@@ -145,41 +145,43 @@ public class SoapRequestHelper : ISoapRequestHelper
         try
         {
             var url = _configSettings["Address_Verification:base_url"];
-            HttpContent content = new StringContent(payload, Encoding.UTF8, "text/xml");
-            var response = await _client.PostAsync(url,content);
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Content = new StringContent(payload, Encoding.UTF8, "text/xml");
+            var response = await _client.SendAsync(request);
             var result = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
                 return new SoapCallResponse("000", result);
             }
-            return new SoapCallResponse("999",result);
+            return new SoapCallResponse("999", result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
-            return new SoapCallResponse("999",ex.Message);
+            _logger.LogError(ex, ex.Message);
+            return new SoapCallResponse("999", ex.Message);
         }
-        
-    } 
+
+    }
 
     public async Task<SoapCallResponse> GetAddressVerificationStatus(string payload)
     {
         try
         {
             var url = _configSettings["Address_Verification:base_url"];
-            var content = new StringContent(payload,Encoding.UTF8,"text/xml");
-            var response = await _client.PostAsync(url,content);
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Content = new StringContent(payload, Encoding.UTF8, "text/xml");
+            var response = await _client.SendAsync(request);
             var result = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
                 return new SoapCallResponse("000", result);
             }
-            return new SoapCallResponse("999",result);
+            return new SoapCallResponse("999", result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
-            return new SoapCallResponse("999",ex.Message);
+            _logger.LogError(ex, ex.Message);
+            return new SoapCallResponse("999", ex.Message);
         }
     }
 
@@ -188,23 +190,24 @@ public class SoapRequestHelper : ISoapRequestHelper
         try
         {
             var url = _configSettings["Address_Verification:base_url"];
-            var content = new StringContent(payload, Encoding.UTF8, "text/xml");
-            var response = await _client.PostAsync(url, content);
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Content = new StringContent(payload, Encoding.UTF8, "text/xml");
+            var response = await _client.SendAsync(request);
             var result = await response.Content.ReadAsStringAsync();
 
-        if (response.IsSuccessStatusCode)
-        {
-            return new SoapCallResponse("000", result);
-        }
+            if (response.IsSuccessStatusCode)
+            {
+                return new SoapCallResponse("000", result);
+            }
 
-        return new SoapCallResponse("999", result);
+            return new SoapCallResponse("999", result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
-            return new SoapCallResponse("999", ex.Message); 
+            _logger.LogError(ex, ex.Message);
+            return new SoapCallResponse("999", ex.Message);
         }
-        
+
     }
 }
 

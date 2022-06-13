@@ -33,4 +33,5 @@ public class TierThreeAccountOpeningRequest
     public DateTime DateOfBirth { get; set; }
     public string Signature { get; set; }
     public string UtilityBill { get; set; }
+    public string PoliticallyExposed { get; set; }
 }

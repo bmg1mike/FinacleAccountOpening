@@ -4,6 +4,7 @@ public enum Platform
 {
     WEB,
     MOBILE,
-    USSD
+    USSD,
+    Bulk
 }
 

@@ -1,4 +1,6 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using StanbicIBTC.AccountOpening.Domain;
 
 namespace StanbicIBTC.AccountOpening.Data;
@@ -18,7 +20,6 @@ public class BulkAccountRequestRepository : IBulkAccountRequestRepository
 
     public async Task<string> CreateBulkAccountRequest(BulkAccountRequest request)
     {
-
         await context.BulkAccountRequests.InsertOneAsync(request);
         return request.BulkAccountRequestId;
 
@@ -48,21 +49,32 @@ public class BulkAccountRequestRepository : IBulkAccountRequestRepository
 
     public async Task<List<BulkAccountRequest>> GetPendingBulkAccountRequests(string branchId)
     {
-        var filter = Builders<BulkAccountRequest>.Filter.Eq(m => m.ApprovalStatus, ApprovalStatus.Pending) & 
-            Builders<BulkAccountRequest>.Filter.Eq(x => x.BranchId,branchId);
+        var filter = Builders<BulkAccountRequest>.Filter.Eq(m => m.ApprovalStatus, ApprovalStatus.Pending) &
+            Builders<BulkAccountRequest>.Filter.Eq(x => x.BranchId, branchId);
 
         var bulkAccountRequests = await context.BulkAccountRequests.Find(filter).ToListAsync();
 
         return bulkAccountRequests;
     }
 
-    // public async Task<PaginatedList<BulkAccountRequest>> GetAllAccountRequests(string branchId,int pageNumber = 1,int PageSize = 10)
-    // {
-    //     var filter = Builders<BulkAccountRequest>.Filter.Eq(x => x.BranchId, branchId);
-    //     var bulk = await context.BulkAccountRequests.Find(filter).SortByDescending(x => x.DateCreated).ToListAsync();
-        
-    //     //var bulkRequests = await PaginatedList<BulkAccountDto>.CreateAsync(bulk.ProjectTo<BulkAccountDto>(_mapper.ConfigurationProvider), pageNumber, PageSize);
-    //     return bulkRequests;
+    public async Task<PaginatedList<BulkAccountDto>> GetAllAccountRequests(UploadHistoryDto history)
+    {
+        var bulk = context.BulkAccountRequests.AsQueryable()
+            .Where(x => x.BranchId == history.BranchId)
+            .OrderBy(x => x.DateCreated)
+            .ProjectTo<BulkAccountDto>(_mapper.ConfigurationProvider);
 
-    // }
+        var bulkRequests = await PaginatedList<BulkAccountDto>.CreateAsync(bulk, history.PageNumber, history.PageSize);
+        return bulkRequests;
+    }
+
+    public async Task<List<BulkAccountRequest>> GetApprovedRequests()
+    {
+        var requests = await context.BulkAccountRequests.AsQueryable()
+            .Where(x => x.ApprovalStatus == ApprovalStatus.Approved)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return requests;
+    }
 }

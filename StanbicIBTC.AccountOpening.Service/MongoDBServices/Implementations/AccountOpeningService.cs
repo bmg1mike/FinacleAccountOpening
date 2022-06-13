@@ -740,16 +740,6 @@ public class AccountOpeningService : IAccountOpeningService
                     return null;
                 }
 
-                // var existingCif = _finacleRepository.CheckCifForBvn(request.CustomerBVN);
-                // FinacleAccountDetailResponse checkAccount = null;
-                // if (existingCif.Cif is not null)
-                // {
-                //    checkAccount = _finacleRepository.GetAccountDetailsByCif(existingCif.Cif);
-                // }
-                // if (checkAccount is not null)
-                // {
-                //    return "This Customer already has an account";
-                // }
 
                 var cifResponse = await CreateCIF(request);
 
@@ -910,7 +900,7 @@ public class AccountOpeningService : IAccountOpeningService
             FirstName = request.FirstName,
             LastName = request.LastName,
             Gender = request.Gender,
-            PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
+            PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber().Substring(3, 10),
             DateOfBirth = request.DateOfBirth,
             SecretWord = request.SecretWord,
             ReferralCode = request.ReferralCode ?? "HPP00",
@@ -1021,7 +1011,10 @@ public class AccountOpeningService : IAccountOpeningService
                 DateCreated = DateTime.UtcNow,
                 CountryOfBirth = "NG",
                 CountryOfTaxResidence = "NG",
-                CustomerId = cif
+                CustomerId = cif,
+                DistributionChannel = "D",
+                ReserveBankCode = "021",
+                ReturnsClassificationCode = "087"
             };
             await _modelContext.AddAsync(customData);
             //await _modelContext.SaveChangesAsync();
@@ -1150,13 +1143,13 @@ public class AccountOpeningService : IAccountOpeningService
             SoapCallResponse response;
             if (request.AccountTypeRequested == AccountTypeRequested.Bulk_Tier_One.ToString())
             {
-                response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request,request.SolId,request.BranchManagerSapId));
+                response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request, request.SolId, request.BranchManagerSapId));
             }
             else
             {
                 response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request));
             }
-            
+
 
 
             if (response.ResponseCode != "000")
@@ -1312,7 +1305,7 @@ public class AccountOpeningService : IAccountOpeningService
         if (sanctionScreeningReport.OutCome.Status != "SUCCESS")
         {
             request.Response = "There was a problem saving sanction screening report to DSX";
-            await _cifRepository.UpdateCIFRequest(request.CIFRequestId,request);
+            await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
             return "There was a problem saving sanction screening report to DSX";
         }
 

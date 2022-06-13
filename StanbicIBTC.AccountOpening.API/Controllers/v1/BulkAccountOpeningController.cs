@@ -1,3 +1,4 @@
+using StanbicIBTC.AccountOpening.Data;
 using StanbicIBTC.AccountOpening.Service;
 
 namespace StanbicIBTC.AccountOpening.API.Controllers.v1;
@@ -47,5 +48,27 @@ public class BulkAccountOpeningController : BaseController
     {
         var accounts = await _service.GetSuccessfullyOpenedAccountByBranchId(branchId);
         return Ok(accounts);
+    }
+
+    [HttpGet("UploadHistory/")]
+    [ProducesResponseType(200, Type = typeof(Result<PaginatedList<BulkAccountDto>>))]
+    public async Task<IActionResult> UploadHistory([FromQuery] UploadHistoryDto history)
+    {
+        var uploads = await _service.UploadHistory(history);
+        return Ok(uploads);
+    }
+
+    [HttpPost("OpenBulkAccounts/")]
+    public async Task<IActionResult> OpenBulkAccounts(BulkAccountRequest request)
+    {
+        var requests = await _service.OpenBulkAccounts(request);
+        return Ok(requests);
+    }
+
+    [HttpGet("GetApprovedRequests/")]
+    public async Task<IActionResult> GetApprovedRequests()
+    {
+        var requests = await _service.GetApprovedRequests();
+        return Ok(requests);
     }
 }

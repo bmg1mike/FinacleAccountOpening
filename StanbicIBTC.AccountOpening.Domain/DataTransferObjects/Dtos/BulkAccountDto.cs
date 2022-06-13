@@ -9,4 +9,5 @@ public class BulkAccountDto
     public string BranchId { get; set; }
     public ApprovalStatus ApprovalStatus { get; set; }
     public string Comment { get; set; }
+    public DateTime DateCreated { get; set; }
 }

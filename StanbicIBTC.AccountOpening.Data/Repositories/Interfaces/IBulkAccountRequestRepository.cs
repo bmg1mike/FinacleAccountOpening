@@ -9,5 +9,6 @@ public interface IBulkAccountRequestRepository
     Task<List<BulkAccountRequest>> GetBulkAccountRequests();
     Task<bool> UpdateBulkAccountRequest(string id, BulkAccountRequest request);
     Task<List<BulkAccountRequest>> GetPendingBulkAccountRequests(string branchId);
-    //Task<PaginatedList<BulkAccountRequest>> GetAllAccountRequests(string branchId, int pageNumber = 1, int PageSize = 10);
+    Task<List<BulkAccountRequest>> GetApprovedRequests();
+    Task<PaginatedList<BulkAccountDto>> GetAllAccountRequests(UploadHistoryDto history);
 }
