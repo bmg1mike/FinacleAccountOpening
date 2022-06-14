@@ -16,29 +16,29 @@ public static class DependencyInjection
         services.AddHealthChecks()
                     .AddMongoDb(configuration.GetSection("MongoDbSettings:ConnectionString").Value, "MongoDb Health", HealthStatus.Degraded);
         services.AddHealthChecks()
-                    .AddOracle(configuration.GetConnectionString("FinacleConnection"),"select * from v$version","Finacle Db Health",HealthStatus.Degraded);
+                    .AddOracle(configuration.GetConnectionString("FinacleConnection"), "select * from v$version", "Finacle Db Health", HealthStatus.Degraded);
         services.AddHealthChecks()
-            .AddSqlServer(configuration["AccountOpeningConnection:ConnectionString"],null,"SQLServer Health",HealthStatus.Degraded);
+            .AddSqlServer(configuration["AccountOpeningConnection:ConnectionString"], null, "SQLServer Health", HealthStatus.Degraded);
         //services.AddHealthChecks()
         //             .AddOracle(configuration.GetConnectionString("AccountOpeningConnection"),"select * from v$version","RedBox Db Health",HealthStatus.Degraded);
-        
+
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();
 
 
-         services.AddTransient<ICIFRequestService, CIFRequestService>();
-         services.AddTransient<ICIFNextOfKinDetailService, CIFNextOfKinDetailService>();
-         services.AddTransient<IAccountOpeningAttemptService, AccountOpeningAttemptService>();
-         services.AddTransient<IInboundLogService, InboundLogService>();
-         services.AddTransient<IOutboundLogService, OutboundLogService>();
-         services.AddScoped<IAccountOpeningService,AccountOpeningService>();
-         services.AddTransient<IBulkAccountOpeningService,BulkAccountOpeningService>();
-         services.AddScoped<IRestRequestHelper,RestRequestHelper>();
-         services.AddScoped<ISoapRequestHelper,SoapRequestHelper>();
-         services.AddScoped<ISmsNotification, SmsNotification>();
-         services.AddHttpClient<ISoapRequestHelper,SoapRequestHelper>();
-            
+        services.AddTransient<ICIFRequestService, CIFRequestService>();
+        services.AddTransient<ICIFNextOfKinDetailService, CIFNextOfKinDetailService>();
+        services.AddTransient<IAccountOpeningAttemptService, AccountOpeningAttemptService>();
+        services.AddTransient<IInboundLogService, InboundLogService>();
+        services.AddTransient<IOutboundLogService, OutboundLogService>();
+        services.AddScoped<IAccountOpeningService, AccountOpeningService>();
+        services.AddTransient<IBulkAccountOpeningService, BulkAccountOpeningService>();
+        services.AddScoped<IRestRequestHelper, RestRequestHelper>();
+        services.AddScoped<ISoapRequestHelper, SoapRequestHelper>();
+        services.AddScoped<IMassageNotification, MassageNotification>();
+        services.AddHttpClient<ISoapRequestHelper, SoapRequestHelper>();
+
 
         return services;
 

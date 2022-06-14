@@ -14,7 +14,7 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly ICIFRequestRepository _cifRepository;
     private readonly IAccountOpeningAttemptRepository _accountOpeningAttempt;
     private readonly IFinacleRepository _finacleRepository;
-    private readonly ISmsNotification _smsNotification;
+    private readonly IMassageNotification _messagingNotification;
     private readonly DataContext _modelContext;
     private readonly IOutboundLogRepository _outboundLogRepository;
     private readonly IInboundLogRepository _inboundLogRepository;
@@ -22,7 +22,8 @@ public class AccountOpeningService : IAccountOpeningService
     public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper,
             ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt,
             IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository,
-            ISmsNotification smsNotification, DataContext modelContext, IOutboundLogRepository outboundLogRepository, IInboundLogRepository inboundLogRepository)
+            IMassageNotification messagingNotification, DataContext modelContext, IOutboundLogRepository outboundLogRepository,
+            IInboundLogRepository inboundLogRepository)
     {
         _logger = logger;
         _soapRequestHelper = soapRequestHelper;
@@ -31,7 +32,7 @@ public class AccountOpeningService : IAccountOpeningService
         _config = config;
         _restRequestHelper = restRequestHelper;
         _finacleRepository = finacleRepository;
-        _smsNotification = smsNotification;
+        _messagingNotification = messagingNotification;
         _modelContext = modelContext;
         _outboundLogRepository = outboundLogRepository;
         _inboundLogRepository = inboundLogRepository;
@@ -709,9 +710,6 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
-            //var accountOpeningAttempt = await _accountOpeningAttempt.GetAccountOpeningAttempt(request.AccountOpeningAttemptId);
-
-            //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
             var cif = request.Cif;
             if (string.IsNullOrEmpty(cif))
             {
@@ -724,7 +722,7 @@ public class AccountOpeningService : IAccountOpeningService
                     request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
                     request.Response = "The state in the BVN is not available in the finacle Database";
                     await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
-                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                    await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
                     return null;
                 }
 
@@ -736,7 +734,7 @@ public class AccountOpeningService : IAccountOpeningService
                     request.Response = "The City in the BVN is not available in the finacle Database";
                     await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
 
-                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                    await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
                     return null;
                 }
 
@@ -749,7 +747,7 @@ public class AccountOpeningService : IAccountOpeningService
                     request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
                     request.Response = "Couldn't create Cif from Finacle( Finacle not reachable )";
                     await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
-                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                    await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
                     _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.CustomerBVN} ");
                     return null;
                 }
@@ -762,7 +760,7 @@ public class AccountOpeningService : IAccountOpeningService
                     request.Response = "There was a problem saving the request to the redbox database";
                     await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
 
-                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                    await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
                     return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
                 }
 
@@ -793,7 +791,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             if (openSavingsAccount.ResponseCode != "000")
             {
-                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, "We are unable to complete the account opening process, please try again");
+                await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
                 request.IsAccountOpenedSuccessfully = false;
                 request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
                 request.Response = "There was a problem saving the request to the Sql Server Db database";
@@ -825,7 +823,7 @@ public class AccountOpeningService : IAccountOpeningService
                 if (isOnboarded)
                 {
                     successMessage = $"Your Account has been opened Successfully. Your Account Number Is {accountNumber}. You can now use the Mobile App and Internet banking";
-                    await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
+                    await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = successMessage, PhoneNumber = request.PhoneNumber });
 
                     request.IsAccountOpenedSuccessfully = true;
                     request.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
@@ -837,7 +835,7 @@ public class AccountOpeningService : IAccountOpeningService
                 }
 
                 successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
-                await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
+                await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = successMessage, PhoneNumber = request.PhoneNumber });
                 request.IsAccountOpenedSuccessfully = true;
                 request.AccountOpeningStatus = AccountOpeningStatus.Successful.ToString();
                 request.Response = "Tier One Account Opened Successfully but Onboarding Failed";
@@ -853,7 +851,8 @@ public class AccountOpeningService : IAccountOpeningService
             request.AccountNumber = accountNumber;
             await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
             successMessage = $"Congratulations! Your account has been opened using your BVN details, Account Number ({accountNumber}). \n To get activated on our channels please visit https://ibanking.stanbicibtcbank.com/quickservices or our nearest branch.";
-            await _smsNotification.SendAccountOpeningSMS(request.PhoneNumber, successMessage);
+
+            await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = successMessage, PhoneNumber = request.PhoneNumber });
             return $"Account Number is {accountNumber}";
         }
         catch (Exception ex)
@@ -1014,7 +1013,10 @@ public class AccountOpeningService : IAccountOpeningService
                 CustomerId = cif,
                 DistributionChannel = "D",
                 ReserveBankCode = "021",
-                ReturnsClassificationCode = "087"
+                ReturnsClassificationCode = "087",
+                PrimarySicCode = "96",
+                SecondarySicCode = "S960"
+
             };
             await _modelContext.AddAsync(customData);
             //await _modelContext.SaveChangesAsync();
@@ -1026,7 +1028,8 @@ public class AccountOpeningService : IAccountOpeningService
                 BvnNumber = cifRequest.CustomerBVN,
                 PhoneNo = cifRequest.PhoneNumber,
                 RecordDelFlag = "N",
-                CifId = cif
+                CifId = cif,
+
             };
             await _modelContext.AddAsync(bvnLinkageLog);
 

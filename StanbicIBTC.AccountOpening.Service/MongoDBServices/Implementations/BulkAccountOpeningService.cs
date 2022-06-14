@@ -25,7 +25,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         {
             var batchId = DateTime.Now.ToString("yyyy MM dd HH mm ss").Replace(" ", string.Empty);
 
-            var dir = $"{Directory.GetCurrentDirectory()}/Files";
+            var dir = $"{Directory.GetCurrentDirectory()}wwwroot/Files";
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
@@ -412,14 +412,14 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
     public async Task<List<BulkAccountRequest>> GetApprovedRequests()
     {
-        try 
+        try
         {
             var requests = await _requestRepo.GetApprovedRequests();
             return requests;
-        } 
-        catch (Exception ex) 
+        }
+        catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
+            _logger.LogError(ex, ex.Message);
             return null;
         }
     }
