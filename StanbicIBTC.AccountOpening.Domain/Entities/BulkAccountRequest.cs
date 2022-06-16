@@ -14,4 +14,5 @@ public class BulkAccountRequest
     public DateTime DateCreated { get; set; } = DateTime.Now;
     public DateTime DateModified { get; set; } = DateTime.Now;
     public bool IsDeleted { get; set; } = false;
+    public bool IsTreated { get; set; } = false;
 }

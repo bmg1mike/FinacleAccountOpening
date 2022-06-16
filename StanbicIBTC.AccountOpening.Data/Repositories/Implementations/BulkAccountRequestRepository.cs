@@ -52,6 +52,7 @@ public class BulkAccountRequestRepository : IBulkAccountRequestRepository
         var filter = Builders<BulkAccountRequest>.Filter.Eq(m => m.ApprovalStatus, ApprovalStatus.Pending) &
             Builders<BulkAccountRequest>.Filter.Eq(x => x.BranchId, branchId);
 
+
         var bulkAccountRequests = await context.BulkAccountRequests.Find(filter).ToListAsync();
 
         return bulkAccountRequests;
@@ -70,11 +71,12 @@ public class BulkAccountRequestRepository : IBulkAccountRequestRepository
 
     public async Task<List<BulkAccountRequest>> GetApprovedRequests()
     {
-        var requests = await context.BulkAccountRequests.AsQueryable()
-            .Where(x => x.ApprovalStatus == ApprovalStatus.Approved)
-            .AsNoTracking()
-            .ToListAsync();
+        var filter = Builders<BulkAccountRequest>.Filter.Eq(m => m.ApprovalStatus, ApprovalStatus.Approved) &
+              Builders<BulkAccountRequest>.Filter.Eq(x => x.IsTreated, false);
 
-        return requests;
+        var bulkAccountRequests = await context.BulkAccountRequests.Find(filter).ToListAsync();
+
+        return bulkAccountRequests;
+        //return requests;
     }
 }

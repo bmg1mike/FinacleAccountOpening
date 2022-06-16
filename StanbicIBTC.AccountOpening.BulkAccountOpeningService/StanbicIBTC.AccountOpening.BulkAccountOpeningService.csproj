@@ -9,11 +9,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\StanbicIBTC.AccountOpening.Data\StanbicIBTC.AccountOpening.Data.csproj" />
     <ProjectReference Include="..\StanbicIBTC.AccountOpening.Domain\StanbicIBTC.AccountOpening.Domain.csproj" />
+    <ProjectReference Include="..\StanbicIBTC.AccountOpening.Service\StanbicIBTC.AccountOpening.Service.csproj" />
   </ItemGroup>
 </Project>

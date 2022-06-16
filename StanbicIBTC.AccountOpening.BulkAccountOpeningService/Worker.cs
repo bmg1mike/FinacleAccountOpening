@@ -13,6 +13,9 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Console.WriteLine("Waiting For API To Start");
+        Thread.Sleep(10000);
+
         while (!stoppingToken.IsCancellationRequested)
         {
             var requests = await _apiCall.GetApprovedRequests();

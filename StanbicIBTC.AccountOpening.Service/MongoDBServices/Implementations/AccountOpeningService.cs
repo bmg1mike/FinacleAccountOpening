@@ -91,8 +91,6 @@ public class AccountOpeningService : IAccountOpeningService
 
             var accountOpeningAttempt = new AccountOpeningAttempt
             {
-                FirstName = bvnDetails.FirstName,
-                LastName = bvnDetails.LastName,
                 Bvn = request.Bvn,
                 Response = string.Empty,
                 PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
@@ -544,8 +542,6 @@ public class AccountOpeningService : IAccountOpeningService
 
             var accountOpeningAttempt = new AccountOpeningAttempt
             {
-                FirstName = bvnDetails.FirstName,
-                LastName = bvnDetails.LastName,
                 Bvn = request.Bvn,
                 Response = string.Empty,
                 PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber()
@@ -1015,7 +1011,8 @@ public class AccountOpeningService : IAccountOpeningService
                 ReserveBankCode = "021",
                 ReturnsClassificationCode = "087",
                 PrimarySicCode = "96",
-                SecondarySicCode = "S960"
+                SecondarySicCode = "S960",
+                PoliticallyExposed = "N"
 
             };
             await _modelContext.AddAsync(customData);

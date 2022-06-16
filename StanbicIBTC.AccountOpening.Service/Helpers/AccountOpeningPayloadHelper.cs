@@ -6,6 +6,12 @@ public static class AccountOpeningPayloadHelper
     {
         var dob = DateTime.Parse(request.DateOfBirthInY_M_D_Format);
         request.Gender = request.Gender.ToUpper().Trim() == "MALE" ? "M" : "F";
+        if (solId is null)
+            solId = "999999";
+
+        if (manager is null)
+            manager = "CCC9676";
+
         var payloaad = @$"
         <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
     <soapenv:Header/>

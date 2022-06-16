@@ -8,8 +8,10 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     private readonly IFinacleRepository _finacleRepository;
     private readonly ICIFRequestRepository _cifRepository;
     private readonly IInboundLogRepository _inboundLogRepository;
+    private readonly IConfiguration _config;
+    private readonly IAccountOpeningAttemptRepository _accountOpeningAttemptRepository;
 
-    public BulkAccountOpeningService(ILogger<BulkAccountOpeningService> logger, IBulkAccountRequestRepository requestRepo, IAccountOpeningService accountOpeningService, IFinacleRepository finacleRepository, ICIFRequestRepository cifRepository, IInboundLogRepository inboundLogRepository)
+    public BulkAccountOpeningService(ILogger<BulkAccountOpeningService> logger, IBulkAccountRequestRepository requestRepo, IAccountOpeningService accountOpeningService, IFinacleRepository finacleRepository, ICIFRequestRepository cifRepository, IInboundLogRepository inboundLogRepository, IConfiguration config, IAccountOpeningAttemptRepository accountOpeningAttemptRepository)
     {
         _logger = logger;
         _requestRepo = requestRepo;
@@ -17,6 +19,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         _finacleRepository = finacleRepository;
         _cifRepository = cifRepository;
         _inboundLogRepository = inboundLogRepository;
+        _config = config;
+        _accountOpeningAttemptRepository = accountOpeningAttemptRepository;
     }
 
     public ApiResult UploadFile(BulkAccountRequestDto request)
@@ -25,7 +29,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         {
             var batchId = DateTime.Now.ToString("yyyy MM dd HH mm ss").Replace(" ", string.Empty);
 
-            var dir = $"{Directory.GetCurrentDirectory()}wwwroot/Files";
+            var dir = $"{Directory.GetCurrentDirectory()}/Files";
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
@@ -34,6 +38,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             if (request.File == null)
             {
                 _logger.LogInformation("There was no file sent");
+                return new ApiResult { responseCode = "999", responseDescription = "There was no file sent" };
 
             }
 
@@ -43,6 +48,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             if (fileInfo.Extension != ".xlsx")
             {
                 _logger.LogInformation("The File received is not an excel file");
+                return new ApiResult { responseCode = "999", responseDescription = "The File received is not an excel file" };
 
             }
 
@@ -122,10 +128,11 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     }
     public List<BulkAccount> ReadFromExcel(string filePath)
     {
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         using (ExcelPackage package = new ExcelPackage(new FileInfo(filePath)))
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            var sheet = package.Workbook.Worksheets[0]; // the 1st sheet in the excel file
+            //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            var sheet = package.Workbook.Worksheets.FirstOrDefault(x => x.Name == "AccountOpening"); // the 1st sheet in the excel file
             var result = GetListFromExcelSheet(sheet);
             return result;
 
@@ -160,10 +167,13 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     {
         try
         {
-            var path = $"{Directory.GetCurrentDirectory()}/Files/{request.File}";
+            var path = $"{_config["FilePath"]}{request.File}";
+            
             var accounts = ReadFromExcel(path);
             if (accounts is null)
             {
+                request.IsTreated = true;
+                await _requestRepo.UpdateBulkAccountRequest(request.BulkAccountRequestId,request);
                 return "Could not read Excel file successfully";
             }
             foreach (var item in accounts)
@@ -171,12 +181,14 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 var savedData = await SaveBulkAccountRequest(item);
             }
 
+            request.IsTreated = true;
+            await _requestRepo.UpdateBulkAccountRequest(request.BulkAccountRequestId,request);
             return "Excel data saved for processing successfully";
         }
-        catch (System.Exception)
+        catch (Exception ex)
         {
-
-            throw;
+            _logger.LogError(ex,ex.Message);
+            return "Please try again later";
         }
     }
 
@@ -184,6 +196,14 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     {
         try
         {
+            var accountOpeningAttempt = new AccountOpeningAttempt
+            {
+                Bvn = request.Bvn,
+                Response = string.Empty,
+                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
+                AccountTypeRequested = "Bulk"
+            };
+
             var bvnDetailsResponse = await _accountOpeningService.GetBVNDetails(request.Bvn);
 
             var outboundBvn = new OutboundLog
@@ -210,11 +230,13 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             //    return new ApiResult { responseCode = "999", responseDescription = "NIN does not match BVN's NIN" };
             //}
 
-            var ninDetailsResponse = await _accountOpeningService.GetNinDetails(bvnDetails.NIN, request.DateOfBirth.ToString());
-
+            var ninDetailsResponse = await _accountOpeningService.GetNinDetails("00000000000", request.DateOfBirth.ToString()); // change back to BVN NIN i.e bvnDetails.NIN
+            
             if (ninDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
+                accountOpeningAttempt.Response = "InValid NIN";
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return "Invalid NIN";
             }
 
@@ -231,30 +253,22 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
             var ninDetails = ninDetailsResponse.data;
 
-            var accountOpeningAttempt = new AccountOpeningAttempt
-            {
-                FirstName = bvnDetails.FirstName,
-                LastName = bvnDetails.LastName,
-                Bvn = request.Bvn,
-                Response = string.Empty,
-                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
-                AccountTypeRequested = "Tier 1"
-            };
+            
 
             if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
             {
                 _logger.LogInformation($"The Phone number provided is not the same with the Bvn phone number. BVN : {bvnDetails.BVN}");
                 accountOpeningAttempt.Response = "The Phone number provided is not the same with the Bvn phone number";
-                //await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return "Details given does not match with your BVN details";
             }
 
             var bvnDob = DateTime.Parse(bvnDetails.DateOfBirth);
-            if (bvnDob.ToString("dd-MM-yyyy") != request.DateOfBirth)
+            if (bvnDob.ToString("yyyy-MM-dd") != request.DateOfBirth)
             {
                 _logger.LogInformation($"BVN Date Of Birth does not match the supplied Date Of Birth");
                 accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
-                //await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return "Details given does not match with your BVN details";
             }
 
@@ -350,8 +364,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
 
 
-            //accountOpeningAttempt.Response = "Request successfully stored in the database for processing";
-            //var accountOpeningAttemptId = await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+            accountOpeningAttempt.Response = "Request successfully stored in the database for processing";
+            var accountOpeningAttemptId = await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
             //var accountNumber = await OpenAccount(cifRequest);
 
 

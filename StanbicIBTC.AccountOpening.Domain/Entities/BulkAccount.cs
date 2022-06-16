@@ -8,7 +8,5 @@ public class BulkAccount
     public string Category { get; set; }
     public string BranchManagerSapId { get; set; }
     public string SolId { get; set; }
-    public DateTime DateCreated { get; set; } = DateTime.Now;
-    public DateTime DateModified { get; set; } = DateTime.Now;
 
 }
