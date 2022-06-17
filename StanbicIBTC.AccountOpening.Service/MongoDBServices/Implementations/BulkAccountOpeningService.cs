@@ -132,7 +132,11 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         using (ExcelPackage package = new ExcelPackage(new FileInfo(filePath)))
         {
             //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            var sheet = package.Workbook.Worksheets.FirstOrDefault(x => x.Name == "AccountOpening"); // the 1st sheet in the excel file
+            var sheet = package.Workbook.Worksheets.FirstOrDefault(x => x.Name == "AccountOpening"); 
+            if (sheet == null)
+            {
+                return null;
+            }
             var result = GetListFromExcelSheet(sheet);
             return result;
 
@@ -142,17 +146,20 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     {
 
         List<BulkAccount> list = new List<BulkAccount>();
-        var columnInfo = Enumerable.Range(1, sheet.Dimension.Columns).ToList().Select(x => new
+        var columnInfo = Enumerable.Range(1, 6).ToList().Select(x => new       // Note :   6 is sheet.Dimension.Columns since we are expecting 6 columns
         {
             Index = x,
             ColumnName = sheet.Cells[1, x].Value.ToString().Trim()
         });
+
+
 
         for (int row = 2; row <= sheet.Dimension.Rows; row++)
         {
             BulkAccount obj = (BulkAccount)Activator.CreateInstance(typeof(BulkAccount));
             foreach (var prop in typeof(BulkAccount).GetProperties())
             {
+
                 int col = columnInfo.SingleOrDefault(x => x.ColumnName == prop.Name).Index;
                 var val = sheet.Cells[row, col].Value;
                 var propType = prop.PropertyType;
@@ -201,8 +208,17 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 Bvn = request.Bvn,
                 Response = string.Empty,
                 PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
-                AccountTypeRequested = "Bulk"
+                AccountTypeRequested = "Bulk",
+                IsSuccessful = false
             };
+
+
+            if(request.Bvn is null || request.DateOfBirth is null || request.PhoneNumber is null)
+            {
+                accountOpeningAttempt.Response = "Invalid request. Bvn, DateOfBirth and Phone Number are required to open a tier 1 account";
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return null;
+            }
 
             var bvnDetailsResponse = await _accountOpeningService.GetBVNDetails(request.Bvn);
 
@@ -220,6 +236,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             if (bvnDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{bvnDetailsResponse.responseDescription}");
+                accountOpeningAttempt.Response = "Invalid Bvn";
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return "Invalid Bvn";
             }
 
@@ -365,6 +383,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
 
             accountOpeningAttempt.Response = "Request successfully stored in the database for processing";
+            accountOpeningAttempt.IsSuccessful = true;
             var accountOpeningAttemptId = await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
             //var accountNumber = await OpenAccount(cifRequest);
 
