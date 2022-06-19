@@ -89,4 +89,19 @@ public class FinacleRepository : IFinacleRepository
         return db.Query<SanctionScreeningResult>(sql,new{ accountOpeningId = accountOpeningId}).SingleOrDefault();
     }
 
+    public ValidateRelationshipManagerResponse ValidateRelationshipManager(string sapId)
+    {
+        var sql = $@"select mpc_1.user_id, mpc_2.emp_name, mpc_2.sol_id
+                    from tbaadm.upr mpc_1, tbaadm.get mpc_2
+                    where mpc_1.del_flg='N'
+                    and mpc_2.del_flg=mpc_1.del_flg
+                    and mpc_1.role_id in ('INQUIRY','INQUIRE')
+                    and mpc_1.user_appl_name='24'
+                    and mpc_2.entity_cre_flg='Y'
+                    and mpc_1.user_id=mpc_2.emp_id
+                    and mpc_1.user_id = :sapId";
+
+        return db.Query<ValidateRelationshipManagerResponse>(sql, new { sapId = sapId }).SingleOrDefault();
+    }
+
 }

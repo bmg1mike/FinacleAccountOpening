@@ -14,4 +14,5 @@ public interface IFinacleRepository
     FinacleAccountDetailResponse GetAccountDetailsByCif(string cif);
     bool LogForSanctionScreening(SanctionScreeningRequest request);
     SanctionScreeningResult GetSanctionScreeningResult(string accountOpeningId);
+    ValidateRelationshipManagerResponse ValidateRelationshipManager(string sapId);
 }

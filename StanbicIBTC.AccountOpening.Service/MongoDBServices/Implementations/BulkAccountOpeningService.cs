@@ -290,6 +290,23 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 return "Details given does not match with your BVN details";
             }
 
+            var checkRelationshipManager = _finacleRepository.ValidateRelationshipManager(request.BranchManagerSapId.Trim());
+
+            if (checkRelationshipManager == null)
+            {
+                _logger.LogInformation($"The Branch Manager is not a varified Branch Manager");
+                accountOpeningAttempt.Response = "The Branch Manager is not a varified Branch Manager";
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return "The Branch Manager is not a varified Branch Manager";
+            }
+
+            if (checkRelationshipManager.Sol_Id != request.SolId.Trim())
+            {
+                _logger.LogInformation($"The Branch Manager does not belong to the branch given");
+                accountOpeningAttempt.Response = "The Branch Manager does not belong to the branch given";
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return "The Branch Manager does not belong to the branch given";
+            }
 
 
             var nextOfKinDetails = new CIFNextOfKinDetail
