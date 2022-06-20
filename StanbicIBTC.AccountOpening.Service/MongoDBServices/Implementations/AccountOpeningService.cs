@@ -780,10 +780,17 @@ public class AccountOpeningService : IAccountOpeningService
                 await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
                 cif = cifResponse.cif;
             }
-
-            //Thread.Sleep(120000);
-
-            var openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request));
+            SoapCallResponse openSavingsAccount;
+            
+            if (request.AccountTypeRequested == AccountTypeRequested.Bulk_Tier_One.ToString())
+            {
+                openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request,"KYCL1","NGN",request.SolId));
+            }
+            else
+            {
+                openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request));
+            }
+            
 
             if (openSavingsAccount.ResponseCode != "000")
             {

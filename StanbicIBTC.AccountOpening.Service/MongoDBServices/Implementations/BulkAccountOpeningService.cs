@@ -88,6 +88,11 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             {
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid Request Sent" };
             }
+
+            if (requestInDb.ApprovalStatus != ApprovalStatus.Pending)
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "This request is no longer pending" };
+            }
             requestInDb.ApprovalStatus = request.ApprovalStatus;
             requestInDb.ApprovedBy = request.ApprovedBy;
             requestInDb.DateModified = DateTime.Now;
@@ -212,6 +217,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 IsSuccessful = false
             };
 
+            
+
 
             if(request.Bvn is null || request.DateOfBirth is null || request.PhoneNumber is null)
             {
@@ -219,6 +226,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return null;
             }
+
 
             var bvnDetailsResponse = await _accountOpeningService.GetBVNDetails(request.Bvn);
 
@@ -288,6 +296,13 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
                 await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return "Details given does not match with your BVN details";
+            }
+
+            if (string.IsNullOrEmpty(request.BranchManagerSapId) || string.IsNullOrEmpty(request.SolId))
+            {
+                accountOpeningAttempt.Response = "one or both BranchManager SapId and SolId  are empty";
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return null;
             }
 
             var checkRelationshipManager = _finacleRepository.ValidateRelationshipManager(request.BranchManagerSapId.Trim());

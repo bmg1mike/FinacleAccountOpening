@@ -176,8 +176,12 @@ public static class AccountOpeningPayloadHelper
         return payloaad;
     }
 
-    public static string AccountOpeningPayload(string cif, CIFRequest request, string schemeCode = "KYCL1", string currency = "NGN")
+    public static string AccountOpeningPayload(string cif, CIFRequest request, string schemeCode = "KYCL1", string currency = "NGN", string branchId = "999999")
     {
+        if (branchId is null)
+        {
+            branchId = "999999";
+        }
         var payloaad = @$"
     <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
     <soapenv:Header/>
@@ -233,7 +237,7 @@ public static class AccountOpeningPayloadHelper
     <AcctCurr>{currency}</AcctCurr>
     <BankInfo>
     <BankId>NG</BankId>
-    <BranchId>999999</BranchId>
+    <BranchId>{branchId}</BranchId>
     </BankInfo>
     </SBAcctId>
     <SBAcctGenInfo>
@@ -249,7 +253,7 @@ public static class AccountOpeningPayloadHelper
     </SBAcctAddRq>
     <SBAcctAdd_CustomData>
     <INTCRACCTFLG>S</INTCRACCTFLG>
-    <SOLID>999999</SOLID>
+    <SOLID>{branchId}</SOLID>
     <LOCALCALFLG>N</LOCALCALFLG>
     <PRICINGCODE>PAYAS</PRICINGCODE>
     <MISENTERED>1</MISENTERED>
