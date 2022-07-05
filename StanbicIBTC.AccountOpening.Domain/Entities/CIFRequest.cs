@@ -58,5 +58,13 @@ public partial class CIFRequest
     public string Category { get; set; }
     public string BranchManagerSapId { get; set; }
     public string UploadedBy { get; set; }
+    public RequiredDocuments RequiredDocuments { get; set; }
+    public SoleProprietor SoleProprietor { get; set; }
+    public DomiciliaryAccountDetails DomiciliaryAccountDetails { get; set; }
+    public PoliticallyExposedPersonDetails PoliticallyExposedPersonDetails { get; set; }
+    public NonNigerian NonNigerian { get; set; }
+    public EmployedAndStudentCustomerInformation EmployedAndStudentCustomerInformation { get; set; }
+    public string PoliticallyExposedStatus { get; set; }
+    public bool IsBackOfficeLogged { get; set; }
 }
 

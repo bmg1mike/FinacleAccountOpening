@@ -9,29 +9,68 @@ public class TierThreeAccountOpeningRequest
     public string ResidenceAddress { get; set; }
     public string NearestBusStop { get; set; }
     public string StateOfResidence { get; set; }
-    // Employment Details
-    public string EmployerName { get; set; }
-    public string EmployerAddress { get; set; }
-    public decimal MonthlyIncome { get; set; }
+    public string MaritalStatus { get; set; }
+    public string NatureOfBusiness { get; set; }
     public string CurrencyCode { get; set; } // For Domiciliary Accounts
-    public string IdentityType { get; set; }
-    public string IdNumber { get; set; }
-    public string IdImage { get; set; } // regulatory Id
-    public string PassportPhotograph { get; set; }
-    public DateTime IdIssueDate { get; set; }
-    public DateTime? IdExpiryDate { get; set; }
-    public string TaxIdentificationNumber { get; set; }
+    public SoleProprietor SoleProprietor { get; set; }
     public string Nationality { get; set; }
     public NextOfKin NextOfKinDetails { get; set; }
-    //If Nationality is not Nigerian
-    public string ResidencePermitNumber { get; set; }
-    public string PermitIssueDate { get; set; }
-    public string PermitExpiryDate { get; set; }
     public Platform Platform { get; set; }
     public string EmploymentStatusCode { get; set; }
     public string OccupationCode { get; set; }
     public DateTime DateOfBirth { get; set; }
+    public RequiredDocuments RequiredDocuments { get; set; }
+    public bool PoliticallyExposed { get; set; }
+    public NonNigerian NonNigerian { get; set; }
+    public EmployedAndStudentCustomerInformation EmployedAndStudentCustomerInformation { get; set; }
+    public PoliticallyExposedPersonDetails PoliticallyExposedPersonDetails { get; set; }
+    public DomiciliaryAccountDetails DomiciliaryAccountDetails { get; set; }
+}
+
+public class PoliticallyExposedPersonDetails
+{
+    public string FamilyMemberHeldGovernment  { get; set; }
+    public string FamilyMemberFullName { get; set; }
+    public string FamilyMemberPositionHeld { get; set; }
+    public string RelationWithFamilyMember { get; set; }
+}
+
+public class NonNigerian
+{
+    public string ResidencePermitNumber { get; set; }
+    public DateTime? PermitIssueDate { get; set; }
+    public DateTime? PermitExpiryDate { get; set; }
+}
+
+public class EmployedAndStudentCustomerInformation
+{
+    public DateTime? DateOfEmployment { get; set; }
+    public string EmployerName { get; set; }
+    public string EmployerAddress { get; set; }
+    public decimal MonthlyIncome { get; set; }
+    public string InstitutionName { get; set; }
+    public string Sector { get; set; }
+}
+
+public class RequiredDocuments
+{
+    public string IdentityType { get; set; }
+    public string IdNumber { get; set; }
+    public string IdImage { get; set; } // regulatory Id
+    public DateTime IdIssueDate { get; set; }
+    public DateTime? IdExpiryDate { get; set; }
+    public string PassportPhotograph { get; set; }
     public string Signature { get; set; }
     public string UtilityBill { get; set; }
-    public string PoliticallyExposed { get; set; }
+}
+
+public class SoleProprietor
+{
+    public string TaxIdentificationNumber { get; set; }
+}
+
+public class DomiciliaryAccountDetails
+{
+    public string SourceOfFunds { get; set; }
+    public decimal? ExpectedCumulativeBalance { get; set; }
 }

@@ -126,6 +126,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 BulkAccountRequestId = item.BulkAccountRequestId,
                 CreatedBy = item.CreatedBy,
                 File = item.File,
+                DateCreated = item.DateCreated
             });
         }
 

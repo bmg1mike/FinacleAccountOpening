@@ -530,6 +530,14 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
+            var accountOpeningAttempt = new AccountOpeningAttempt
+            {
+                Bvn = request.Bvn,
+                Response = string.Empty,
+                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber(),
+                AccountTypeRequested = AccountTypeRequested.Tier_Three.ToString()
+            };
+
             var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
 
             if (bvnDetailsResponse.data is null)
@@ -540,12 +548,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             var bvnDetails = bvnDetailsResponse.data;
 
-            var accountOpeningAttempt = new AccountOpeningAttempt
-            {
-                Bvn = request.Bvn,
-                Response = string.Empty,
-                PhoneNumber = request.PhoneNumber.AsNigerianPhoneNumber()
-            };
+            
 
             if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
             {
@@ -564,9 +567,9 @@ public class AccountOpeningService : IAccountOpeningService
                 return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
             }
 
-            if (!Util.IsBase64String(request.PassportPhotograph)
-                || !Util.IsBase64String(request.IdImage)
-                || !Util.IsBase64String(request.Signature) || !Util.IsBase64String(request.UtilityBill))
+            if (!Util.IsBase64String(request.RequiredDocuments.PassportPhotograph)
+                || !Util.IsBase64String(request.RequiredDocuments.IdImage)
+                || !Util.IsBase64String(request.RequiredDocuments.Signature) || !Util.IsBase64String(request.RequiredDocuments.UtilityBill))
             {
                 return new ApiResult { responseCode = "999", responseDescription = "PassportPhotograph,IdImage and Signature must be Base 64 strings" };
             }
@@ -633,6 +636,7 @@ public class AccountOpeningService : IAccountOpeningService
                 Gender = bvnDetails.Gender,
                 Platform = request.Platform.ToString(),
                 MiddleName = bvnDetails.MiddleName,
+
                 NextOfKinDetail = new CIFNextOfKinDetail
                 {
                     Address1 = request.NextOfKinDetails.Address,
@@ -646,10 +650,14 @@ public class AccountOpeningService : IAccountOpeningService
                     Relationship = request.NextOfKinDetails.Relationship
                 },
                 SanctionScreeningAccountId = sanctionScreeningRequest.AccountOpeningRequestId,
-                IdentityType = request.IdentityType,
-                IdExpiryDate = request.IdExpiryDate,
-                IdIssueDate = request.IdIssueDate,
-                IdNumber = request.IdNumber,
+                PoliticallyExposedStatus = request.PoliticallyExposed == true ? "Y" : "N",
+                IdNumber = request.RequiredDocuments.IdNumber,
+                RequiredDocuments = request.RequiredDocuments,
+                SoleProprietor = request.SoleProprietor,
+                DomiciliaryAccountDetails = request.DomiciliaryAccountDetails,
+                PoliticallyExposedPersonDetails = request.PoliticallyExposedPersonDetails,
+                NonNigerian = request.NonNigerian,
+                EmployedAndStudentCustomerInformation = request.EmployedAndStudentCustomerInformation,
                 Title = bvnDetails.Title
 
             };
@@ -753,17 +761,18 @@ public class AccountOpeningService : IAccountOpeningService
                 {
                     request.IsAccountOpenedSuccessfully = false;
                     request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                    request.Response = "There was a problem saving the request to the redbox database";
+                    request.Response = "There was a problem saving the request to the MSSQL database";
                     await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
 
                     await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
                     return ($"There was a problem saving the CIF Request for BVN: {request.CustomerBVN} Please try again later");
                 }
 
-                if (request.AccountTypeRequested == "Tier Three")
+                if (request.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString())
                 {
                     var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
                     AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.CustomerAddress, cifResponse.cif));
+                    //
 
                     if (addressVerificationRequest.ResponseCode != "000")
                     {
@@ -774,6 +783,33 @@ public class AccountOpeningService : IAccountOpeningService
 
                     var addressverificationId = _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription, "LogAddressVerificationRequestResult");
                     request.AddressverificationId = addressverificationId;
+
+                    // log to back office
+
+                    var backOfficeLog = new BackOfficeRequest
+                    {
+                        HaveDebitCard = "N",
+                        IdDoc = request.RequiredDocuments.IdImage,
+                        IdDocExtension = "Jpg",
+                        IdNumber = request.RequiredDocuments.IdNumber,
+                        IdType = request.RequiredDocuments.IdentityType,
+                        PicDoc = request.RequiredDocuments.PassportPhotograph,
+                        PicDocExtension = "jpg",
+                        RequestTranId = Guid.NewGuid().ToString(),
+                        SignatureDoc = request.RequiredDocuments.Signature,
+                        SignatureDocExtension = "jpg",
+                        UtilityDoc = request.RequiredDocuments.UtilityBill,
+                        UtilityDocExtension = "jpg"
+                    };
+
+                    //var logToBackOffice = await _restRequestHelper.HttpAsync(Method.POST,_config[""],null,backOfficeLog);
+
+                    //if (!logToBackOffice.IsSuccessful)
+                    //{
+                    //    _logger.LogInformation("Could not log to back office");
+                    //    request.IsBackOfficeLogged = false;
+                    //}
+                    
                 }
 
                 request.Cif = cifResponse.cif;
@@ -786,10 +822,16 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request,"KYCL1","NGN",request.SolId));
             }
+            else if (request.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString() && request.Platform == Platform.USSD_Device_Financing.ToString())
+            {
+                openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request, "SB001"));
+            }
             else
             {
                 openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request));
             }
+
+            
             
 
             if (openSavingsAccount.ResponseCode != "000")
@@ -1074,6 +1116,85 @@ public class AccountOpeningService : IAccountOpeningService
 
     }
 
+    private async Task<bool> SaveTierThreeCustomData(string cif, CIFRequest cifRequest = null)
+    {
+        try
+        {
+
+            var customData = new RbxBpmCifCustomDatum
+            {
+                Bvn = cifRequest.CustomerBVN,
+                BranchId = cifRequest.BvnEnrollmentBranch,
+                MaritalStatus = cifRequest.MaritalStatus,
+                EmploymentType = cifRequest.EmploymentStatus,
+                NationalIdNumber = cifRequest.NIN,
+                DateCreated = DateTime.UtcNow,
+                CountryOfBirth = "NG",
+                CountryOfTaxResidence = "NG",
+                CustomerId = cif,
+                DistributionChannel = "D",
+                ReserveBankCode = "021",
+                ReturnsClassificationCode = "087",
+                PrimarySicCode = "96",
+                SecondarySicCode = "S960",
+                PoliticallyExposed = cifRequest.PoliticallyExposedStatus,
+                IdentityNumber = cifRequest.RequiredDocuments.IdNumber,
+                IdentityType = cifRequest.RequiredDocuments.IdentityType,
+                MonthlyNetIncome = cifRequest.EmployedAndStudentCustomerInformation.MonthlyIncome.ToString(),
+                TaxIdentificationNumber = cifRequest.SoleProprietor.TaxIdentificationNumber
+                
+            };
+            
+            await _modelContext.AddAsync(customData);
+            
+            var bvnLinkageLog = new RbxTBvnLinkageLog
+            {
+                AcctName = cifRequest.FirstName + " " + cifRequest.LastName,
+                BankEnrolled = cifRequest.BvnErollmentBank,
+                BranchEnrolled = cifRequest.BvnEnrollmentBranch,
+                BvnNumber = cifRequest.CustomerBVN,
+                PhoneNo = cifRequest.PhoneNumber,
+                RecordDelFlag = "N",
+                CifId = cif,
+
+            };
+            await _modelContext.AddAsync(bvnLinkageLog);
+
+
+            var nextOfKin = new RbxBpmNextOfKinDetail
+            {
+                Address = cifRequest.NextOfKinDetail.Address1,
+                EmailAddress = cifRequest.NextOfKinDetail.Email,
+                FirstName = cifRequest.NextOfKinDetail.FirstName,
+                LastName = cifRequest.NextOfKinDetail.LastName,
+                PhoneNumber = cifRequest.NextOfKinDetail.PhoneNumber,
+                MiddleName = cifRequest.NextOfKinDetail.MiddleName,
+                DateCreated = DateTime.UtcNow,
+                FkCustomerAddDetails = customData.Id,
+                //FkCustomerAddDetails = nextofkinId.Id,
+                FkCustomerAddDetailsNavigation = customData,
+                Gender = cifRequest.Gender
+            };
+
+
+            await _modelContext.AddAsync(nextOfKin);
+
+            if (await _modelContext.SaveChangesAsync() < 1)
+            {
+                _logger.LogInformation("There was a problem saving to the Redbox Database");
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+
+            return false;
+        }
+    }
+
     public async Task<(string responseCode, string responseDescription, VerifyBVNResponseModel data)> GetBVNDetails(string bvn)
     {
         try
@@ -1288,6 +1409,31 @@ public class AccountOpeningService : IAccountOpeningService
             _logger.LogInformation("There was a problem saving to redbox");
             return "There was a problem uprading your account. Please try again later";
         }
+
+        var backOfficeLog = new BackOfficeRequest
+        {
+            HaveDebitCard = "N",
+            IdDoc = request.RequiredDocuments.IdImage,
+            IdDocExtension = "Jpg",
+            IdNumber = request.RequiredDocuments.IdNumber,
+            IdType = request.RequiredDocuments.IdentityType,
+            PicDoc = request.RequiredDocuments.PassportPhotograph,
+            PicDocExtension = "jpg",
+            RequestTranId = Guid.NewGuid().ToString(),
+            SignatureDoc = request.RequiredDocuments.Signature,
+            SignatureDocExtension = "jpg",
+            UtilityDoc = request.RequiredDocuments.UtilityBill,
+            UtilityDocExtension = "jpg"
+        };
+
+        //var logToBackOffice = await _restRequestHelper.HttpAsync(Method.POST, _config[""], null, backOfficeLog);
+
+        //if (!logToBackOffice.IsSuccessful)
+        //{
+        //    _logger.LogInformation("Could not log to back office");
+        //    request.IsBackOfficeLogged = false;
+        //    return null;
+        //}
 
         // check address verification status
         var AddressVerificationResultCheck = await _soapRequestHelper.GetAddressVerificationStatus(

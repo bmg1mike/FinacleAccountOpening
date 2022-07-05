@@ -1,20 +1,8 @@
-# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP .NET Core service.
-
 version: '3.4'
 
 services:
-  stanbicibtcaccountopeningapi:
-    image: stanbicibtcaccountopeningapi
+  stanbicibtc.accountopening.api:
+    image: ${DOCKER_REGISTRY-}stanbicibtcaccountopeningapi
     build:
       context: .
       dockerfile: StanbicIBTC.AccountOpening.API/Dockerfile
-    ports:
-      - 5103:5103
-
-  # stanbicibtcaccountopeningworkerservice:
-  #   image: stanbicibtcaccountopeningworkerservice
-  #   build:
-  #     context: .
-  #     dockerfile: StanbicIBTC.AccountOpening.WorkerService/Dockerfile
-  #   ports:
-  #     - 5104:5104

@@ -1,24 +1,21 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS base
+#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
 WORKDIR /app
-EXPOSE 5104
 
-ENV ASPNETCORE_URLS=http://+:5104
-
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-dotnet-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
-USER appuser
-
-FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["StanbicIBTC.AccountOpening.WorkerService/StanbicIBTC.AccountOpening.WorkerService.csproj", "StanbicIBTC.AccountOpening.WorkerService/"]
+COPY ["StanbicIBTC.AccountOpening.Domain/StanbicIBTC.AccountOpening.Domain.csproj", "StanbicIBTC.AccountOpening.Domain/"]
+COPY ["StanbicIBTC.AccountOpening.Data/StanbicIBTC.AccountOpening.Data.csproj", "StanbicIBTC.AccountOpening.Data/"]
+COPY ["StanbicIBTC.AccountOpening.Service/StanbicIBTC.AccountOpening.Service.csproj", "StanbicIBTC.AccountOpening.Service/"]
 RUN dotnet restore "StanbicIBTC.AccountOpening.WorkerService/StanbicIBTC.AccountOpening.WorkerService.csproj"
 COPY . .
 WORKDIR "/src/StanbicIBTC.AccountOpening.WorkerService"
 RUN dotnet build "StanbicIBTC.AccountOpening.WorkerService.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "StanbicIBTC.AccountOpening.WorkerService.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "StanbicIBTC.AccountOpening.WorkerService.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app

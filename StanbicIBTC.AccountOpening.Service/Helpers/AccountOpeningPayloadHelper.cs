@@ -540,4 +540,188 @@ public static class AccountOpeningPayloadHelper
             </soapenv:Envelope>";
         return payload;
     }
+
+    public static string CorporateAccountCifPayload()
+    {
+        var payload = $@"
+         <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <web:executeService>
+            <arg_0_0>
+                <![CDATA[
+                    <FIXML xmlns:ns5=""http://soap.finacle.redbox.stanbic.com/"" xmlns:ns2=""http://webservice.fiusb.ci.infosys.com/"" xmlns:ns4=""http://www.finacle.com/fixml"">
+<Header>
+<RequestHeader>
+<MessageKey>
+<RequestUUID>28Aug2018corpAdd002</RequestUUID>
+<ServiceRequestId>createCorporateCustomer</ServiceRequestId>
+<ServiceRequestVersion>10.2</ServiceRequestVersion>
+<ChannelId>RBX</ChannelId>
+</MessageKey>
+<RequestMessageInfo>
+<BankId>NG</BankId>
+<TimeZone>
+</TimeZone>
+<EntityId>
+</EntityId>
+<EntityType>
+</EntityType>
+<ArmCorrelationId>
+</ArmCorrelationId>
+<MessageDateTime>2021-02-23T06:39:03.671</MessageDateTime>
+</RequestMessageInfo>
+<Security>
+<Token>
+<PasswordToken>
+<UserId>
+</UserId>
+<Password>
+</Password>
+</PasswordToken>
+</Token>
+<FICertToken>
+</FICertToken>
+<RealUserLoginSessionId>
+</RealUserLoginSessionId>
+<RealUser>
+</RealUser>
+<RealUserPwd>
+</RealUserPwd>
+<SSOTransferToken>
+</SSOTransferToken>
+</Security>
+</RequestHeader>
+</Header>
+<Body>
+<createCorporateCustomerRequest>
+<createCorporateCustomer_CustomData>
+<corpMiscInfo.0.CRNCY_CODE>NGN</corpMiscInfo.0.CRNCY_CODE>
+</createCorporateCustomer_CustomData>
+<CorpCustDetails>
+<corpCustomerDtlsData>
+<corpCustomerData>
+<segment>005</segment>
+<primaryRM_ID>A171462</primaryRM_ID>
+<corporate_name>TEST INC</corporate_name>
+<nativeLangCode>INFENG</nativeLangCode>
+<date_of_incorporation>2007-09-26T00:00:00.000</date_of_incorporation>
+<trade_services_availed>N</trade_services_availed>
+<crncy_Code>NGN</crncy_Code>
+<CustTypeDesc>006</CustTypeDesc> check
+<priority>Normal</priority>
+<corpPhoneEmailData>
+<phonenolocalcode>8066457858</phonenolocalcode>
+<phoneoremail>PHONE</phoneoremail>
+<preferredflag>Y</preferredflag>
+<phoneemailtype>CELLPH</phoneemailtype>
+<phonenocountrycode>234</phonenocountrycode>
+<phonenocitycode>0</phonenocitycode>
+<phoneno>2348066457858</phoneno>
+</corpPhoneEmailData>
+<corpPhoneEmailData>
+<email>info@test.com</email>
+<phoneoremail>EMAIL</phoneoremail>
+<preferredflag>Y</preferredflag>
+<phoneemailtype>REGEML</phoneemailtype>
+</corpPhoneEmailData>
+<relationship_createdby>DUMMY</relationship_createdby>
+<subsegment>301</subsegment>
+<islamic_banking_customer>N</islamic_banking_customer>
+<cust_hlth>003</cust_hlth>
+<health_desc>003</health_desc>
+<corpAddressData>
+<zip>234</zip>
+<state>LAGOS</state>
+<addresscategory>Registered</addresscategory>
+<Country>NG</Country>
+<preferredAddress>Y</preferredAddress>
+<City>LAGOS</City>
+<preferredFormat>FREE_TEXT_FORMAT</preferredFormat>
+<address_line1>54-56</address_line1>
+<address_line2>Marshalltown Mapungunbwe</address_line2>
+<address_line3>
+</address_line3>
+<FreeTextLabel>.</FreeTextLabel> Check this----------------------------
+<start_date>2018-08-09T00:00:00.000</start_date>
+<holdMailFlag>N</holdMailFlag>
+<street_name>
+</street_name>
+</corpAddressData>
+<lang_desc>en</lang_desc>
+<relationship_startdate>2017-09-27T12:20:21.621</relationship_startdate>
+<short_name>TEST INC</short_name>
+<createdBySystemID>TN014855</createdBySystemID> check this
+<average_annualincome>1</average_annualincome>
+<defaultaddresstype>Registered</defaultaddresstype>
+<primaryRMLOGIN_ID>A169189</primaryRMLOGIN_ID>
+<startdate>2018-08-09T12:20:21.621</startdate>
+<primary_service_center>000191</primary_service_center>
+<entity_type>Customer</entity_type>
+<cust_type_desc>003</cust_type_desc>
+<registration_number>RC122666</registration_number>
+<business_Type>005</business_Type>
+</corpCustomerData>
+</corpCustomerDtlsData>
+<corpRelatedData>
+<preferencesData>
+<corpPrefMiscData>
+<str1>USD</str1>
+<str10>CURRENCY</str10>
+<type>CURRENCY</type>
+<date1>2099-12-31T00:00:00.000</date1>
+</corpPrefMiscData>
+<corpPrefMiscData>
+<str1>GBP</str1>
+<str10>CURRENCY</str10>
+<type>CURRENCY</type>
+<date1>2099-12-31T00:00:00.000</date1>
+</corpPrefMiscData>
+<corpPrefMiscData>
+<str1>EUR</str1>
+<str10>CURRENCY</str10>
+<type>CURRENCY</type>
+<date1>2099-12-31T00:00:00.000</date1>
+</corpPrefMiscData>
+<corpPrefMiscData>
+<str1>NGN</str1>
+<str10>CURRENCY</str10>
+<type>CURRENCY</type>
+<date1>2099-12-31T00:00:00.000</date1>
+</corpPrefMiscData>
+</preferencesData>
+<corpEntityDocumentData/>
+<corpEntityDocumentData>
+<docissuedate>2010-10-27T00:00:00.000</docissuedate>
+<doctypecode>DT000</doctypecode>
+<placeofissue>NG</placeofissue>
+<countryofissue>NG</countryofissue>
+<referencenumber>UPLOAD</referencenumber>
+<docexpirydate>2099-01-01T00:00:00.000</docexpirydate>
+<doccode>D0002</doccode>
+<preferredUniqueId>UPLOAD</preferredUniqueId>
+</corpEntityDocumentData>
+<corpEntityDocumentData>
+<docissuedate>2010-10-27T00:00:00.000</docissuedate>
+<doctypecode>DT000</doctypecode>
+<placeofissue>NG</placeofissue>
+<countryofissue>NG</countryofissue>
+<referencenumber>UTILITY BILL OF SIGNATORIES</referencenumber>
+<docexpirydate>2099-01-01T00:00:00.000</docexpirydate>
+<doccode>D0004</doccode>
+<preferredUniqueId>UTILITY BILL OF SIGNATORIES</preferredUniqueId>
+</corpEntityDocumentData>
+</corpRelatedData>
+</CorpCustDetails>
+</createCorporateCustomerRequest>
+</Body>
+</FIXML>
+]]>
+    </arg_0_0>
+    </web:executeService>
+    </soapenv:Body>
+    </soapenv:Envelope>";
+
+    return payload;
+    }
 }

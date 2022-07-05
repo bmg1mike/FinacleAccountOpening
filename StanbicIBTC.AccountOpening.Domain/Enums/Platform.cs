@@ -5,6 +5,7 @@ public enum Platform
     WEB,
     MOBILE,
     USSD,
-    Bulk
+    Bulk,
+    USSD_Device_Financing
 }
 

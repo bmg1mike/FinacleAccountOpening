@@ -5,5 +5,6 @@ public enum AccountTypeRequested
     Tier_One,
     Tier_Three,
     Tier_One_Upgrade,
-    Bulk_Tier_One
+    Bulk_Tier_One,
+    Device_Financing_Tier_Three
 }
