@@ -107,7 +107,7 @@ app.MapControllers();
 
 app.UseHealthChecksUI();
 
-app.MapHealthChecks("http://10.234.206.104/health", new HealthCheckOptions()
+app.MapHealthChecks("/health", new HealthCheckOptions()
 {
     Predicate = _ => true,
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
