@@ -548,7 +548,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             var bvnDetails = bvnDetailsResponse.data;
 
-            
+
 
             if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
             {
@@ -809,7 +809,7 @@ public class AccountOpeningService : IAccountOpeningService
                     //    _logger.LogInformation("Could not log to back office");
                     //    request.IsBackOfficeLogged = false;
                     //}
-                    
+
                 }
 
                 request.Cif = cifResponse.cif;
@@ -817,10 +817,10 @@ public class AccountOpeningService : IAccountOpeningService
                 cif = cifResponse.cif;
             }
             SoapCallResponse openSavingsAccount;
-            
+
             if (request.AccountTypeRequested == AccountTypeRequested.Bulk_Tier_One.ToString())
             {
-                openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request,"KYCL1","NGN",request.SolId));
+                openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request, "KYCL1", "NGN", request.SolId));
             }
             else if (request.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString() && request.Platform == Platform.USSD_Device_Financing.ToString())
             {
@@ -831,8 +831,8 @@ public class AccountOpeningService : IAccountOpeningService
                 openSavingsAccount = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AccountOpeningPayload(cif, request));
             }
 
-            
-            
+
+
 
             if (openSavingsAccount.ResponseCode != "000")
             {
@@ -1142,11 +1142,11 @@ public class AccountOpeningService : IAccountOpeningService
                 IdentityType = cifRequest.RequiredDocuments.IdentityType,
                 MonthlyNetIncome = cifRequest.EmployedAndStudentCustomerInformation.MonthlyIncome.ToString(),
                 TaxIdentificationNumber = cifRequest.SoleProprietor.TaxIdentificationNumber
-                
+
             };
-            
+
             await _modelContext.AddAsync(customData);
-            
+
             var bvnLinkageLog = new RbxTBvnLinkageLog
             {
                 AcctName = cifRequest.FirstName + " " + cifRequest.LastName,
@@ -1500,6 +1500,11 @@ public class AccountOpeningService : IAccountOpeningService
             AccountOpeningPayloadHelper.DownloadAddressVerificationReport(addressVerificationId));
 
         return string.Empty;
+    }
+
+    public async Task GetAccountNumberByBvn()
+    {
+
     }
 
 }
