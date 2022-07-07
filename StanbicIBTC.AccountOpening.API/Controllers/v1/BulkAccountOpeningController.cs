@@ -66,9 +66,20 @@ public class BulkAccountOpeningController : BaseController
     }
 
     [HttpGet("GetApprovedRequests/")]
-    public async Task<IActionResult> GetApprovedRequests()
+    public async Task<IActionResult> GetApprovedRequests(string branchId)
     {
-        var requests = await _service.GetApprovedRequests();
+        var requests = await _service.GetApprovedBulkAccountRequestsByBranchId(branchId);
         return Ok(requests);
+    }
+
+    [HttpGet("DownloadFile"),DisableRequestSizeLimit]
+    public async Task<IActionResult> DownloadFile(string fileName)
+    {
+        var file = await _service.DownloadFile(fileName);
+        if (file is null)
+        {
+            return NotFound("The File does not exist");
+        }
+        return File(file.Memory,file.ContentType,file.FilePath);
     }
 }
