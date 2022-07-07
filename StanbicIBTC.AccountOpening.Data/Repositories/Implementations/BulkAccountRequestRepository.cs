@@ -58,6 +58,17 @@ public class BulkAccountRequestRepository : IBulkAccountRequestRepository
         return bulkAccountRequests;
     }
 
+    public async Task<List<BulkAccountRequest>> GetApprovedBulkAccountRequests(string branchId)
+    {
+        var filter = Builders<BulkAccountRequest>.Filter.Eq(m => m.ApprovalStatus, ApprovalStatus.Approved) &
+            Builders<BulkAccountRequest>.Filter.Eq(x => x.BranchId, branchId);
+
+
+        var bulkAccountRequests = await context.BulkAccountRequests.Find(filter).ToListAsync();
+
+        return bulkAccountRequests;
+    }
+
     public async Task<PaginatedList<BulkAccountDto>> GetAllAccountRequests(UploadHistoryDto history)
     {
         var bulk = context.BulkAccountRequests.AsQueryable()

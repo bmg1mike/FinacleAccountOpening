@@ -10,4 +10,6 @@ public interface IBulkAccountOpeningService
     Task<Result<PaginatedList<BulkAccountDto>>> UploadHistory(UploadHistoryDto history);
     Task<string> OpenBulkAccounts(BulkAccountRequest request);
     Task<List<BulkAccountRequest>> GetApprovedRequests();
+    Task<DownloadFileResponse> DownloadFile(string fileName);
+    Task<Result<List<BulkAccountDto>>> GetApprovedBulkAccountRequestsByBranchId(string branchId);
 }

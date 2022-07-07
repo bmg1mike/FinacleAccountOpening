@@ -11,4 +11,5 @@ public interface IBulkAccountRequestRepository
     Task<List<BulkAccountRequest>> GetPendingBulkAccountRequests(string branchId);
     Task<List<BulkAccountRequest>> GetApprovedRequests();
     Task<PaginatedList<BulkAccountDto>> GetAllAccountRequests(UploadHistoryDto history);
+    Task<List<BulkAccountRequest>> GetApprovedBulkAccountRequests(string branchId);
 }

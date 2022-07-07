@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.StaticFiles;
+
 namespace StanbicIBTC.AccountOpening.Service;
 
 public class BulkAccountOpeningService : IBulkAccountOpeningService
@@ -78,15 +80,55 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         }
     }
 
+    public async Task<DownloadFileResponse> DownloadFile(string fileName)   /// Todo
+    {
+        var filePath = $"{Directory.GetCurrentDirectory()}/Files/{fileName.Trim()}";//Path.Combine(Directory.GetCurrentDirectory(), $"/Files/{ fileName.Trim()}");
+        if (!File.Exists(filePath))
+        {
+            return null;
+        }
+        var memory = new MemoryStream();
+        await using (var stream = new FileStream(filePath, FileMode.Open))
+        {
+            await stream.CopyToAsync(memory);
+        }
+        memory.Position = 0;
+
+        GetContentType(filePath);
+
+        var response = new DownloadFileResponse
+        {
+            Memory = memory,
+            ContentType = GetContentType(filePath),
+            FilePath = filePath
+        };
+
+        return response;
+        //var file = $"{Directory.GetCurrentDirectory()}/Files/{fileName.Trim()}";
+
+    }
+
     public async Task<ApiResult> ApproveOrRejectFile(BulkAccountDto request)
     {
         try
         {
             var requestInDb = await _requestRepo.GetBulkAccountRequest(request.BulkAccountRequestId);
 
+            
+
             if (requestInDb is null)
             {
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid Request Sent" };
+            }
+
+            if (request.ApprovedBy == requestInDb.CreatedBy)
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "You Can't approve yourself" };
+            }
+
+            if (_finacleRepository.ValidateRelationshipManager(request.ApprovedBy) == null)
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "You are not a registered branch manager" };
             }
 
             if (requestInDb.ApprovalStatus != ApprovalStatus.Pending)
@@ -114,6 +156,28 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     public async Task<Result<List<BulkAccountDto>>> GetBulkAccountRequestsByBranchId(string branchId)
     {
         var requests = await _requestRepo.GetPendingBulkAccountRequests(branchId);
+
+        var requestsdto = new List<BulkAccountDto>();
+        foreach (var item in requests)
+        {
+            requestsdto.Add(new BulkAccountDto
+            {
+                BranchId = item.BranchId,
+                ApprovalStatus = item.ApprovalStatus,
+                ApprovedBy = item.ApprovedBy,
+                BulkAccountRequestId = item.BulkAccountRequestId,
+                CreatedBy = item.CreatedBy,
+                File = item.File,
+                DateCreated = item.DateCreated
+            });
+        }
+
+        return new Result<List<BulkAccountDto>> { Content = requestsdto, ResponseCode = "000" };
+    }
+
+    public async Task<Result<List<BulkAccountDto>>> GetApprovedBulkAccountRequestsByBranchId(string branchId)
+    {
+        var requests = await _requestRepo.GetApprovedBulkAccountRequests(branchId);
 
         var requestsdto = new List<BulkAccountDto>();
         foreach (var item in requests)
@@ -488,6 +552,19 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             _logger.LogError(ex, ex.Message);
             return null;
         }
+    }
+
+    private string GetContentType(string path)
+    {
+        var provider = new FileExtensionContentTypeProvider();
+        string contentType;
+
+        if (!provider.TryGetContentType(path, out contentType))
+        {
+            contentType = "application/octet-stream";
+        }
+
+        return contentType;
     }
 
 }
