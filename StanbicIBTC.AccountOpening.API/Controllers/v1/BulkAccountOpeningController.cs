@@ -72,7 +72,7 @@ public class BulkAccountOpeningController : BaseController
         return Ok(requests);
     }
 
-    [HttpGet("DownloadFile"),DisableRequestSizeLimit]
+    [HttpGet("DownloadFile/"),DisableRequestSizeLimit]
     public async Task<IActionResult> DownloadFile(string fileName)
     {
         var file = await _service.DownloadFile(fileName);
