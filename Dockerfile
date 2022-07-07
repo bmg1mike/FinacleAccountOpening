@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS base
 WORKDIR /app
+EXPOSE 80
 EXPOSE 5103
 
 ENV ASPNETCORE_URLS=http://+:5103

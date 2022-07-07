@@ -123,10 +123,10 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(result);
         }
 
-        [HttpGet("GetAccountDetailsByBvn")]
-        public async Task<IActionResult> GetAccountDetailsByBvn(string bvn)
+        [HttpPost("GetAccountDetailsByBvn/")]
+        public async Task<IActionResult> GetAccountDetailsByBvn([FromBody] GetAccoutDetailsByBvnDto request)
         {
-            var response = await _accountOpeningService.GetAccountDetailsByBvn(bvn);
+            var response = await _accountOpeningService.GetAccountDetailsByBvn(request.Bvn);
             return Ok(response);
         }
     }
