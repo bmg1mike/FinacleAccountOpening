@@ -19,4 +19,5 @@ public interface IAccountOpeningService
     Task<string> UpgradeToTierThree(CIFRequest request);
     Task<ApiResult> UpgradeToTierThreeAccountOpeningRequest(TierOneUgrade request);
     Task<ApiResult> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request);
+    Task<ApiResult> GetAccountDetailsByBvn(string bvn);
 }

@@ -10,5 +10,6 @@ public class ApiResult
 {
     public string responseCode { get; set; }
     public string responseDescription { get; set; }
+    public object data { get; set; } = null;
 }
 

@@ -39,6 +39,15 @@ public partial class CIFRequestRepository : ICIFRequestRepository
   
     }
 
+    public async Task<CIFRequest> GetCIFRequestByBvn(string bvn)
+    {
+        var filter = Builders<CIFRequest>.Filter.Eq(m => m.CustomerBVN, bvn);
+        var cIFRequest =await context.CIFRequests.Find(filter).FirstOrDefaultAsync();
+
+        return cIFRequest;
+  
+    }
+
     //GetList by any Field Name template. Uncomment If Needed. Remember to add to your ICIFRequestRepository.cs
     /* public async Task<List<CIFRequest>> GetByFieldName(string fieldName)
     {
@@ -65,6 +74,7 @@ public partial class CIFRequestRepository : ICIFRequestRepository
 
         return cIFRequests;
     }
+
 
     public async Task<bool> RemoveCIFRequest(string cIFRequestId)
     {

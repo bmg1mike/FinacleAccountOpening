@@ -1502,9 +1502,23 @@ public class AccountOpeningService : IAccountOpeningService
         return string.Empty;
     }
 
-    public async Task GetAccountNumberByBvn()
+    public async Task<ApiResult> GetAccountDetailsByBvn(string bvn)
     {
+        try
+        {
+            var cifRequet = await _cifRepository.GetCIFRequestByBvn(bvn);
 
+            if (cifRequet is null)
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "Account Details does not exist", data = null };
+            }
+            return new ApiResult { responseCode = "000", responseDescription = "Successful", data = new { AccountNumber = cifRequet.AccountNumber, Cif = cifRequet.Cif } };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription = "There was an error, please try again later", data = null };
+        }
     }
 
 }

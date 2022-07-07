@@ -46,12 +46,12 @@
       "dockerBuild": {
         "tag": "accountopeningapi:dev",
         "target": "base",
-        "dockerfile": "${workspaceFolder}/StanbicIBTC.AccountOpening.API/Dockerfile",
+        "dockerfile": "${workspaceFolder}/StanbicIBTC.AccountOpening.BulkAccountOpeningService/Dockerfile",
         "context": "${workspaceFolder}",
         "pull": true
       },
       "netCore": {
-        "appProject": "${workspaceFolder}/StanbicIBTC.AccountOpening.API/StanbicIBTC.AccountOpening.API.csproj"
+        "appProject": "${workspaceFolder}/StanbicIBTC.AccountOpening.BulkAccountOpeningService/StanbicIBTC.AccountOpening.BulkAccountOpeningService.csproj"
       }
     },
     {
@@ -62,12 +62,12 @@
       ],
       "dockerBuild": {
         "tag": "accountopeningapi:latest",
-        "dockerfile": "${workspaceFolder}/StanbicIBTC.AccountOpening.API/Dockerfile",
+        "dockerfile": "${workspaceFolder}/StanbicIBTC.AccountOpening.BulkAccountOpeningService/Dockerfile",
         "context": "${workspaceFolder}",
         "pull": true
       },
       "netCore": {
-        "appProject": "${workspaceFolder}/StanbicIBTC.AccountOpening.API/StanbicIBTC.AccountOpening.API.csproj"
+        "appProject": "${workspaceFolder}/StanbicIBTC.AccountOpening.BulkAccountOpeningService/StanbicIBTC.AccountOpening.BulkAccountOpeningService.csproj"
       }
     },
     {
@@ -78,7 +78,7 @@
       ],
       "dockerRun": {},
       "netCore": {
-        "appProject": "${workspaceFolder}/StanbicIBTC.AccountOpening.API/StanbicIBTC.AccountOpening.API.csproj",
+        "appProject": "${workspaceFolder}/StanbicIBTC.AccountOpening.BulkAccountOpeningService/StanbicIBTC.AccountOpening.BulkAccountOpeningService.csproj",
         "enableDebugging": true
       }
     },
@@ -90,7 +90,7 @@
       ],
       "dockerRun": {},
       "netCore": {
-        "appProject": "${workspaceFolder}/StanbicIBTC.AccountOpening.API/StanbicIBTC.AccountOpening.API.csproj"
+        "appProject": "${workspaceFolder}/StanbicIBTC.AccountOpening.BulkAccountOpeningService/StanbicIBTC.AccountOpening.BulkAccountOpeningService.csproj"
       }
     }
   ]
