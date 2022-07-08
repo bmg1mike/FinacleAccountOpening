@@ -19,6 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Stanbic IBTC Account Opening Service", Version = "v1" });
+    c.AddServer(new OpenApiServer { Url = "https://80.248.0.83:7443/newaccountopening", Description = "URL for Https Dev requests with IP" });
     c.AddServer(new OpenApiServer { Url = "https://stanbic.nibse.com/mybank/newaccountopening", Description = "URL for UAT requests" });
     c.AddServer(new OpenApiServer { Url = "https://localhost:7215", Description = "URL for Https Dev requests" });
     c.AddServer(new OpenApiServer { Url = "http://localhost:5103", Description = "URL for Http Dev requests" });

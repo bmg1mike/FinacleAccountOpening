@@ -68,7 +68,12 @@ public class AccountOpeningService : IAccountOpeningService
             //    return new ApiResult { responseCode = "999", responseDescription = "NIN does not match BVN's NIN" };
             //}
 
-            var ninDetailsResponse = await GetNinDetails(request.Nin, request.DateOfBirth.ToString());
+            if (string.IsNullOrEmpty(bvnDetails.NIN))
+            {
+                return new ApiResult { responseCode = "999", responseDescription = "Your NIN is not linked to your BVN" };
+            }
+
+            var ninDetailsResponse = await GetNinDetails("00000000000", request.DateOfBirth.ToString()); // Change NIN in production to BVN NIN
 
             if (ninDetailsResponse.data is null)
             {
