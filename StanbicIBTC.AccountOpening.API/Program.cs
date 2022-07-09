@@ -1,4 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using StanbicIBTC.AccountOpening.API;
+using StanbicIBTC.AccountOpening.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,7 +58,7 @@ builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
 
 builder.Services.AddDataDependencies(builder.Configuration);
 builder.Services.AddServiceDependencies(builder.Configuration);
-
+builder.Services.AddIdentityService();
 
 
 builder.Services.AddApiVersioning(x =>
@@ -79,6 +82,20 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
+using var scope = app.Services.CreateScope();
+
+var services = scope.ServiceProvider;
+try
+{
+    var context = services.GetRequiredService<DataContext>();
+    await context.Database.MigrateAsync();
+}
+catch (Exception ex)
+{
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "An error occured during migraiton");
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -100,6 +117,7 @@ app.UseHttpsRedirection();
 //                 c.SwaggerEndpoint("./swagger/v1/swagger.json", "AccountOpening.API v1");
 //                 c.RoutePrefix = "";
 //             });
+app.UseAuthentication();
 
 app.UseAuthorization();
 

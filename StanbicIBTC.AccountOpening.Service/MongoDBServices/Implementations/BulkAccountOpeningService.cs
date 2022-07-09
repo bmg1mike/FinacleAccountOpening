@@ -295,6 +295,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
             var bvnDetailsResponse = await _accountOpeningService.GetBVNDetails(request.Bvn);
 
+
             var outboundBvn = new OutboundLog
             {
                 APICalled = "BVN Api",
@@ -314,14 +315,18 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 return "Invalid Bvn";
             }
 
+            if (string.IsNullOrEmpty(bvnDetailsResponse.data.NIN))
+            {
+                _logger.LogInformation("The BVN is not linked to any NIN");
+                accountOpeningAttempt.Response = "The BVN is not linked to any NIN";
+                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                return "Invalid Bvn";
+            }
+
             var bvnDetails = bvnDetailsResponse.data;
 
-            //if (bvnDetails.NIN != request.Nin)
-            //{
-            //    return new ApiResult { responseCode = "999", responseDescription = "NIN does not match BVN's NIN" };
-            //}
 
-            var ninDetailsResponse = await _accountOpeningService.GetNinDetails("00000000000", request.DateOfBirth.ToString()); // change back to BVN NIN i.e bvnDetails.NIN
+            var ninDetailsResponse = await _accountOpeningService.GetNinDetails(bvnDetails.NIN.Trim(), request.DateOfBirth.ToString()); // change back to BVN NIN i.e bvnDetails.NIN
             
             if (ninDetailsResponse.data is null)
             {

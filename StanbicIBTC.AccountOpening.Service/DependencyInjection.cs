@@ -1,5 +1,8 @@
 using System.Reflection;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
 
 namespace StanbicIBTC.AccountOpening.Core.Services;
 public static class DependencyInjection
@@ -38,6 +41,20 @@ public static class DependencyInjection
         services.AddScoped<ISoapRequestHelper, SoapRequestHelper>();
         services.AddScoped<IMassageNotification, MassageNotification>();
         services.AddHttpClient<ISoapRequestHelper, SoapRequestHelper>();
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x => {
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["AuthSecretKey"])),
+                ValidateIssuer = true,
+                ValidIssuer = configuration["Token_Issuer"],
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+            x.Authority = configuration["Token_Issuer"];
+        });
 
 
         return services;

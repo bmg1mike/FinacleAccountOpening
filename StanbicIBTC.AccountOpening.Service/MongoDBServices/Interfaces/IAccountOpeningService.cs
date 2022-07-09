@@ -2,7 +2,6 @@ namespace StanbicIBTC.AccountOpening.Service;
 public interface IAccountOpeningService
 {
     Task AddressVerificationRequest(AccountOpeningAttempt request);
-    Task<List<ApiResult>> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests);
     Task<string> CheckAddressVerificationStatus(string addressVerificationId);
     Task<string> DownloadAddressVerificationReport(string addressVerificationId);
     ApiResult GetAccountNameByAccountNumber(string accountNumber);

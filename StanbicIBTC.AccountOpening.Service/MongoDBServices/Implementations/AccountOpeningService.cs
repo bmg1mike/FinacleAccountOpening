@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -18,12 +20,13 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly DataContext _modelContext;
     private readonly IOutboundLogRepository _outboundLogRepository;
     private readonly IInboundLogRepository _inboundLogRepository;
+    private readonly IHttpContextAccessor _contextAccessor;
 
     public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper,
             ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt,
             IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository,
             IMassageNotification messagingNotification, DataContext modelContext, IOutboundLogRepository outboundLogRepository,
-            IInboundLogRepository inboundLogRepository)
+            IInboundLogRepository inboundLogRepository, IHttpContextAccessor contextAccessor)
     {
         _logger = logger;
         _soapRequestHelper = soapRequestHelper;
@@ -36,12 +39,16 @@ public class AccountOpeningService : IAccountOpeningService
         _modelContext = modelContext;
         _outboundLogRepository = outboundLogRepository;
         _inboundLogRepository = inboundLogRepository;
+        _contextAccessor = contextAccessor;
     }
 
     public async Task<ApiResult> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request)
     {
         try
         {
+            var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            var platform = identity.FindFirst("DisplayName").Value;
+
             var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
 
             var outboundBvn = new OutboundLog
@@ -73,7 +80,7 @@ public class AccountOpeningService : IAccountOpeningService
                 return new ApiResult { responseCode = "999", responseDescription = "Your NIN is not linked to your BVN" };
             }
 
-            var ninDetailsResponse = await GetNinDetails("00000000000", request.DateOfBirth.ToString()); // Change NIN in production to BVN NIN
+            var ninDetailsResponse = await GetNinDetails(bvnDetails.NIN.Trim(), request.DateOfBirth.ToString()); // Change NIN in production to BVN NIN
 
             if (ninDetailsResponse.data is null)
             {
@@ -203,7 +210,7 @@ public class AccountOpeningService : IAccountOpeningService
                 NIN = bvnDetails.NIN,
                 PhoneNumber = bvnDetails.PhoneNumber,
                 Gender = bvnDetails.Gender,
-                Platform = request.Platform.ToString(),
+                Platform = platform,
                 MiddleName = bvnDetails.MiddleName,
                 WillOnBoard = request.WillOnboard,
                 SecretQuestion = secretQuestion,
@@ -244,6 +251,8 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
+            var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            var platform = identity.FindFirst("DisplayName").Value;
 
             var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(request.AccountNumber);
 
@@ -370,7 +379,7 @@ public class AccountOpeningService : IAccountOpeningService
                 IsKycDocumentsUploaded = true,
                 IsAddressVerificationLogged = true,
                 IsSanctionScreeningLogged = true,
-                Platform = request.Platform.ToString()
+                Platform = platform
 
             };
 
@@ -401,6 +410,9 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
+            var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            var platform = identity.FindFirst("DisplayName").Value;
+
             var cifDetails = _finacleRepository.CheckCifForBvn(request.Bvn);
             if (cifDetails is null)
             {
@@ -443,6 +455,9 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
+            var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            var platform = identity.FindFirst("DisplayName").Value;
+
             var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
 
             if (bvnDetailsResponse.data is null)
@@ -484,7 +499,7 @@ public class AccountOpeningService : IAccountOpeningService
                 NIN = bvnDetails.NIN,
                 PhoneNumber = bvnDetails.PhoneNumber,
                 Gender = bvnDetails.Gender,
-                Platform = request.Platform.ToString(),
+                Platform = platform,
                 MiddleName = bvnDetails.MiddleName,
                 NextOfKinDetail = nextOfKinDetails
             };
@@ -535,6 +550,9 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
+            var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            var platform = identity.FindFirst("DisplayName").Value;
+
             var accountOpeningAttempt = new AccountOpeningAttempt
             {
                 Bvn = request.Bvn,
@@ -639,7 +657,7 @@ public class AccountOpeningService : IAccountOpeningService
                 NIN = bvnDetails.NIN,
                 PhoneNumber = bvnDetails.PhoneNumber,
                 Gender = bvnDetails.Gender,
-                Platform = request.Platform.ToString(),
+                Platform = platform,
                 MiddleName = bvnDetails.MiddleName,
 
                 NextOfKinDetail = new CIFNextOfKinDetail
@@ -684,24 +702,6 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
-    public async Task<List<ApiResult>> BulkTierOneAccountOpening(List<TierOneAccountOpeningRequest> requests)
-    {
-        try
-        {
-            var apiResults = new List<ApiResult>();
-            foreach (var item in requests)
-            {
-                var accountOpened = await ValidateTierOneAccountOpeningRequest(item);
-                apiResults.Add(accountOpened);
-            }
-            return apiResults;
-        }
-        catch (Exception ex)
-        {
-
-            throw new Exception(ex.Message);
-        }
-    }
 
     public List<EmploymentResult> GetEmploymentStatus()
     {
