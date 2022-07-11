@@ -22,9 +22,48 @@ public static class DependencyInjection
                     .AddOracle(configuration.GetConnectionString("FinacleConnection"), "select * from v$version", "Finacle Db Health", HealthStatus.Degraded);
         services.AddHealthChecks()
             .AddSqlServer(configuration["AccountOpeningConnection:ConnectionString"], null, "SQLServer Health", HealthStatus.Degraded);
-        //services.AddHealthChecks()
-        //             .AddOracle(configuration.GetConnectionString("AccountOpeningConnection"),"select * from v$version","RedBox Db Health",HealthStatus.Degraded);
 
+        services.AddHealthChecks()
+            .AddUrlGroup(new Uri
+                (configuration["NIN_service:base_url"]),
+                name: "NIN Redbox Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                (configuration["BVN_service:base_url"]),
+                name: "BVN Redbox Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                (configuration["Messaging_Service:base_url"]),
+                name: "SMS and Email Redbox Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                (configuration["Finacle:base_url"]),
+                name: "Finacle Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                (configuration["Address_Verification:base_url"]),
+                name: "Address Verification Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                (configuration["RubyConnection:RubyUrl"]),
+                name: "Ruby Account Opening Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                (configuration["WebAndMobileOnboarding"]),
+                name: "Internet and Mobile Banking Onboarding Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                ("https://google.com"),
+                name: "Internet Connection",
+                failureStatus: HealthStatus.Degraded
+            );
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();
@@ -42,7 +81,8 @@ public static class DependencyInjection
         services.AddScoped<IMassageNotification, MassageNotification>();
         services.AddHttpClient<ISoapRequestHelper, SoapRequestHelper>();
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x => {
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
+        {
             x.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
