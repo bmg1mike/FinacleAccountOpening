@@ -3,7 +3,7 @@ using StanbicIBTC.AccountOpening.Service;
 
 namespace StanbicIBTC.AccountOpening.API.Controllers.v1;
 
-[Authorize(AuthenticationSchemes = "Bearer")]
+//[Authorize(AuthenticationSchemes = "Bearer")]
 public class BulkAccountOpeningController : BaseController
 {
     private readonly IBulkAccountOpeningService _service;
@@ -73,7 +73,7 @@ public class BulkAccountOpeningController : BaseController
         return Ok(requests);
     }
 
-    [HttpGet("DownloadFile/"),DisableRequestSizeLimit]
+    [HttpGet("DownloadFile/"), DisableRequestSizeLimit]
     public async Task<IActionResult> DownloadFile(string fileName)
     {
         var file = await _service.DownloadFile(fileName);
@@ -81,6 +81,6 @@ public class BulkAccountOpeningController : BaseController
         {
             return NotFound("The File does not exist");
         }
-        return File(file.Memory,file.ContentType,file.FilePath);
+        return File(file.Memory, file.ContentType, file.FilePath);
     }
 }
