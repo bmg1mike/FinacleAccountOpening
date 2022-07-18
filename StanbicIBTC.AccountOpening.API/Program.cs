@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Configuration.SetBasePath("/dkworker/dkapp/docker/config/")
-    .AddJsonFile("appsettings")
+    .AddJsonFile("appsettings.json")
     .Build();
 
 builder.Host.UseSerilog((context, config) =>
