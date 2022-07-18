@@ -104,4 +104,10 @@ public class FinacleRepository : IFinacleRepository
         return db.Query<ValidateRelationshipManagerResponse>(sql, new { sapId = sapId }).SingleOrDefault();
     }
 
+    public List<BranchesResponse> GetBranches()
+    {
+        var sql = $@"select sol_id,sol_desc Branch_Name from tbaadm.sol";
+        return db.Query<BranchesResponse>(sql).ToList();
+    }
+
 }

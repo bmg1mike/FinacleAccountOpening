@@ -31,8 +31,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         {
             var batchId = DateTime.Now.ToString("yyyy MM dd HH mm ss").Replace(" ", string.Empty);
 
-            //var dir = $"{Directory.GetCurrentDirectory()}/Files";
-            var dir = _config["File_Path"];
+            var dir = $"{Directory.GetCurrentDirectory()}/others/Files";
+            //var dir = _config["File_Path"];
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
@@ -84,7 +84,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
     public async Task<DownloadFileResponse> DownloadFile(string fileName)   /// Todo
     {
-        var filePath = $"{_config["File_Path"]}/{fileName.Trim()}";//Path.Combine(Directory.GetCurrentDirectory(), $"/Files/{ fileName.Trim()}");
+        var dir = $"{Directory.GetCurrentDirectory()}/others/Files";
+        var filePath = $"{dir}/{fileName.Trim()}";//Path.Combine(Directory.GetCurrentDirectory(), $"/Files/{ fileName.Trim()}");
         if (!File.Exists(filePath))
         {
             return null;
