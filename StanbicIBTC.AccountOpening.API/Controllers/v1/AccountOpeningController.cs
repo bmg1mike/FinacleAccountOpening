@@ -3,7 +3,7 @@ using StanbicIBTC.AccountOpening.Service;
 
 namespace StanbicIBTC.AccountOpening.API.Controllers.v1
 {
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    //[Authorize(AuthenticationSchemes = "Bearer")]
     public class AccountOpeningController : BaseController
     {
         private readonly IAccountOpeningService _accountOpeningService;
@@ -92,7 +92,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(result);
         }
 
-        
+
         [HttpGet("GetEmploymentStatus/")]
         [ProducesResponseType(200, Type = typeof(Result<List<EmploymentResult>>))]
         public IActionResult GetEmploymentStatus()
