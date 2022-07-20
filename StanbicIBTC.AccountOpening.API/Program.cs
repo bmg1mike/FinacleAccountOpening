@@ -7,9 +7,10 @@ using StanbicIBTC.AccountOpening.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Configuration.SetBasePath($"{Directory.GetCurrentDirectory()}/others")
-    .AddJsonFile("appsettings.json")
-    .Build();
+
+// builder.Configuration.SetBasePath($"{Directory.GetCurrentDirectory()}/others")
+//     .AddJsonFile("appsettings.json")
+//     .Build();
 
 builder.Host.UseSerilog((context, config) =>
 {
