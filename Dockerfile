@@ -19,6 +19,7 @@ RUN dotnet build "StanbicIBTC.AccountOpening.API.csproj" -c Release -o /app/buil
 
 FROM build AS publish
 RUN dotnet publish "StanbicIBTC.AccountOpening.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN sed -i 's/SECLEVEL=2/SECLEVEL=1/g' /etc/ssl/openssl.cnf
 
 FROM base AS final
 WORKDIR /app
