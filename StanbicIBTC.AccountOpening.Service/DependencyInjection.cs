@@ -25,22 +25,22 @@ public static class DependencyInjection
 
         services.AddHealthChecks()
             .AddUrlGroup(new Uri
-                (configuration["NIN_service:base_url"]),
+                ("https://10.234.207.60:60003"),
                 name: "NIN Redbox Endpoint",
                 failureStatus: HealthStatus.Degraded
             )
             .AddUrlGroup(new Uri
-                (configuration["BVN_service:base_url"]),
+                ("https://10.234.203.160:7095"),
                 name: "BVN Redbox Endpoint",
                 failureStatus: HealthStatus.Degraded
             )
             .AddUrlGroup(new Uri
-                (configuration["Messaging_Service:base_url"]),
+                ("https://pngcorredbox:7037"),
                 name: "SMS and Email Redbox Endpoint",
                 failureStatus: HealthStatus.Degraded
             )
             .AddUrlGroup(new Uri
-                (configuration["Finacle:base_url"]),
+                ("https://pngcorweb.ng.sbicdirectory.com/"),
                 name: "Finacle Endpoint",
                 failureStatus: HealthStatus.Degraded
             )
@@ -50,7 +50,7 @@ public static class DependencyInjection
                 failureStatus: HealthStatus.Degraded
             )
             .AddUrlGroup(new Uri
-                (configuration["RubyConnection:RubyUrl"]),
+                ("https://10.234.18.240:9443/"),
                 name: "Ruby Account Opening Endpoint",
                 failureStatus: HealthStatus.Degraded
             )
