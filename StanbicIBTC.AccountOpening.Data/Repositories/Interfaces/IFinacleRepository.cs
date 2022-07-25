@@ -15,4 +15,5 @@ public interface IFinacleRepository
     bool LogForSanctionScreening(SanctionScreeningRequest request);
     SanctionScreeningResult GetSanctionScreeningResult(string accountOpeningId);
     ValidateRelationshipManagerResponse ValidateRelationshipManager(string sapId);
+    List<BranchesResponse> GetBranches();
 }

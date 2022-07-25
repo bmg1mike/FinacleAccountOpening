@@ -29,7 +29,7 @@ public class TierThreeAccountOpeningRequest
 
 public class PoliticallyExposedPersonDetails
 {
-    public string FamilyMemberHeldGovernment  { get; set; }
+    public string FamilyMemberHeldGovernment { get; set; }
     public string FamilyMemberFullName { get; set; }
     public string FamilyMemberPositionHeld { get; set; }
     public string RelationWithFamilyMember { get; set; }
@@ -57,7 +57,7 @@ public class RequiredDocuments
     public string IdentityType { get; set; }
     public string IdNumber { get; set; }
     public string IdImage { get; set; } // regulatory Id
-    public DateTime IdIssueDate { get; set; }
+    public DateTime? IdIssueDate { get; set; }
     public DateTime? IdExpiryDate { get; set; }
     public string PassportPhotograph { get; set; }
     public string Signature { get; set; }

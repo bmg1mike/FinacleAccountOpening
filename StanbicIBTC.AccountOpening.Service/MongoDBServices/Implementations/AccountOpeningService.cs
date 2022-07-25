@@ -1526,4 +1526,10 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
+    public ApiResult GetBranches()
+    {
+        var branches = _finacleRepository.GetBranches();
+        return new ApiResult { responseCode = "000", responseDescription = "successful", data = branches };
+    }
+
 }
