@@ -19,33 +19,33 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// builder.Services.AddSwaggerGen(c =>
-// {
-//     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Stanbic IBTC Account Opening Service", Version = "v1" });
-//     c.AddServer(new OpenApiServer { Url = "https://stanbic.nibse.com/mybank/newaccountopening", Description = "URL for UAT requests" });
-//     c.AddServer(new OpenApiServer { Url = "https://localhost:7215", Description = "URL for Https Dev requests" });
-//     c.AddServer(new OpenApiServer { Url = "http://localhost:5103", Description = "URL for Http Dev requests" });
+//builder.Services.AddSwaggerGen(c =>
+//{
+//    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Stanbic IBTC Account Opening Service", Version = "v1" });
+//    c.AddServer(new OpenApiServer { Url = "https://stanbic.nibse.com/mybank/newaccountopening", Description = "URL for UAT requests" });
+//    c.AddServer(new OpenApiServer { Url = "https://localhost:7215", Description = "URL for Https Dev requests" });
+//    c.AddServer(new OpenApiServer { Url = "http://localhost:5103", Description = "URL for Http Dev requests" });
 
-// });
+//});
 
 builder.Services.AddHealthChecks()
     .AddUrlGroup(new Uri
-        ("http://10.234.135.44:60003/smileidentity/verify"),
+        ("http://10.234.135.44:60003/"),
         name: "NIN Redbox Endpoint",
         failureStatus: HealthStatus.Degraded
     )
     .AddUrlGroup(new Uri
-        ("http://10.234.135.44:9882/uat/redbox/services/api/bvn/getbvndetails"),
+        ("http://10.234.135.44:9882/"),
         name: "BVN Redbox Endpoint",
         failureStatus: HealthStatus.Degraded
     )
     .AddUrlGroup(new Uri
-        ("https://10.234.135.44:8443/uat/redbox/services/messaging/outbound"),
+        ("https://10.234.135.44:8443/"),
         name: "SMS Redbox Endpoint",
         failureStatus: HealthStatus.Degraded
     )
     .AddUrlGroup(new Uri
-        ("https://ungcorweb.ng.sbicdirectory.com/fiwebservice/FIWebService"),
+        ("https://ungcorweb.ng.sbicdirectory.com/"),
         name: "Finacle Endpoint",
         failureStatus: HealthStatus.Degraded
     );

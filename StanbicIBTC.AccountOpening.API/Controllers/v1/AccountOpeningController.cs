@@ -3,7 +3,7 @@ using StanbicIBTC.AccountOpening.Service;
 
 namespace StanbicIBTC.AccountOpening.API.Controllers.v1
 {
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    //[Authorize(AuthenticationSchemes = "Bearer")]
     public class AccountOpeningController : BaseController
     {
         private readonly IAccountOpeningService _accountOpeningService;

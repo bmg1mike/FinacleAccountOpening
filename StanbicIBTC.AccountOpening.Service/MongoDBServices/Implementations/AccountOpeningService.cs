@@ -46,8 +46,8 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
-            var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
-            var platform = identity.FindFirst("DisplayName").Value;
+            //var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            //var platform = identity.FindFirst("DisplayName").Value;
 
             var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
 
@@ -210,7 +210,7 @@ public class AccountOpeningService : IAccountOpeningService
                 NIN = bvnDetails.NIN,
                 PhoneNumber = bvnDetails.PhoneNumber,
                 Gender = bvnDetails.Gender,
-                Platform = platform,
+                Platform = request.Platform.ToString(),
                 MiddleName = bvnDetails.MiddleName,
                 WillOnBoard = request.WillOnboard,
                 SecretQuestion = secretQuestion,
