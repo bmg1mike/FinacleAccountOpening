@@ -20,4 +20,5 @@ public interface IAccountOpeningService
     Task<ApiResult> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request);
     Task<ApiResult> GetAccountDetailsByBvn(string bvn);
     ApiResult GetBranches();
+    Task<ApiResult> OpenTierOneAccountForEzCash(TierOneAccountOpeningRequest request);
 }
