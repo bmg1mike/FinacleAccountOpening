@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS base
 WORKDIR /app
-EXPOSE 80
+EXPOSE 5100
 
-ENV ASPNETCORE_URLS=http://+:80
+# ENV ASPNETCORE_URLS=http://+:5100
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-dotnet-configure-containers
@@ -19,7 +19,7 @@ RUN dotnet build "StanbicIBTC.AccountOpening.API.csproj" -c Release -o /app/buil
 
 FROM build AS publish
 RUN dotnet publish "StanbicIBTC.AccountOpening.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
-RUN sed -i 's/SECLEVEL=2/SECLEVEL=1/g' /etc/ssl/openssl.cnf
+# RUN sed -i 's/SECLEVEL=2/SECLEVEL=1/g' /etc/ssl/openssl.cnf
 
 FROM base AS final
 WORKDIR /app
