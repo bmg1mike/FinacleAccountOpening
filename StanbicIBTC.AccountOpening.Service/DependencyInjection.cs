@@ -22,9 +22,48 @@ public static class DependencyInjection
                     .AddOracle(configuration.GetConnectionString("FinacleConnection"), "select * from v$version", "Finacle Db Health", HealthStatus.Degraded);
         services.AddHealthChecks()
             .AddSqlServer(configuration["AccountOpeningConnection:ConnectionString"], null, "SQLServer Health", HealthStatus.Degraded);
-        //services.AddHealthChecks()
-        //             .AddOracle(configuration.GetConnectionString("AccountOpeningConnection"),"select * from v$version","RedBox Db Health",HealthStatus.Degraded);
 
+        services.AddHealthChecks()
+            .AddUrlGroup(new Uri
+                ("https://10.234.207.60:60003"),
+                name: "NIN Redbox Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                ("https://10.234.203.160:7095"),
+                name: "BVN Redbox Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                ("https://pngcorredbox:7037"),
+                name: "SMS and Email Redbox Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                ("https://pngcorweb.ng.sbicdirectory.com/"),
+                name: "Finacle Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                (configuration["Address_Verification:base_url"]),
+                name: "Address Verification Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                ("https://10.234.18.240:9443/"),
+                name: "Ruby Account Opening Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                (configuration["WebAndMobileOnboarding"]),
+                name: "Internet and Mobile Banking Onboarding Endpoint",
+                failureStatus: HealthStatus.Degraded
+            )
+            .AddUrlGroup(new Uri
+                ("https://google.com"),
+                name: "Internet Connection",
+                failureStatus: HealthStatus.Degraded
+            );
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();
@@ -42,7 +81,8 @@ public static class DependencyInjection
         services.AddScoped<IMassageNotification, MassageNotification>();
         services.AddHttpClient<ISoapRequestHelper, SoapRequestHelper>();
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x => {
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
+        {
             x.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,

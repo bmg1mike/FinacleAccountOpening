@@ -14,4 +14,7 @@ public class TierOneAccountOpeningRequest
     public string SecretQuestion { get; set; }
     public string SecretAnswer { get; set; }
     public string Email { get; set; }
+    public RequiredDocuments Documents { get; set; }
+    public string BranchId { get; set; }
+    public NextOfKin NextOfKinDetails { get; set; }
 }

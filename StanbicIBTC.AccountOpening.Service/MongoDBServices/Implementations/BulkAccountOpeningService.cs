@@ -31,7 +31,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         {
             var batchId = DateTime.Now.ToString("yyyy MM dd HH mm ss").Replace(" ", string.Empty);
 
-            var dir = $"{Directory.GetCurrentDirectory()}/Files";
+            var dir = $"{Directory.GetCurrentDirectory()}/others/Bulk_Files";
+            //var dir = _config["File_Path"];
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
@@ -56,7 +57,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
             var uniqueFileName = $"{batchId}_{request.File.FileName}";
 
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Files");
+            //var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Files");
+            var uploadsFolder = dir;
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
             request.File.CopyTo(new FileStream(filePath, FileMode.Create));
 
@@ -82,7 +84,8 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
     public async Task<DownloadFileResponse> DownloadFile(string fileName)   /// Todo
     {
-        var filePath = $"{Directory.GetCurrentDirectory()}/Files/{fileName.Trim()}";//Path.Combine(Directory.GetCurrentDirectory(), $"/Files/{ fileName.Trim()}");
+        var dir = $"{Directory.GetCurrentDirectory()}/others/Bulk_Files";
+        var filePath = $"{dir}/{fileName.Trim()}";//Path.Combine(Directory.GetCurrentDirectory(), $"/Files/{ fileName.Trim()}");
         if (!File.Exists(filePath))
         {
             return null;
@@ -114,7 +117,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         {
             var requestInDb = await _requestRepo.GetBulkAccountRequest(request.BulkAccountRequestId);
 
-            
+
 
             if (requestInDb is null)
             {
@@ -202,7 +205,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         using (ExcelPackage package = new ExcelPackage(new FileInfo(filePath)))
         {
             //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            var sheet = package.Workbook.Worksheets.FirstOrDefault(x => x.Name == "AccountOpening"); 
+            var sheet = package.Workbook.Worksheets.FirstOrDefault(x => x.Name == "AccountOpening");
             if (sheet == null)
             {
                 return null;
@@ -244,13 +247,13 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     {
         try
         {
-            var path = $"{_config["FilePath"]}{request.File}";
-            
+            var path = $"{Directory.GetCurrentDirectory()}/others/Bulk_Files{request.File}";
+
             var accounts = ReadFromExcel(path);
             if (accounts is null)
             {
                 request.IsTreated = true;
-                await _requestRepo.UpdateBulkAccountRequest(request.BulkAccountRequestId,request);
+                await _requestRepo.UpdateBulkAccountRequest(request.BulkAccountRequestId, request);
                 return "Could not read Excel file successfully";
             }
             foreach (var item in accounts)
@@ -259,12 +262,12 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             }
 
             request.IsTreated = true;
-            await _requestRepo.UpdateBulkAccountRequest(request.BulkAccountRequestId,request);
+            await _requestRepo.UpdateBulkAccountRequest(request.BulkAccountRequestId, request);
             return "Excel data saved for processing successfully";
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,ex.Message);
+            _logger.LogError(ex, ex.Message);
             return "Please try again later";
         }
     }
@@ -282,10 +285,10 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 IsSuccessful = false
             };
 
-            
 
 
-            if(request.Bvn is null || request.DateOfBirth is null || request.PhoneNumber is null)
+
+            if (request.Bvn is null || request.DateOfBirth is null || request.PhoneNumber is null)
             {
                 accountOpeningAttempt.Response = "Invalid request. Bvn, DateOfBirth and Phone Number are required to open a tier 1 account";
                 await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
@@ -327,7 +330,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
 
             var ninDetailsResponse = await _accountOpeningService.GetNinDetails(bvnDetails.NIN.Trim(), request.DateOfBirth.ToString()); // change back to BVN NIN i.e bvnDetails.NIN
-            
+
             if (ninDetailsResponse.data is null)
             {
                 _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
@@ -349,7 +352,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
 
             var ninDetails = ninDetailsResponse.data;
 
-            
+
 
             if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
             {

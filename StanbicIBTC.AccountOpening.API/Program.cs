@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using StanbicIBTC.AccountOpening.API;
@@ -6,6 +7,10 @@ using StanbicIBTC.AccountOpening.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// builder.Configuration.SetBasePath($"{Directory.GetCurrentDirectory()}/others")
+//     .AddJsonFile("appsettings.json")
+//     .Build();
 
 builder.Host.UseSerilog((context, config) =>
 {
@@ -27,28 +32,6 @@ builder.Services.AddSwaggerGen();
 //    c.AddServer(new OpenApiServer { Url = "http://localhost:5103", Description = "URL for Http Dev requests" });
 
 //});
-
-builder.Services.AddHealthChecks()
-    .AddUrlGroup(new Uri
-        ("http://10.234.135.44:60003/"),
-        name: "NIN Redbox Endpoint",
-        failureStatus: HealthStatus.Degraded
-    )
-    .AddUrlGroup(new Uri
-        ("http://10.234.135.44:9882/"),
-        name: "BVN Redbox Endpoint",
-        failureStatus: HealthStatus.Degraded
-    )
-    .AddUrlGroup(new Uri
-        ("https://10.234.135.44:8443/"),
-        name: "SMS Redbox Endpoint",
-        failureStatus: HealthStatus.Degraded
-    )
-    .AddUrlGroup(new Uri
-        ("https://ungcorweb.ng.sbicdirectory.com/"),
-        name: "Finacle Endpoint",
-        failureStatus: HealthStatus.Degraded
-    );
 
 builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
     {
@@ -74,7 +57,7 @@ builder.Services.AddHealthChecksUI(opt =>
     opt.SetEvaluationTimeInSeconds(10); //time in seconds between check    
     opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
     opt.SetApiMaxActiveRequests(1); //api requests concurrency    
-    opt.AddHealthCheckEndpoint("Acount Opening api", "health"); //map health check api    
+    opt.AddHealthCheckEndpoint("Acount Opening api", $"http://{Dns.GetHostName()}/health"); //map health check api    
 })
 .AddInMemoryStorage();
 

@@ -92,7 +92,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(result);
         }
 
-        
+
         [HttpGet("GetEmploymentStatus/")]
         [ProducesResponseType(200, Type = typeof(Result<List<EmploymentResult>>))]
         public IActionResult GetEmploymentStatus()
@@ -100,6 +100,17 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             var result = new Result<List<EmploymentResult>>();
             var response = _accountOpeningService.GetEmploymentStatus();
             result.Content = response;
+            result.ResponseCode = "000";
+            return Ok(result);
+        }
+
+        [HttpGet("GetBranches/")]
+        [ProducesResponseType(200, Type = typeof(Result<List<BranchesResponse>>))]
+        public IActionResult GetBranches()
+        {
+            var result = new Result<List<BranchesResponse>>();
+            var response = _accountOpeningService.GetBranches();
+            result.Content = (List<BranchesResponse>)response.data;
             result.ResponseCode = "000";
             return Ok(result);
         }
@@ -122,5 +133,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             var response = await _accountOpeningService.GetAccountDetailsByBvn(request.Bvn);
             return Ok(response);
         }
+
+
     }
 }
