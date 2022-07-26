@@ -44,26 +44,26 @@ public static class DependencyInjection
                 name: "Finacle Endpoint",
                 failureStatus: HealthStatus.Degraded
             )
-            .AddUrlGroup(new Uri
-                (configuration["Address_Verification:base_url"]),
-                name: "Address Verification Endpoint",
-                failureStatus: HealthStatus.Degraded
-            )
+            // .AddUrlGroup(new Uri
+            //     (configuration["Address_Verification:base_url"]),
+            //     name: "Address Verification Endpoint",
+            //     failureStatus: HealthStatus.Degraded
+            // )
             .AddUrlGroup(new Uri
                 ("https://10.234.18.240:9443/"),
                 name: "Ruby Account Opening Endpoint",
                 failureStatus: HealthStatus.Degraded
-            )
-            .AddUrlGroup(new Uri
-                (configuration["WebAndMobileOnboarding"]),
-                name: "Internet and Mobile Banking Onboarding Endpoint",
-                failureStatus: HealthStatus.Degraded
-            )
-            .AddUrlGroup(new Uri
-                ("https://google.com"),
-                name: "Internet Connection",
-                failureStatus: HealthStatus.Degraded
             );
+        // .AddUrlGroup(new Uri
+        //     (configuration["WebAndMobileOnboarding"]),
+        //     name: "Internet and Mobile Banking Onboarding Endpoint",
+        //     failureStatus: HealthStatus.Degraded
+        // )
+        // .AddUrlGroup(new Uri
+        //     ("https://google.com"),
+        //     name: "Internet Connection",
+        //     failureStatus: HealthStatus.Degraded
+        // );
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         services.AddScoped<IAccountOpeningMongoDBContext, AccountOpeningMongoDBContext>();

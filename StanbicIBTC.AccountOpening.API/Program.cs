@@ -57,7 +57,8 @@ builder.Services.AddHealthChecksUI(opt =>
     opt.SetEvaluationTimeInSeconds(10); //time in seconds between check    
     opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
     opt.SetApiMaxActiveRequests(1); //api requests concurrency    
-    opt.AddHealthCheckEndpoint("Acount Opening api", $"https://{Dns.GetHostName()}:5100/health"); //map health check api    
+    // $"https://{Dns.GetHostName()}:5100/health"
+    opt.AddHealthCheckEndpoint("Acount Opening api", "https://10.234.203.205:8989/health"); //map health check api    
 })
 .AddInMemoryStorage();
 
