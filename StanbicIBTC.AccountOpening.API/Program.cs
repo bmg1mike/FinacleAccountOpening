@@ -58,7 +58,7 @@ builder.Services.AddHealthChecksUI(opt =>
     opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
     opt.SetApiMaxActiveRequests(1); //api requests concurrency    
     // $"https://{Dns.GetHostName()}:5100/health"
-    opt.AddHealthCheckEndpoint("Acount Opening api", $"https://{Dns.GetHostName()}/health"); //map health check api    
+    opt.AddHealthCheckEndpoint("Acount Opening api", $"https://{Dns.GetHostName()}:443/health"); //map health check api    
     opt.UseApiEndpointHttpMessageHandler(x => {
         return new HttpClientHandler
         {
