@@ -59,6 +59,13 @@ builder.Services.AddHealthChecksUI(opt =>
     opt.SetApiMaxActiveRequests(1); //api requests concurrency    
     // $"https://{Dns.GetHostName()}:5100/health"
     opt.AddHealthCheckEndpoint("Acount Opening api", $"https://{Dns.GetHostName()}:443/health"); //map health check api    
+    opt.UseApiEndpointHttpMessageHandler(x => {
+        return new HttpClientHandler
+        {
+            ClientCertificateOptions = ClientCertificateOption.Manual,
+			ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
+        };
+    });
 })
 .AddInMemoryStorage();
 
