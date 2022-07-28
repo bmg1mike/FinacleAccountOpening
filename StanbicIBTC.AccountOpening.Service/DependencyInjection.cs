@@ -25,12 +25,12 @@ public static class DependencyInjection
 
         services.AddHealthChecks()
             .AddUrlGroup(new Uri
-                ("https://10.234.207.60:60003"),
+                ("https://pngcorredbox:60003"),
                 name: "NIN Redbox Endpoint",
                 failureStatus: HealthStatus.Degraded
             )
             .AddUrlGroup(new Uri
-                ("https://10.234.203.160:7095"),
+                ("https://pngcorredbox:7095"),
                 name: "BVN Redbox Endpoint",
                 failureStatus: HealthStatus.Degraded
             )
