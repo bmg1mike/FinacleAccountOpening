@@ -6,6 +6,7 @@ public enum Platform
     MOBILE,
     USSD,
     Bulk,
-    USSD_Device_Financing
+    USSD_Device_Financing,
+    RM_Companion
 }
 

@@ -221,6 +221,61 @@ public class AccountOpeningService : IAccountOpeningService
                 Title = bvnDetails.Title
             };
 
+            if (cifRequest.Platform == Platform.RM_Companion.ToString())
+            {
+                var cifResponse = await CreateCIF(cifRequest);
+                var cif = cifResponse.cif;
+                if (cifResponse.cif == null)
+                {
+                    cifRequest.ReasonForFailure = $"There was a problem creating CIF for this BVN : {request.Bvn}";
+                    _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.Bvn} ");
+                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
+                }
+
+                var redboxResult = await SaveTierOneCustomData(cifResponse.cif, cifRequest);
+                if (!redboxResult)
+                {
+                    _logger.LogInformation($"There was a problem saving the request to the MSSQL database for this BVN : {request.Bvn} ");
+                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
+                    
+                }
+                
+                var signatureResponse = await SaveDocumentToDataStore(cif, request.Documents.Signature, "Customer's Signature");
+                
+                if (signatureResponse.OutCome.Status != "SUCCESS")
+                {
+
+                    _logger.LogInformation($"There was a problem saving Customer's signature to Data Store");
+                    //return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+                } 
+
+                var photographResponse = await SaveDocumentToDataStore(cif, request.Documents.PassportPhotograph, "Customer Photograph");
+
+                if (photographResponse.OutCome.Status != "SUCCESS")
+                {
+                    _logger.LogInformation($"There was a problem saving Customer's photo to Data Store");
+                    //return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+                }
+
+                cifRequest.AccountManagerSapId = request.AccountManager;
+                cifRequest.BranchManagerSapId = request.CustomerRelationshipManager;
+                cifRequest.Cif = cifResponse.cif;
+                cifRequest.SolId = request.BranchId;
+                cifRequest.NextOfKinDetail = new CIFNextOfKinDetail
+                {
+                    FirstName = request.NextOfKinDetails.FirstName,
+                    LastName = request.NextOfKinDetails.LastName,
+                    PhoneNumber = request.NextOfKinDetails.PhoneNumber,
+                    Relationship = request.NextOfKinDetails.Relationship,
+                    Address1 = request.NextOfKinDetails.Address
+                };
+                cifRequest.IsKycDocumentsUploaded = true;
+                if (!string.Equals(request.Address,bvnDetails.ResidentialAddress))
+                {
+                    cifRequest.CustomerAddress = request.Address;
+                }
+            }
+
             var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
             if (saveCifRequest == null)
             {

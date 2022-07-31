@@ -32,6 +32,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             var batchId = DateTime.Now.ToString("yyyy MM dd HH mm ss").Replace(" ", string.Empty);
 
             var dir = $"{Directory.GetCurrentDirectory()}/others/Bulk_Files";
+            
             //var dir = _config["File_Path"];
             if (!Directory.Exists(dir))
             {
