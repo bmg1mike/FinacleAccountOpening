@@ -68,5 +68,6 @@ public partial class CIFRequest
     public string PoliticallyExposedStatus { get; set; }
     public bool IsBackOfficeLogged { get; set; }
     public string ReasonForFailure { get; set; }
+    public string BulkAccountId { get; set; }
 }
 
