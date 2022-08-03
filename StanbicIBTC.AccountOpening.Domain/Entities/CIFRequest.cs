@@ -69,5 +69,5 @@ public partial class CIFRequest
     public bool IsBackOfficeLogged { get; set; }
     public string ReasonForFailure { get; set; }
     public string BulkAccountId { get; set; }
+    public string Signature { get; set; }
 }
-

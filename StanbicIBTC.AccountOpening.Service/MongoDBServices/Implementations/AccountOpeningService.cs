@@ -70,24 +70,6 @@ public class AccountOpeningService : IAccountOpeningService
 
             var bvnDetails = bvnDetailsResponse.data;
 
-            //if (bvnDetails.NIN != request.Nin)
-            //{
-            //    return new ApiResult { responseCode = "999", responseDescription = "NIN does not match BVN's NIN" };
-            //}
-
-            // if (string.IsNullOrEmpty(bvnDetails.NIN))
-            // {
-            //     return new ApiResult { responseCode = "999", responseDescription = "Your NIN is not linked to your BVN" };
-            // }
-
-            //var ninDetailsResponse = await GetNinDetails(bvnDetails.NIN.Trim(), request.DateOfBirth.ToString()); // Change NIN in production to BVN NIN
-
-            // if (ninDetailsResponse.data is null)
-            // {
-            //     _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
-            //     return new ApiResult { responseCode = "999", responseDescription = "Invalid NIN" };
-            // }
-
             var outboundNin = new OutboundLog
             {
                 APICalled = "NIN Api",
@@ -98,8 +80,6 @@ public class AccountOpeningService : IAccountOpeningService
                 SystemCalledName = "Account Opening Microservice",
                 RequestDetails = String.Empty
             };
-
-            //var ninDetails = ninDetailsResponse.data;
 
             var accountOpeningAttempt = new AccountOpeningAttempt
             {
@@ -132,17 +112,6 @@ public class AccountOpeningService : IAccountOpeningService
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid Occupation Code Or Employment status" };
 
 
-
-
-            // var nextOfKinDetails = new CIFNextOfKinDetail
-            // {
-            //     FirstName = ninDetails.FullData.nok_firstname,
-            //     LastName = ninDetails.FullData.nok_lastname,
-            //     Address1 = ninDetails.FullData.nok_address1,
-            //     Address2 = ninDetails.FullData.nok_address2,
-            //     State = ninDetails.FullData.nok_state,
-            //     Town = ninDetails.FullData.nok_town
-            // };
 
             var secretQuestion = string.Empty;
             var secretAnswer = string.Empty;
@@ -274,6 +243,7 @@ public class AccountOpeningService : IAccountOpeningService
                     //return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
                 }
                 cifRequest.Cif = cifResponse.cif;
+                cifRequest.Signature = request.Documents.Signature;
 
             }
 
