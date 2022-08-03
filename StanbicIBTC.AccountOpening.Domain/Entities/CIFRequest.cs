@@ -57,6 +57,7 @@ public partial class CIFRequest
     public string SolId { get; set; }
     public string Category { get; set; }
     public string BranchManagerSapId { get; set; }
+    public string AccountManagerSapId { get; set; }
     public string UploadedBy { get; set; }
     public RequiredDocuments RequiredDocuments { get; set; }
     public SoleProprietor SoleProprietor { get; set; }
@@ -67,5 +68,6 @@ public partial class CIFRequest
     public string PoliticallyExposedStatus { get; set; }
     public bool IsBackOfficeLogged { get; set; }
     public string ReasonForFailure { get; set; }
+    public string BulkAccountId { get; set; }
+    public string Signature { get; set; }
 }
-

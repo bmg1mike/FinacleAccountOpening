@@ -134,12 +134,16 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(response);
         }
 
-        [HttpPost("OpenTierOneAccountForEzCash/")]
-        [ProducesResponseType(200, Type = typeof(Result<ApiResult>))]
-        public async Task<IActionResult> OpenTierOneAccountForEzCash(TierOneAccountOpeningRequest request)
+        [HttpGet("GetBVNDetails/")]
+        public async Task<IActionResult> GetBVNDetails(string bvn)
         {
-            var response = await _accountOpeningService.OpenTierOneAccountForEzCash(request);
-            return Ok(response);
+            var bvnResponse = await _accountOpeningService.GetBVNDetails(bvn);
+            return Ok(new
+            {
+                responseCode = bvnResponse.responseCode,
+                responseDescription = bvnResponse.responseDescription,
+                Data = bvnResponse.data
+            });
         }
 
     }

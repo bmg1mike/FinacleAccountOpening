@@ -30,6 +30,8 @@ public class SoapRequestHelper : ISoapRequestHelper
         moduleId = string.IsNullOrEmpty(moduleId) ? _configSettings["Finacle:moduleId"] : moduleId;
         authId = string.IsNullOrEmpty(authId) ? _configSettings["Finacle:authorization"] : authId;
 
+        
+
         var responseResult = new SoapCallResponse("99", "Init");
         var reqId = $"{soapAction}_{Util.TimeStampCode()}";
         _logger.LogInformation($"{soapAction} API REQ: {reqId}\nModuleId:{moduleId}|AuthId:{authId}\n{soapRequest}:{url}");

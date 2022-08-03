@@ -32,6 +32,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             var batchId = DateTime.Now.ToString("yyyy MM dd HH mm ss").Replace(" ", string.Empty);
 
             var dir = $"{Directory.GetCurrentDirectory()}/others/Bulk_Files";
+            
             //var dir = _config["File_Path"];
             if (!Directory.Exists(dir))
             {
@@ -258,7 +259,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             }
             foreach (var item in accounts)
             {
-                var savedData = await SaveBulkAccountRequest(item);
+                var savedData = await SaveBulkAccountRequest(item, request.BulkAccountRequestId);
             }
 
             request.IsTreated = true;
@@ -272,7 +273,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
         }
     }
 
-    private async Task<string> SaveBulkAccountRequest(BulkAccount request)
+    private async Task<string> SaveBulkAccountRequest(BulkAccount request, string bulkAccountId)
     {
         try
         {
@@ -318,26 +319,26 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 return "Invalid Bvn";
             }
 
-            if (string.IsNullOrEmpty(bvnDetailsResponse.data.NIN))
-            {
-                _logger.LogInformation("The BVN is not linked to any NIN");
-                accountOpeningAttempt.Response = "The BVN is not linked to any NIN";
-                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return "Invalid Bvn";
-            }
+            // if (string.IsNullOrEmpty(bvnDetailsResponse.data.NIN))
+            // {
+            //     _logger.LogInformation("The BVN is not linked to any NIN");
+            //     accountOpeningAttempt.Response = "The BVN is not linked to any NIN";
+            //     await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
+            //     return "Invalid Bvn";
+            // }
 
             var bvnDetails = bvnDetailsResponse.data;
 
 
-            var ninDetailsResponse = await _accountOpeningService.GetNinDetails(bvnDetails.NIN.Trim(), request.DateOfBirth.ToString()); // change back to BVN NIN i.e bvnDetails.NIN
+            // var ninDetailsResponse = await _accountOpeningService.GetNinDetails(bvnDetails.NIN.Trim(), request.DateOfBirth.ToString()); // change back to BVN NIN i.e bvnDetails.NIN
 
-            if (ninDetailsResponse.data is null)
-            {
-                _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
-                accountOpeningAttempt.Response = "InValid NIN";
-                await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return "Invalid NIN";
-            }
+            // if (ninDetailsResponse.data is null)
+            // {
+            //     _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
+            //     accountOpeningAttempt.Response = "InValid NIN";
+            //     await _accountOpeningAttemptRepository.CreateAccountOpeningAttempt(accountOpeningAttempt);
+            //     return "Invalid NIN";
+            // }
 
             var outboundNin = new OutboundLog
             {
@@ -350,8 +351,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 RequestDetails = String.Empty
             };
 
-            var ninDetails = ninDetailsResponse.data;
-
+            //var ninDetails = ninDetailsResponse.data;
 
 
             if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
@@ -397,15 +397,15 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             }
 
 
-            var nextOfKinDetails = new CIFNextOfKinDetail
-            {
-                FirstName = ninDetails.FullData.nok_firstname,
-                LastName = ninDetails.FullData.nok_lastname,
-                Address1 = ninDetails.FullData.nok_address1,
-                Address2 = ninDetails.FullData.nok_address2,
-                State = ninDetails.FullData.nok_state,
-                Town = ninDetails.FullData.nok_town
-            };
+            // var nextOfKinDetails = new CIFNextOfKinDetail
+            // {
+            //     FirstName = ninDetails.FullData.nok_firstname,
+            //     LastName = ninDetails.FullData.nok_lastname,
+            //     Address1 = ninDetails.FullData.nok_address1,
+            //     Address2 = ninDetails.FullData.nok_address2,
+            //     State = ninDetails.FullData.nok_state,
+            //     Town = ninDetails.FullData.nok_town
+            // };
 
             var secretQuestion = string.Empty;
             var secretAnswer = string.Empty;
@@ -426,7 +426,7 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
             };
             await _inboundLogRepository.CreateInboundLog(inbound);
 
-            switch (ninDetails.FullData.title.ToUpper())
+            switch (bvnDetails.Title.ToUpper())
             {
                 case "MR":
                     bvnDetails.Title = "041";
@@ -471,11 +471,12 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
                 SecretAnswer = secretAnswer,
                 Password = password,
                 ConfirmPassword = confirmPassword,
-                NextOfKinDetail = nextOfKinDetails,
+                //NextOfKinDetail = nextOfKinDetails,
                 Title = bvnDetails.Title,
                 SolId = request.SolId,
                 Category = request.Category,
-                BranchManagerSapId = request.BranchManagerSapId
+                BranchManagerSapId = request.BranchManagerSapId,
+                BulkAccountId = bulkAccountId
             };
 
             var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
@@ -518,11 +519,11 @@ public class BulkAccountOpeningService : IBulkAccountOpeningService
     }
 
 
-    public async Task<Result<List<BulkRecentActivities>>> GetSuccessfullyOpenedAccountByBranchId(string branchId)
+    public async Task<Result<List<BulkRecentActivities>>> GetSuccessfullyOpenedAccountByBranchId(string branchId,string bulkAccountId)
     {
         try
         {
-            var accounts = await _cifRepository.GetSuccessfullyOpenedAccountsByBranchId(branchId);
+            var accounts = await _cifRepository.GetSuccessfullyOpenedAccountsByBranchId(branchId,bulkAccountId);
 
             var bulkAccountActivities = new List<BulkRecentActivities>();
             foreach (var item in accounts)

@@ -45,9 +45,9 @@ public class BulkAccountOpeningController : BaseController
 
     [HttpGet("GetSuccessfullyOpenedAccounts/")]
     [ProducesResponseType(200, Type = typeof(Result<List<BulkRecentActivities>>))]
-    public async Task<IActionResult> GetSuccessfullyOpenedAccountsByBranchId(string branchId)
+    public async Task<IActionResult> GetSuccessfullyOpenedAccountsByBranchId(string branchId,string bulkAccountId)
     {
-        var accounts = await _service.GetSuccessfullyOpenedAccountByBranchId(branchId);
+        var accounts = await _service.GetSuccessfullyOpenedAccountByBranchId(branchId,bulkAccountId);
         return Ok(accounts);
     }
 

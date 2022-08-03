@@ -16,6 +16,11 @@ public static class AccountOpeningPayloadHelper
         if (manager is null)
             manager = "CCC9676";
 
+        if (string.IsNullOrEmpty(request.MiddleName))
+        {
+            request.MiddleName = string.Empty;
+        }
+
         var payloaad = @$"
         <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:web=""http://webservice.fiusb.ci.infosys.com/"">
     <soapenv:Header/>

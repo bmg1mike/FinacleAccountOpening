@@ -70,24 +70,6 @@ public class AccountOpeningService : IAccountOpeningService
 
             var bvnDetails = bvnDetailsResponse.data;
 
-            //if (bvnDetails.NIN != request.Nin)
-            //{
-            //    return new ApiResult { responseCode = "999", responseDescription = "NIN does not match BVN's NIN" };
-            //}
-
-            if (string.IsNullOrEmpty(bvnDetails.NIN))
-            {
-                return new ApiResult { responseCode = "999", responseDescription = "Your NIN is not linked to your BVN" };
-            }
-
-            var ninDetailsResponse = await GetNinDetails(bvnDetails.NIN.Trim(), request.DateOfBirth.ToString()); // Change NIN in production to BVN NIN
-
-            if (ninDetailsResponse.data is null)
-            {
-                _logger.LogInformation($"{ninDetailsResponse.responseDescription}");
-                return new ApiResult { responseCode = "999", responseDescription = "Invalid NIN" };
-            }
-
             var outboundNin = new OutboundLog
             {
                 APICalled = "NIN Api",
@@ -98,8 +80,6 @@ public class AccountOpeningService : IAccountOpeningService
                 SystemCalledName = "Account Opening Microservice",
                 RequestDetails = String.Empty
             };
-
-            var ninDetails = ninDetailsResponse.data;
 
             var accountOpeningAttempt = new AccountOpeningAttempt
             {
@@ -133,17 +113,6 @@ public class AccountOpeningService : IAccountOpeningService
 
 
 
-
-            var nextOfKinDetails = new CIFNextOfKinDetail
-            {
-                FirstName = ninDetails.FullData.nok_firstname,
-                LastName = ninDetails.FullData.nok_lastname,
-                Address1 = ninDetails.FullData.nok_address1,
-                Address2 = ninDetails.FullData.nok_address2,
-                State = ninDetails.FullData.nok_state,
-                Town = ninDetails.FullData.nok_town
-            };
-
             var secretQuestion = string.Empty;
             var secretAnswer = string.Empty;
             var password = string.Empty;
@@ -171,7 +140,7 @@ public class AccountOpeningService : IAccountOpeningService
             };
             await _inboundLogRepository.CreateInboundLog(inbound);
 
-            switch (ninDetails.FullData.title.ToUpper())
+            switch (bvnDetails.Title.ToUpper())
             {
                 case "MR":
                     bvnDetails.Title = "041";
@@ -217,9 +186,66 @@ public class AccountOpeningService : IAccountOpeningService
                 SecretAnswer = secretAnswer,
                 Password = password,
                 ConfirmPassword = confirmPassword,
-                NextOfKinDetail = nextOfKinDetails,
+                //NextOfKinDetail = nextOfKinDetails,
                 Title = bvnDetails.Title
             };
+
+            if (cifRequest.Platform == Platform.RM_Companion.ToString())
+            {
+                cifRequest.AccountManagerSapId = request.AccountManager;
+                cifRequest.BranchManagerSapId = request.CustomerRelationshipManager;
+                cifRequest.SolId = request.BranchId;
+                cifRequest.NextOfKinDetail = new CIFNextOfKinDetail
+                {
+                    FirstName = request.NextOfKinDetails.FirstName,
+                    LastName = request.NextOfKinDetails.LastName,
+                    PhoneNumber = request.NextOfKinDetails.PhoneNumber,
+                    Relationship = request.NextOfKinDetails.Relationship,
+                    Address1 = request.NextOfKinDetails.Address
+                };
+
+                cifRequest.IsKycDocumentsUploaded = true;
+                if (!string.Equals(request.Address, bvnDetails.ResidentialAddress))
+                {
+                    cifRequest.CustomerAddress = request.Address;
+                }
+                var cifResponse = await CreateCIF(cifRequest);
+                var cif = cifResponse.cif;
+                if (cifResponse.cif == null)
+                {
+                    cifRequest.ReasonForFailure = $"There was a problem creating CIF for this BVN : {request.Bvn}";
+                    _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.Bvn} ");
+                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
+                }
+
+                var redboxResult = await SaveTierOneCustomData(cifResponse.cif, cifRequest);
+                if (!redboxResult)
+                {
+                    _logger.LogInformation($"There was a problem saving the request to the MSSQL database for this BVN : {request.Bvn} ");
+                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
+
+                }
+
+                var signatureResponse = await SaveDocumentToDataStore(cif, request.Documents.Signature, "Customer's Signature");
+
+                if (signatureResponse.OutCome.Status != "SUCCESS")
+                {
+
+                    _logger.LogInformation($"There was a problem saving Customer's signature to Data Store");
+                    //return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+                }
+
+                var photographResponse = await SaveDocumentToDataStore(cif, request.Documents.PassportPhotograph, "Customer Photograph");
+
+                if (photographResponse.OutCome.Status != "SUCCESS")
+                {
+                    _logger.LogInformation($"There was a problem saving Customer's photo to Data Store");
+                    //return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
+                }
+                cifRequest.Cif = cifResponse.cif;
+                cifRequest.Signature = request.Documents.Signature;
+
+            }
 
             var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
             if (saveCifRequest == null)
@@ -1498,6 +1524,10 @@ public class AccountOpeningService : IAccountOpeningService
         {
             SoapCallResponse response;
             if (request.AccountTypeRequested == AccountTypeRequested.Bulk_Tier_One.ToString())
+            {
+                response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request, request.SolId, request.BranchManagerSapId));
+            }
+            else if (request.AccountTypeRequested == AccountTypeRequested.Tier_One.ToString() && request.Platform == Platform.RM_Companion.ToString())
             {
                 response = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.CifPayload(request, request.SolId, request.BranchManagerSapId));
             }

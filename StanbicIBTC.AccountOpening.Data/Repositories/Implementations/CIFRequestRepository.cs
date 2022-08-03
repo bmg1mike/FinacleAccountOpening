@@ -11,14 +11,14 @@ public partial class CIFRequestRepository : ICIFRequestRepository
 
     public CIFRequestRepository(IAccountOpeningMongoDBContext context, ILogger logger)
     {
-        this.context  = context;
+        this.context = context;
         this.logger = logger;
     }
 
     public async Task<string> CreateCIFRequest(CIFRequest cIFRequest)
     {
 
-        await  context.CIFRequests.InsertOneAsync(cIFRequest);
+        await context.CIFRequests.InsertOneAsync(cIFRequest);
         return cIFRequest.CIFRequestId;
 
     }
@@ -27,25 +27,25 @@ public partial class CIFRequestRepository : ICIFRequestRepository
     {
         var results = await context.CIFRequests.FindAsync(_ => true);
         return results.ToList();
-     
+
     }
 
     public async Task<CIFRequest> GetCIFRequest(string cIFRequestId)
     {
         var filter = Builders<CIFRequest>.Filter.Eq(m => m.CIFRequestId, cIFRequestId);
-        var cIFRequest =await context.CIFRequests.Find(filter).FirstOrDefaultAsync();
+        var cIFRequest = await context.CIFRequests.Find(filter).FirstOrDefaultAsync();
 
         return cIFRequest;
-  
+
     }
 
     public async Task<CIFRequest> GetCIFRequestByBvn(string bvn)
     {
         var filter = Builders<CIFRequest>.Filter.Eq(m => m.CustomerBVN, bvn);
-        var cIFRequest =await context.CIFRequests.Find(filter).FirstOrDefaultAsync();
+        var cIFRequest = await context.CIFRequests.Find(filter).FirstOrDefaultAsync();
 
         return cIFRequest;
-  
+
     }
 
     //GetList by any Field Name template. Uncomment If Needed. Remember to add to your ICIFRequestRepository.cs
@@ -56,15 +56,11 @@ public partial class CIFRequestRepository : ICIFRequestRepository
 
         return cIFRequests ;
     } */
-    public async Task<List<CIFRequest>> GetSuccessfullyOpenedAccountsByBranchId(string branchId)
+    public async Task<List<CIFRequest>> GetSuccessfullyOpenedAccountsByBranchId(string branchId, string bulkAccountId)
     {
-        var filter = Builders<CIFRequest>.Filter.Eq(x => x.SolId, branchId) & Builders<CIFRequest>.Filter.Eq(x => x.IsAccountOpenedSuccessfully,true);
-        var cifRequests = await context.CIFRequests.Find(filter)
-            .SortByDescending(x => x.DateCreated)
-            //.Skip((pageNumber -1) * pageSize)
-            //.Limit(pageSize)
-            .ToListAsync();
-        //var count = await context.CIFRequests.CountDocumentsAsync(filter);
+        var filter = context.CIFRequests.AsQueryable();
+        var cifRequests = filter.Where(x => x.SolId == branchId && x.BulkAccountId == bulkAccountId && x.IsAccountOpenedSuccessfully == true)
+                        .OrderByDescending(x => x.DateModified).ToList();
         return cifRequests;
     }
     public async Task<List<CIFRequest>> GetPendingCifRequests()
@@ -80,14 +76,14 @@ public partial class CIFRequestRepository : ICIFRequestRepository
     {
         var filter = Builders<CIFRequest>.Filter.Eq(m => m.CIFRequestId, cIFRequestId);
         var result = await context.CIFRequests.DeleteOneAsync(filter);
-        
+
         return result.DeletedCount == 1;
-    
+
     }
 
     public async Task<bool> UpdateCIFRequest(string id, CIFRequest cIFRequest)
     {
-        var result = await context.CIFRequests.ReplaceOneAsync(cIFRequest => cIFRequest.CIFRequestId == id, cIFRequest); 
+        var result = await context.CIFRequests.ReplaceOneAsync(cIFRequest => cIFRequest.CIFRequestId == id, cIFRequest);
         return result.ModifiedCount == 1;
     }
 
