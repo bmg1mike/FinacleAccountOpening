@@ -140,6 +140,11 @@ public class AccountOpeningService : IAccountOpeningService
             };
             await _inboundLogRepository.CreateInboundLog(inbound);
 
+            if (string.IsNullOrEmpty(bvnDetails.Title))
+            {
+                bvnDetails.Title = string.Empty;
+            }
+
             switch (bvnDetails.Title.ToUpper())
             {
                 case "MR":
