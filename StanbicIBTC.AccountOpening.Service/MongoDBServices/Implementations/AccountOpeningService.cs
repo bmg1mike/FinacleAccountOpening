@@ -206,7 +206,8 @@ public class AccountOpeningService : IAccountOpeningService
                     LastName = request.NextOfKinDetails.LastName,
                     PhoneNumber = request.NextOfKinDetails.PhoneNumber,
                     Relationship = request.NextOfKinDetails.Relationship,
-                    Address1 = request.NextOfKinDetails.Address
+                    Address1 = request.NextOfKinDetails.Address,
+                    
                 };
 
                 cifRequest.IsKycDocumentsUploaded = true;
