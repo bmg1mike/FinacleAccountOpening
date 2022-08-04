@@ -70,4 +70,5 @@ public partial class CIFRequest
     public string ReasonForFailure { get; set; }
     public string BulkAccountId { get; set; }
     public string Signature { get; set; }
+    public bool IsCustomCifDetailsSaved { get; set; }
 }
