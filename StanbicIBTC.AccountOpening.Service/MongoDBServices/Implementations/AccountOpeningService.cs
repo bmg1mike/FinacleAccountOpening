@@ -223,14 +223,6 @@ public class AccountOpeningService : IAccountOpeningService
                     return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
                 }
 
-                var redboxResult = await SaveTierOneCustomData(cifResponse.cif, cifRequest);
-                if (!redboxResult)
-                {
-                    _logger.LogInformation($"There was a problem saving the request to the MSSQL database for this BVN : {request.Bvn} ");
-                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
-
-                }
-
                 var signatureResponse = await SaveDocumentToDataStore(cif, request.Documents.Signature, "Customer's Signature");
 
                 if (signatureResponse.OutCome.Status != "SUCCESS")
