@@ -25,6 +25,7 @@ public class TierThreeAccountOpeningRequest
     public EmployedAndStudentCustomerInformation EmployedAndStudentCustomerInformation { get; set; }
     public PoliticallyExposedPersonDetails PoliticallyExposedPersonDetails { get; set; }
     public DomiciliaryAccountDetails DomiciliaryAccountDetails { get; set; }
+    public bool IsAddressVerified { get; set; } 
 }
 
 public class PoliticallyExposedPersonDetails
@@ -50,6 +51,7 @@ public class EmployedAndStudentCustomerInformation
     public decimal MonthlyIncome { get; set; }
     public string InstitutionName { get; set; }
     public string Sector { get; set; }
+    
 }
 
 public class RequiredDocuments

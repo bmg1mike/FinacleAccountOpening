@@ -17,11 +17,11 @@ public class TierThreeAccountOpeningRequestValidator : AbstractValidator<TierThr
         RuleFor(x => x.DateOfBirth).NotEmpty().NotNull();
         RuleFor(x => x.EmploymentStatusCode).NotEmpty().NotNull();
         RuleFor(x => x.OccupationCode).NotEmpty().NotNull();
-        RuleFor(x => x.RequiredDocuments.IdentityType).NotEmpty().NotNull();
-        RuleFor(x => x.RequiredDocuments.IdExpiryDate).NotEmpty().NotNull();
-        RuleFor(x => x.RequiredDocuments.IdImage).NotEmpty().NotNull();
-        RuleFor(x => x.RequiredDocuments.IdIssueDate).NotEmpty().NotNull();
-        RuleFor(x => x.RequiredDocuments.IdNumber).NotEmpty().NotNull();
+       // RuleFor(x => x.RequiredDocuments.IdentityType).NotEmpty().NotNull();
+        //RuleFor(x => x.RequiredDocuments.IdExpiryDate).NotEmpty().NotNull();
+        //RuleFor(x => x.RequiredDocuments.IdImage).NotEmpty().NotNull();
+        //RuleFor(x => x.RequiredDocuments.IdIssueDate).NotEmpty().NotNull();
+        //RuleFor(x => x.RequiredDocuments.IdNumber).NotEmpty().NotNull();
         RuleFor(x => x.StateOfResidence).NotEmpty().NotNull();
     }
 }

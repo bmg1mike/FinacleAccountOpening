@@ -16,8 +16,8 @@ public partial class CIFNextOfKinDetail
    public string Town { get; set; }
    public string PhoneNumber { get; set;}
    public string Email { get; set;}
-   public string DateCreated { get; set;}
-   public string DateModified { get; set;}
+   public string DateCreated { get; set;} = DateTime.Now.ToString();
+   public string DateModified { get; set; } = DateTime.Now.ToString();
    public string Relationship { get; set; }
 }
 
