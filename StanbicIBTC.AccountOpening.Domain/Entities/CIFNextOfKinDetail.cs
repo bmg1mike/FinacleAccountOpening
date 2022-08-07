@@ -2,8 +2,8 @@ namespace StanbicIBTC.AccountOpening.Domain.Entities;
 
 public partial class CIFNextOfKinDetail
 {
-   [BsonId]
-   [BsonRepresentation(BsonType.ObjectId)]
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
 
    public string CIFNextOfKinDetailId { get; set;}
    public string FirstName { get; set;}

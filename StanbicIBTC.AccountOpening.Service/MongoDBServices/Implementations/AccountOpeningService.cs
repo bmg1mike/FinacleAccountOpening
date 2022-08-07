@@ -142,7 +142,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             if (string.IsNullOrEmpty(bvnDetails.Title))
             {
-                bvnDetails.Title = String.Empty;
+                bvnDetails.Title = string.Empty;
             }
 
             switch (bvnDetails.Title.ToUpper())
@@ -209,7 +209,8 @@ public class AccountOpeningService : IAccountOpeningService
                     LastName = request.NextOfKinDetails.LastName,
                     PhoneNumber = request.NextOfKinDetails.PhoneNumber,
                     Relationship = request.NextOfKinDetails.Relationship,
-                    Address1 = request.NextOfKinDetails.Address
+                    Address1 = request.NextOfKinDetails.Address,
+                    
                 };
 
                 cifRequest.IsKycDocumentsUploaded = true;

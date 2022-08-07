@@ -71,4 +71,7 @@ public partial class CIFRequest
     public string BulkAccountId { get; set; }
     public string Signature { get; set; }
     public bool IsCustomCifDetailsSaved { get; set; }
+    public bool AccountFreezed { get; set; }
+    public DateTime? AvrVisitDate { get; set; }
+    public string AvrComment { get; set; }
 }
