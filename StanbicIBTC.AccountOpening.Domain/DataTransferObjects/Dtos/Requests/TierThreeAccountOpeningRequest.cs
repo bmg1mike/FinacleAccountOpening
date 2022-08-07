@@ -25,7 +25,8 @@ public class TierThreeAccountOpeningRequest
     public EmployedAndStudentCustomerInformation EmployedAndStudentCustomerInformation { get; set; }
     public PoliticallyExposedPersonDetails PoliticallyExposedPersonDetails { get; set; }
     public DomiciliaryAccountDetails DomiciliaryAccountDetails { get; set; }
-    public bool IsAddressVerified { get; set; } 
+    public DateTime? AvrVisitDate { get; set; }
+    public string AvrComment { get; set; }
 }
 
 public class PoliticallyExposedPersonDetails

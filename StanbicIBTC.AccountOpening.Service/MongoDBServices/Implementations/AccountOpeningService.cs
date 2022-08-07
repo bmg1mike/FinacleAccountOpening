@@ -945,7 +945,8 @@ public class AccountOpeningService : IAccountOpeningService
                 NonNigerian = request.NonNigerian,
                 EmployedAndStudentCustomerInformation = request.EmployedAndStudentCustomerInformation,
                 Title = bvnDetails.Title,
-                AddressVerified = request.IsAddressVerified
+                AvrVisitDate = request.AvrVisitDate,
+                AvrComment = request.AvrComment
 
             };
             // Check if CIF exist
