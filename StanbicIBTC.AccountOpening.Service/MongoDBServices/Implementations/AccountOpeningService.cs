@@ -869,27 +869,27 @@ public class AccountOpeningService : IAccountOpeningService
 
             }
 
-            if (string.IsNullOrEmpty(bvnDetails.Title))
-            {
-                bvnDetails.Title = String.Empty;
-            }
+            //if (string.IsNullOrEmpty(bvnDetails.Title))
+            //{
+            //    bvnDetails.Title = String.Empty;
+            //}
 
-            switch (bvnDetails.Title.ToUpper())
+            switch (request.Title.ToUpper())
             {
                 case "MR":
-                    bvnDetails.Title = "041";
+                    request.Title = "041";
                     break;
                 case "MRS":
-                    bvnDetails.Title = "042";
+                    request.Title = "042";
                     break;
                 case "MISS":
-                    bvnDetails.Title = "043";
+                    request.Title = "043";
                     break;
                 case "MS":
-                    bvnDetails.Title = "040";
+                    request.Title = "040";
                     break;
                 default:
-                    bvnDetails.Title = "175";
+                    request.Title = "175";
                     break;
             }
 
@@ -944,12 +944,16 @@ public class AccountOpeningService : IAccountOpeningService
                 PoliticallyExposedPersonDetails = request.PoliticallyExposedPersonDetails,
                 NonNigerian = request.NonNigerian,
                 EmployedAndStudentCustomerInformation = request.EmployedAndStudentCustomerInformation,
-                Title = bvnDetails.Title,
+                Title = request.Title,
                 AvrVisitDate = request.AvrVisitDate,
-                AvrComment = request.AvrComment
-
+                AvrComment = request.AvrComment,
+                SolId = request.BranchId,
+                AccountManagerSapId = request.AccountManager,
+                BranchManagerSapId = request.CustomerRelationshipManager
             };
             // Check if CIF exist
+
+
 
             var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);
             if (saveCifRequest == null)
