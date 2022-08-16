@@ -13,6 +13,7 @@ public class FinacleRepository : IFinacleRepository
 
     public string GetStateCode(string state)
     {
+        
         var sql = @$"select a.VALUE from CRMUSER.categories a,crmuser.category_lang  b  where a.bank_id = 'NG' and a.CATEGORYTYPE ='STATE' and b.LOCALETEXT = :state AND a.categoryid=b.categoryid";
         return db.Query<string>(sql, new { state = state }).SingleOrDefault();
     }

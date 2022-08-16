@@ -145,7 +145,13 @@ public class AccountOpeningService : IAccountOpeningService
                 bvnDetails.Title = string.Empty;
             }
 
-            switch (bvnDetails.Title.ToUpper())
+            var title = bvnDetails.Title;
+
+            if (request.Platform is Platform.RM_Companion)
+            {
+                title = request.Title;
+            }
+            switch (title.ToUpper())
             {
                 case "MR":
                     bvnDetails.Title = "041";
@@ -202,6 +208,8 @@ public class AccountOpeningService : IAccountOpeningService
                 cifRequest.SolId = request.BranchId;
                 cifRequest.LgaOfResidence = request.LgaOfResidence;
                 cifRequest.StateOfResidence = request.StateOfResidence;
+                cifRequest.Email = request.Email;
+                cifRequest.RequiredDocuments = request.Documents;
 
                 cifRequest.NextOfKinDetail = new CIFNextOfKinDetail
                 {
@@ -228,22 +236,8 @@ public class AccountOpeningService : IAccountOpeningService
                     return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
                 }
 
-                var signatureResponse = await SaveDocumentToDataStore(cif, request.Documents.Signature, "Customer's Signature");
 
-                if (signatureResponse.OutCome.Status != "SUCCESS")
-                {
-
-                    _logger.LogInformation($"There was a problem saving Customer's signature to Data Store");
-                    //return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
-                }
-
-                var photographResponse = await SaveDocumentToDataStore(cif, request.Documents.PassportPhotograph, "Customer Photograph");
-
-                if (photographResponse.OutCome.Status != "SUCCESS")
-                {
-                    _logger.LogInformation($"There was a problem saving Customer's photo to Data Store");
-                    //return new ApiResult { responseCode = "999", responseDescription = $"There was a problem upgrading your account, Please try again later" };
-                }
+                
                 cifRequest.Cif = cifResponse.cif;
                 cifRequest.Signature = request.Documents.Signature;
 
