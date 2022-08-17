@@ -8,7 +8,7 @@ public class SanctionScreeningRequest
     public string CustomerFirstName { get; set; }
     public string CustomerFullHomeAddress { get; set; }
     public string CustomerLastName { get; set; }
-    public bool? HasBeenTreatedByBot { get; set; }
+    public int? HasBeenTreatedByBot { get; set; }
     public string AccountOpeningRequestId { get; set; } = Guid.NewGuid().ToString();
     public string CustomerMiddleName { get; set; }
 }

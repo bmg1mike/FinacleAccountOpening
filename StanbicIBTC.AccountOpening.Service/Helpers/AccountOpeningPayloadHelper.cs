@@ -6,6 +6,10 @@ public static class AccountOpeningPayloadHelper
     {
         var dob = DateTime.Parse(request.DateOfBirthInY_M_D_Format);
         request.Gender = request.Gender.ToUpper().Trim() == "MALE" ? "M" : "F";
+        if (string.IsNullOrEmpty(request.MiddleName))
+        {
+            request.MiddleName = string.Empty;
+        }
         if (solId is null)
             solId = "999999";
 

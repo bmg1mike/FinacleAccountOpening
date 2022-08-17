@@ -25,6 +25,12 @@ public class TierThreeAccountOpeningRequest
     public EmployedAndStudentCustomerInformation EmployedAndStudentCustomerInformation { get; set; }
     public PoliticallyExposedPersonDetails PoliticallyExposedPersonDetails { get; set; }
     public DomiciliaryAccountDetails DomiciliaryAccountDetails { get; set; }
+    public DateTime? AvrVisitDate { get; set; }
+    public string AvrComment { get; set; }
+    public string CustomerRelationshipManager { get; set; }
+    public string AccountManager { get; set; }
+    public string BranchId { get; set; }
+    public string Title { get; set; }
 }
 
 public class PoliticallyExposedPersonDetails
@@ -50,6 +56,7 @@ public class EmployedAndStudentCustomerInformation
     public decimal MonthlyIncome { get; set; }
     public string InstitutionName { get; set; }
     public string Sector { get; set; }
+    
 }
 
 public class RequiredDocuments
