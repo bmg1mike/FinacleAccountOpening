@@ -727,6 +727,34 @@ public static class AccountOpeningPayloadHelper
     </soapenv:Body>
     </soapenv:Envelope>";
 
-    return payload;
+        return payload;
+    }
+
+    public static string DedupCheckPayload(string firstName, string lastName, DateTime dateOfBirth, string phoneNumber)
+    {
+        var payload = @$"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:soap=""http://soap.request.manager.redbox.stanbic.com/"">
+<soapenv:Header/>
+<soapenv:Body>
+<ns2:request xmlns:ns2=""http://soap.request.manager.redbox.stanbic.com/"">
+<channel>BPM</channel>
+<type>DUPE_CHECK</type>
+<body><![CDATA[<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>
+<otherRequestDetails>
+<customerType>
+</customerType>
+<firstName>{firstName}</firstName>
+<middleName></middleName>
+<lastName>{lastName}</lastName>
+<dOB>1993-10-03T00:00:00.000</dOB>{dateOfBirth.ToString("YYYY-MM-DD")}
+<phoneNumber>{phoneNumber.AsNigerianPhoneNumber()}</phoneNumber>
+<corporateName>
+</corporateName>
+<rCNumber>
+</rCNumber>
+</otherRequestDetails>]]></body>
+</ns2:request>
+</soapenv:Body>
+</soapenv:Envelope>";
+        return payload;
     }
 }

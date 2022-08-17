@@ -207,7 +207,7 @@ public class AccountOpeningService : IAccountOpeningService
                     PhoneNumber = request.NextOfKinDetails.PhoneNumber,
                     Relationship = request.NextOfKinDetails.Relationship,
                     Address1 = request.NextOfKinDetails.Address,
-                    
+
                 };
 
                 cifRequest.IsKycDocumentsUploaded = true;
@@ -1560,4 +1560,72 @@ public class AccountOpeningService : IAccountOpeningService
         return new ApiResult { responseCode = "000", responseDescription = "successful", data = branches };
     }
 
+    public async Task<ApiResult> VerifyIdCard(IdVerificationRequest request)
+    {
+        try
+        {
+            var idType = string.Empty;
+            switch (request.idType)
+            {
+                case IdType.VOTER_CARD:
+                    idType = "VOTER'S CARD";
+                    break;
+                case IdType.INTERNATIONAL_PASSPORT:
+                    idType = "INTERNATIONAL PASSPORT";
+                    break;
+                case IdType.DRIVERS_LICENSE:
+                    idType = "DRIVER'S LICENSE";
+                    break;
+                default:
+                    idType = "NIN";
+                    break;
+            }
+
+            var apiRequest = new
+            {
+                idNumber = request.idNumber,
+                idType = idType,
+                lastNameOnId = request.lastNameOnId,
+                processingOfficer = request.processingOfficer,
+                returnImages = request.returnImages
+            };
+
+            var url = _config["IdEndpoint:baseUrl"];
+            var response = await _restRequestHelper.HttpAsync(Method.POST, url, null, apiRequest);
+
+            if (response.IsSuccessful)
+            {
+                var data = JsonConvert.DeserializeObject<IdVerificationResponse>(response.Content);
+                return new ApiResult { responseCode = "000", responseDescription = data.description, data = data };
+            }
+
+            return new ApiResult { responseCode = "999", responseDescription = "There was a problem, please try again later" };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription = ex.Message };
+        }
+
+    }
+
+    public ApiResult CheckAccountAvailabilityByBvn(string bvn)
+    {
+        try
+        {
+            var response = _finacleRepository.CheckCifForBvn(bvn);
+            if (response is null)
+            {
+                return new ApiResult { responseCode = "000", responseDescription = "No record for this Bvn", data = null };
+            }
+
+            return new ApiResult { responseCode = "000", responseDescription = "Customer already has an account", data = response };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription = ex.Message };
+        }
+
+    }
 }

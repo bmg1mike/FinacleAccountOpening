@@ -20,4 +20,6 @@ public interface IAccountOpeningService
     Task<ApiResult> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request);
     Task<ApiResult> GetAccountDetailsByBvn(string bvn);
     ApiResult GetBranches();
+    Task<ApiResult> VerifyIdCard(IdVerificationRequest request);
+    ApiResult CheckAccountAvailabilityByBvn(string bvn);
 }

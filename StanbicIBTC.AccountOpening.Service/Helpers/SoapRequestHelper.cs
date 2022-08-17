@@ -30,7 +30,7 @@ public class SoapRequestHelper : ISoapRequestHelper
         moduleId = string.IsNullOrEmpty(moduleId) ? _configSettings["Finacle:moduleId"] : moduleId;
         authId = string.IsNullOrEmpty(authId) ? _configSettings["Finacle:authorization"] : authId;
 
-        
+
 
         var responseResult = new SoapCallResponse("99", "Init");
         var reqId = $"{soapAction}_{Util.TimeStampCode()}";
@@ -210,6 +210,36 @@ public class SoapRequestHelper : ISoapRequestHelper
             return new SoapCallResponse("999", ex.Message);
         }
 
+    }
+
+    public async Task<SoapCallResponse> DedupCheck(string payloaad)
+    {
+        try
+        {
+            var url = _configSettings["RedboxReqMngr:base_url"];
+            var moduleId = _configSettings["RedboxReqMngr:ModuleId"];
+            var authId = _configSettings["RedboxReqMngr:AuthId"];
+            var soapAction = "\"treat\"";
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", authId);
+            requestMessage.Headers.Add("module_id", moduleId);
+            requestMessage.Headers.Add("SOAPAction", soapAction);
+            requestMessage.Content = new StringContent(payloaad, Encoding.UTF8, "text/xml");
+
+            var response = await _client.SendAsync(requestMessage);
+            var result = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                return new SoapCallResponse("000", result);
+            }
+            return new SoapCallResponse("999", result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new SoapCallResponse("999", ex.Message);
+        }
     }
 }
 

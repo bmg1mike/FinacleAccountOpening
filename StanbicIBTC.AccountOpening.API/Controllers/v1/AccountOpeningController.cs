@@ -146,5 +146,25 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             });
         }
 
+        [HttpPost("VerifyIdCard")]
+        public async Task<IActionResult> VerifyIdCard([FromBody]IdVerificationRequest request)
+        {
+            var result = new Result<IdVerificationResponse>();
+            var response = await _accountOpeningService.VerifyIdCard(request);
+            result.Content = (IdVerificationResponse)response.data;
+            result.ResponseCode = response.responseCode;
+            return Ok(result); 
+        }
+
+        [HttpGet("CheckAccountAvailabilityByBvn/{bvn}")]
+        public IActionResult CheckAccountAvailabilityByBvn(string bvn)
+        {
+            var result = new Result<CifCheck>();
+            var response = _accountOpeningService.CheckAccountAvailabilityByBvn(bvn);
+            result.Content = (CifCheck)response.data;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
+        }
+
     }
 }
