@@ -909,6 +909,7 @@ public class AccountOpeningService : IAccountOpeningService
                 Gender = bvnDetails.Gender,
                 Platform = request.Platform.ToString(),
                 MiddleName = bvnDetails.MiddleName,
+                MotherMaidenName = request.MotherMaidenName,
 
                 NextOfKinDetail = new CIFNextOfKinDetail
                 {
