@@ -34,6 +34,7 @@ public class TierThreeAccountOpeningRequest
     public string CountryOfBirth { get; set; }
     public string SectorCode { get; set; }
     public string SubSectorCode { get; set; }
+    public string MotherMaidenName { get; set; }
 }
 
 public class PoliticallyExposedPersonDetails
@@ -67,11 +68,15 @@ public class RequiredDocuments
     public string IdentityType { get; set; }
     public string IdNumber { get; set; }
     public string IdImage { get; set; } // regulatory Id
+    public string IdImageExtension { get; set; }
     public DateTime? IdIssueDate { get; set; }
     public DateTime? IdExpiryDate { get; set; }
     public string PassportPhotograph { get; set; }
+    public string PassportPhotographExtension { get; set; }
     public string Signature { get; set; }
+    public string SignatureExtension { get; set; }
     public string UtilityBill { get; set; }
+    public string UtilityBillExtension { get; set; }
 }
 
 public class SoleProprietor

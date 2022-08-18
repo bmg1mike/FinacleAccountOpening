@@ -189,7 +189,7 @@ public class AccountOpeningService : IAccountOpeningService
                 LastName = bvnDetails.LastName,
                 CustomerBVN = bvnDetails.BVN,
                 DateOfBirthInY_M_D_Format = bvnDetails.DateOfBirth,
-                Email =  request.Email ?? bvnDetails.Email,
+                Email = request.Email ?? bvnDetails.Email,
                 StateOfResidence = bvnDetails.StateOfResidence,
                 MaritalStatus = Util.MaritalStatusCode(bvnDetails.MaritalStatus),
                 LgaOfResidence = bvnDetails.LgaOfResidence,
@@ -1052,21 +1052,22 @@ public class AccountOpeningService : IAccountOpeningService
 
                     // log to back office
 
-                    var backOfficeLog = new BackOfficeRequest
-                    {
-                        HaveDebitCard = "N",
-                        IdDoc = request.RequiredDocuments.IdImage,
-                        IdDocExtension = "Jpg",
-                        IdNumber = request.RequiredDocuments.IdNumber,
-                        IdType = request.RequiredDocuments.IdentityType,
-                        PicDoc = request.RequiredDocuments.PassportPhotograph,
-                        PicDocExtension = "jpg",
-                        RequestTranId = Guid.NewGuid().ToString(),
-                        SignatureDoc = request.RequiredDocuments.Signature,
-                        SignatureDocExtension = "jpg",
-                        UtilityDoc = request.RequiredDocuments.UtilityBill,
-                        UtilityDocExtension = "jpg"
-                    };
+                    // var backOfficeLog = new BackOfficeRequest
+                    // {
+                    //     documents = new Documents
+                    //     HaveDebitCard = "N",
+                    //     IdDoc = request.RequiredDocuments.IdImage,
+                    //     IdDocExtension = "Jpg",
+                    //     IdNumber = request.RequiredDocuments.IdNumber,
+                    //     IdType = request.RequiredDocuments.IdentityType,
+                    //     PicDoc = request.RequiredDocuments.PassportPhotograph,
+                    //     PicDocExtension = "jpg",
+                    //     RequestTranId = Guid.NewGuid().ToString(),
+                    //     SignatureDoc = request.RequiredDocuments.Signature,
+                    //     SignatureDocExtension = "jpg",
+                    //     UtilityDoc = request.RequiredDocuments.UtilityBill,
+                    //     UtilityDocExtension = "jpg"
+                    // };
 
                     //var logToBackOffice = await _restRequestHelper.HttpAsync(Method.POST,_config[""],null,backOfficeLog);
 
@@ -1680,21 +1681,21 @@ public class AccountOpeningService : IAccountOpeningService
             return "There was a problem uprading your account. Please try again later";
         }
 
-        var backOfficeLog = new BackOfficeRequest
-        {
-            HaveDebitCard = "N",
-            IdDoc = request.RequiredDocuments.IdImage,
-            IdDocExtension = "Jpg",
-            IdNumber = request.RequiredDocuments.IdNumber,
-            IdType = request.RequiredDocuments.IdentityType,
-            PicDoc = request.RequiredDocuments.PassportPhotograph,
-            PicDocExtension = "jpg",
-            RequestTranId = Guid.NewGuid().ToString(),
-            SignatureDoc = request.RequiredDocuments.Signature,
-            SignatureDocExtension = "jpg",
-            UtilityDoc = request.RequiredDocuments.UtilityBill,
-            UtilityDocExtension = "jpg"
-        };
+        // var backOfficeLog = new BackOfficeRequest
+        // {
+        //     HaveDebitCard = "N",
+        //     IdDoc = request.RequiredDocuments.IdImage,
+        //     IdDocExtension = "Jpg",
+        //     IdNumber = request.RequiredDocuments.IdNumber,
+        //     IdType = request.RequiredDocuments.IdentityType,
+        //     PicDoc = request.RequiredDocuments.PassportPhotograph,
+        //     PicDocExtension = "jpg",
+        //     RequestTranId = Guid.NewGuid().ToString(),
+        //     SignatureDoc = request.RequiredDocuments.Signature,
+        //     SignatureDocExtension = "jpg",
+        //     UtilityDoc = request.RequiredDocuments.UtilityBill,
+        //     UtilityDocExtension = "jpg"
+        // };
 
         //var logToBackOffice = await _restRequestHelper.HttpAsync(Method.POST, _config[""], null, backOfficeLog);
 

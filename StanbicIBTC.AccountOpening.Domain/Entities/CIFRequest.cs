@@ -77,4 +77,5 @@ public partial class CIFRequest
     public string CountryOfBirth { get; set; }
     public string Sector { get; set; }
     public string SubSector { get; set; }
+    public string MotherMaidenName { get; set; }
 }
