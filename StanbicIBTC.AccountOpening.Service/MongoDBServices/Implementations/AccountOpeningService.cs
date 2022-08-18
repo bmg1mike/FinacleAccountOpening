@@ -49,6 +49,9 @@ public class AccountOpeningService : IAccountOpeningService
             //var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
             //var platform = identity.FindFirst("DisplayName").Value;
 
+            VerifyBVNResponseModel bvnDetails = null;
+
+
             var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
 
             var outboundBvn = new OutboundLog
@@ -68,7 +71,7 @@ public class AccountOpeningService : IAccountOpeningService
                 return new ApiResult { responseCode = "999", responseDescription = "Invalid Bvn" };
             }
 
-            var bvnDetails = bvnDetailsResponse.data;
+            bvnDetails = bvnDetailsResponse.data;
 
             var outboundNin = new OutboundLog
             {
@@ -89,21 +92,24 @@ public class AccountOpeningService : IAccountOpeningService
                 AccountTypeRequested = "Tier 1"
             };
 
-            if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
+            if (request.Platform != Platform.RM_Companion)
             {
-                _logger.LogInformation($"The Phone number provided is not the same with the Bvn phone number. BVN : {bvnDetails.BVN}");
-                accountOpeningAttempt.Response = "The Phone number provided is not the same with the Bvn phone number";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
-            }
+                if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
+                {
+                    _logger.LogInformation($"The Phone number provided is not the same with the Bvn phone number. BVN : {bvnDetails.BVN}");
+                    accountOpeningAttempt.Response = "The Phone number provided is not the same with the Bvn phone number";
+                    await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                    return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
+                }
 
-            var bvnDob = DateTime.Parse(bvnDetails.DateOfBirth);
-            if (bvnDob.ToString("dd-MM-yyyy") != request.DateOfBirth.ToString("dd-MM-yyyy"))
-            {
-                _logger.LogInformation($"BVN Date Of Birth does not match the supplied Date Of Birth");
-                accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
+                var bvnDob = DateTime.Parse(bvnDetails.DateOfBirth);
+                if (bvnDob.ToString("dd-MM-yyyy") != request.DateOfBirth.ToString("dd-MM-yyyy"))
+                {
+                    _logger.LogInformation($"BVN Date Of Birth does not match the supplied Date Of Birth");
+                    accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
+                    await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                    return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
+                }
             }
             var occupationCode = _finacleRepository.GetOccupations().FirstOrDefault(x => x.OccupationCode == request.OccupationCode);
             var employmentStatus = _finacleRepository.GetEmploymentStatus().FirstOrDefault(x => x.EmploymentStatusCode == request.EmploymentStatusCode);
@@ -126,47 +132,47 @@ public class AccountOpeningService : IAccountOpeningService
                 confirmPassword = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.ConfirmPassword));
             }
 
-            var inbound = new InboundLog
-            {
-                LogDate = DateTime.Now,
-                APICalled = "OpenTierOneAccount",
-                APIMethod = "ValidateTierOneAccountOpeningRequest",
-                OutboundLogs = new List<OutboundLog> { outboundBvn, outboundNin },
-                RequestDateTime = DateTime.Now,
-                RequestSystem = Environment.MachineName.ToString(),
-                ImpactUniqueIdentifier = Guid.NewGuid().ToString(),
-                AlternateUniqueIdentifier = Guid.NewGuid().ToString(),
-
-            };
-            await _inboundLogRepository.CreateInboundLog(inbound);
-
+            var title = string.Empty;
             if (string.IsNullOrEmpty(bvnDetails.Title))
             {
                 bvnDetails.Title = string.Empty;
+
             }
 
-            var title = bvnDetails.Title;
+            //var title = bvnDetails.Title;
 
             if (request.Platform is Platform.RM_Companion)
             {
                 title = request.Title;
             }
+            else
+            {
+                if (string.IsNullOrEmpty(bvnDetails.Title))
+                {
+                    title = string.Empty;
+
+                }
+                else
+                {
+                    title = bvnDetails.Title;
+                }
+            }
             switch (title.ToUpper())
             {
                 case "MR":
-                    bvnDetails.Title = "041";
+                    title = "041";
                     break;
                 case "MRS":
-                    bvnDetails.Title = "042";
+                    title = "042";
                     break;
                 case "MISS":
-                    bvnDetails.Title = "043";
+                    title = "043";
                     break;
                 case "MS":
-                    bvnDetails.Title = "040";
+                    title = "040";
                     break;
                 default:
-                    bvnDetails.Title = "175";
+                    title = "175";
                     break;
             }
 
@@ -183,7 +189,7 @@ public class AccountOpeningService : IAccountOpeningService
                 LastName = bvnDetails.LastName,
                 CustomerBVN = bvnDetails.BVN,
                 DateOfBirthInY_M_D_Format = bvnDetails.DateOfBirth,
-                Email = bvnDetails.Email,
+                Email =  request.Email ?? bvnDetails.Email,
                 StateOfResidence = bvnDetails.StateOfResidence,
                 MaritalStatus = Util.MaritalStatusCode(bvnDetails.MaritalStatus),
                 LgaOfResidence = bvnDetails.LgaOfResidence,
@@ -198,7 +204,7 @@ public class AccountOpeningService : IAccountOpeningService
                 Password = password,
                 ConfirmPassword = confirmPassword,
                 //NextOfKinDetail = nextOfKinDetails,
-                Title = bvnDetails.Title
+                Title = title
             };
 
             if (cifRequest.Platform == Platform.RM_Companion.ToString())
@@ -210,6 +216,8 @@ public class AccountOpeningService : IAccountOpeningService
                 cifRequest.StateOfResidence = request.StateOfResidence;
                 cifRequest.Email = request.Email;
                 cifRequest.RequiredDocuments = request.Documents;
+                cifRequest.CustomerAddress = request.Address;
+                cifRequest.PhoneNumber = request.PhoneNumber;
 
                 cifRequest.NextOfKinDetail = new CIFNextOfKinDetail
                 {
@@ -222,24 +230,6 @@ public class AccountOpeningService : IAccountOpeningService
                 };
 
                 cifRequest.IsKycDocumentsUploaded = true;
-                if (!string.Equals(request.Address, bvnDetails.ResidentialAddress))
-                {
-                    cifRequest.CustomerAddress = request.Address;
-                }
-
-                var cifResponse = await CreateCIF(cifRequest);
-                var cif = cifResponse.cif;
-                if (cifResponse.cif == null)
-                {
-                    cifRequest.ReasonForFailure = $"There was a problem creating CIF for this BVN : {request.Bvn}";
-                    _logger.LogInformation($"There was a problem creating CIF for this BVN : {request.Bvn} ");
-                    return new ApiResult { responseCode = "999", responseDescription = $"There was a problem saving the CIF Request for BVN: {request.Bvn} Please try again later" };
-                }
-
-
-                
-                cifRequest.Cif = cifResponse.cif;
-                cifRequest.Signature = request.Documents.Signature;
 
             }
 
@@ -446,18 +436,18 @@ public class AccountOpeningService : IAccountOpeningService
                 Title = bvnDetails.Title
             };
 
-            
-                cifRequest.StateOfResidence = _finacleRepository.GetStateCode(cifRequest.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
-                if (string.IsNullOrEmpty(cifRequest.StateOfResidence))
-                {
-                    return null;
-                }
 
-                cifRequest.LgaOfResidence = _finacleRepository.GetCityCode(cifRequest.LgaOfResidence.ToUpper().Trim());
-                if (string.IsNullOrEmpty(cifRequest.LgaOfResidence))
-                {
-                    return null;
-                }
+            cifRequest.StateOfResidence = _finacleRepository.GetStateCode(cifRequest.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
+            if (string.IsNullOrEmpty(cifRequest.StateOfResidence))
+            {
+                return null;
+            }
+
+            cifRequest.LgaOfResidence = _finacleRepository.GetCityCode(cifRequest.LgaOfResidence.ToUpper().Trim());
+            if (string.IsNullOrEmpty(cifRequest.LgaOfResidence))
+            {
+                return null;
+            }
 
             var cif = await CreateCIF(cifRequest);
             if (string.IsNullOrEmpty(cif.cif))
@@ -480,7 +470,7 @@ public class AccountOpeningService : IAccountOpeningService
             }
 
 
-            return new ApiResult { responseCode = "000", responseDescription = $"Request successfully stored in the database for processing", data = new { Cif = cif.cif, AccountNumber = accountNumber} };
+            return new ApiResult { responseCode = "000", responseDescription = $"Request successfully stored in the database for processing", data = new { Cif = cif.cif, AccountNumber = accountNumber } };
 
         }
         catch (Exception ex)
@@ -806,6 +796,8 @@ public class AccountOpeningService : IAccountOpeningService
                 AccountTypeRequested = AccountTypeRequested.Tier_Three.ToString()
             };
 
+
+
             var bvnDetailsResponse = await GetBVNDetails(request.Bvn);
 
             if (bvnDetailsResponse.data is null)
@@ -817,22 +809,24 @@ public class AccountOpeningService : IAccountOpeningService
             var bvnDetails = bvnDetailsResponse.data;
 
 
-
-            if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
+            if (request.Platform != Platform.RM_Companion)
             {
-                _logger.LogInformation($"The Phone number provided is not the same with the Bvn phone number. BVN : {bvnDetails.BVN}");
-                accountOpeningAttempt.Response = "The Phone number provided is not the same with the Bvn phone number";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
-            }
+                if (bvnDetails.PhoneNumber.AsNigerianPhoneNumber() != request.PhoneNumber.AsNigerianPhoneNumber())
+                {
+                    _logger.LogInformation($"The Phone number provided is not the same with the Bvn phone number. BVN : {bvnDetails.BVN}");
+                    accountOpeningAttempt.Response = "The Phone number provided is not the same with the Bvn phone number";
+                    await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                    return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
+                }
 
-            var bvnDob = DateTime.Parse(bvnDetails.DateOfBirth);
-            if (bvnDob.ToString("dd-MM-yyyy") != request.DateOfBirth.ToString("dd-MM-yyyy"))
-            {
-                _logger.LogInformation($"BVN Date Of Birth does not match the supplied Date Of Birth");
-                accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
-                await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
-                return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
+                var bvnDob = DateTime.Parse(bvnDetails.DateOfBirth);
+                if (bvnDob.ToString("dd-MM-yyyy") != request.DateOfBirth.ToString("dd-MM-yyyy"))
+                {
+                    _logger.LogInformation($"BVN Date Of Birth does not match the supplied Date Of Birth");
+                    accountOpeningAttempt.Response = "BVN Date Of Birth does not match the supplied Date Of Birth";
+                    await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
+                    return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
+                }
             }
 
             //if (!Util.IsBase64String(request.RequiredDocuments.PassportPhotograph)
@@ -842,7 +836,7 @@ public class AccountOpeningService : IAccountOpeningService
             //    return new ApiResult { responseCode = "999", responseDescription = "PassportPhotograph,IdImage and Signature must be Base 64 strings" };
             //}
 
-           // var cif = _finacleRepository.CheckCifForBvn(request.Bvn).Cif;
+            // var cif = _finacleRepository.CheckCifForBvn(request.Bvn).Cif;
 
 
             var sanctionScreeningRequest = new SanctionScreeningRequest
@@ -892,12 +886,13 @@ public class AccountOpeningService : IAccountOpeningService
             {
                 return new ApiResult { responseCode = "999", responseDescription = "Please indicate the date the ID was issued" };
             }
+
             var cifRequest = new CIFRequest
             {
                 AccountTypeRequested = AccountTypeRequested.Tier_Three.ToString(),
                 BvnEnrollmentBranch = bvnDetails.EnrollmentBranch,
                 BvnErollmentBank = bvnDetails.EnrollmentBank,
-                CustomerAddress = bvnDetails.ResidentialAddress,
+                CustomerAddress = request.ResidenceAddress,
                 AccountOpeningStatus = AccountOpeningStatus.Pending.ToString(),
                 EmploymentStatus = request.EmploymentStatusCode,
                 OccupationCode = request.OccupationCode,
@@ -905,7 +900,7 @@ public class AccountOpeningService : IAccountOpeningService
                 LastName = bvnDetails.LastName,
                 CustomerBVN = bvnDetails.BVN,
                 DateOfBirthInY_M_D_Format = bvnDetails.DateOfBirth,
-                Email = bvnDetails.Email,
+                Email = request.Email,
                 StateOfResidence = request.StateOfResidence,
                 MaritalStatus = Util.MaritalStatusCode(bvnDetails.MaritalStatus),
                 LgaOfResidence = bvnDetails.LgaOfResidence,
@@ -926,7 +921,7 @@ public class AccountOpeningService : IAccountOpeningService
                     State = request.NextOfKinDetails.StateOfResidence,
                     Town = request.NextOfKinDetails.Town,
                     Relationship = request.NextOfKinDetails.Relationship,
-                    
+
                 },
                 SanctionScreeningAccountId = sanctionScreeningRequest.AccountOpeningRequestId,
                 IsSanctionScreeningLogged = true,
@@ -943,10 +938,13 @@ public class AccountOpeningService : IAccountOpeningService
                 AvrComment = request.AvrComment,
                 SolId = request.BranchId,
                 AccountManagerSapId = request.AccountManager,
-                BranchManagerSapId = request.CustomerRelationshipManager
+                BranchManagerSapId = request.CustomerRelationshipManager,
+                CountryOfBirth = request.CountryOfBirth,
+                Sector = request.SectorCode,
+                SubSector = request.SubSectorCode,
+
             };
             // Check if CIF exist
-
 
 
             var saveCifRequest = await _cifRepository.CreateCIFRequest(cifRequest);

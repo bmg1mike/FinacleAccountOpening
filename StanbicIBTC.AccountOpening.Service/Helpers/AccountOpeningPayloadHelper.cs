@@ -136,11 +136,11 @@ public static class AccountOpeningPayloadHelper
                 <RelationshipOpeningDt>{DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff")}</RelationshipOpeningDt>
                 <RiskProfileScore>0</RiskProfileScore>
                 <Salutation>{request.Title}</Salutation>
-                <Sector>96</Sector>
+                <Sector>{request.Sector ?? "96"}</Sector>
                 <SegmentationClass>001</SegmentationClass>
                 <StaffEmployeeId></StaffEmployeeId>
                 <StaffFlag>N</StaffFlag>
-                <SubSector>S960</SubSector>
+                <SubSector>{request.SubSector ?? "S960"}</SubSector>
                 <SubSegment>106</SubSegment>
                 <TaxDeductionTable>001</TaxDeductionTable>
                 <TradeFinFlag>N</TradeFinFlag>

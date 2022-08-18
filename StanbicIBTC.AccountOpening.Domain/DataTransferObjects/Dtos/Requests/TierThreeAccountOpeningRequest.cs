@@ -31,6 +31,9 @@ public class TierThreeAccountOpeningRequest
     public string AccountManager { get; set; }
     public string BranchId { get; set; }
     public string Title { get; set; }
+    public string CountryOfBirth { get; set; }
+    public string SectorCode { get; set; }
+    public string SubSectorCode { get; set; }
 }
 
 public class PoliticallyExposedPersonDetails
@@ -56,7 +59,7 @@ public class EmployedAndStudentCustomerInformation
     public decimal MonthlyIncome { get; set; }
     public string InstitutionName { get; set; }
     public string Sector { get; set; }
-    
+
 }
 
 public class RequiredDocuments

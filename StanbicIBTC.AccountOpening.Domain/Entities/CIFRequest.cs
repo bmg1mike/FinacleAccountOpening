@@ -74,4 +74,7 @@ public partial class CIFRequest
     public bool AccountFreezed { get; set; }
     public DateTime? AvrVisitDate { get; set; }
     public string AvrComment { get; set; }
+    public string CountryOfBirth { get; set; }
+    public string Sector { get; set; }
+    public string SubSector { get; set; }
 }
