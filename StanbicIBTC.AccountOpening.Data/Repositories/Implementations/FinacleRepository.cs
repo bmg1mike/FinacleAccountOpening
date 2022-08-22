@@ -101,6 +101,7 @@ public class FinacleRepository : IFinacleRepository
                     and mpc_2.entity_cre_flg='Y'
                     and mpc_1.user_id=mpc_2.emp_id
                     and mpc_1.user_id = :sapId";
+        
 
         return db.Query<ValidateRelationshipManagerResponse>(sql, new { sapId = sapId }).SingleOrDefault();
     }
@@ -108,7 +109,7 @@ public class FinacleRepository : IFinacleRepository
     public List<BranchesResponse> GetBranches()
     {
         var sql = $@"select sol_id,sol_desc Branch_Name from tbaadm.sol";
-        return db.Query<BranchesResponse>(sql).ToList();
+        return db.Query<BranchesResponse>(sql).OrderBy(x => x.Branch_Name).ToList();
     }
 
 }

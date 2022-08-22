@@ -1,4 +1,5 @@
 using StanbicIBTC.AccountOpening.Domain;
+using StanbicIBTC.AccountOpening.Domain.Entities;
 using StanbicIBTC.AccountOpening.Service;
 
 namespace StanbicIBTC.AccountOpening.API.Controllers.v1
@@ -146,7 +147,7 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             });
         }
 
-        [HttpPost("VerifyIdCard")]
+        [HttpPost("VerifyIdCard/")]
         public async Task<IActionResult> VerifyIdCard([FromBody]IdVerificationRequest request)
         {
             var result = new Result<IdVerificationResponse>();
@@ -162,6 +163,36 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             var result = new Result<CifCheck>();
             var response = _accountOpeningService.CheckAccountAvailabilityByBvn(bvn);
             result.Content = (CifCheck)response.data;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
+        }
+
+        [HttpGet("GetFailedAccountsByAccountManager/{sapId}")]
+        public async Task<IActionResult> GetFailedAccountsByAccountManager(string sapId)
+        {
+            var result = new Result<List<UserResponse>>();
+            var response = await _accountOpeningService.GetFailedCifRequestsByAccountManager(sapId);
+            result.Content = (List<UserResponse>)response.data;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
+        }
+
+        [HttpGet("GetSuccessfulAccountsByAccountManager/{sapId}")]
+        public async Task<IActionResult> GetSuccessfulAccountsByAccountManager(string sapId)
+        {
+            var result = new Result<List<UserResponse>>();
+            var response = await _accountOpeningService.GetSuccessfulCifRequestsByAccountManager(sapId);
+            result.Content = (List<UserResponse>)response.data;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
+        }
+
+        [HttpGet("GetPendingAccountsByAccountManager/{sapId}")]
+        public async Task<IActionResult> GetPendingAccountsByAccountManager(string sapId)
+        {
+            var result = new Result<List<UserResponse>>();
+            var response = await _accountOpeningService.GetPendingCifRequestsByAccountManager(sapId);
+            result.Content = (List<UserResponse>)response.data;
             result.ResponseCode = response.responseCode;
             return Ok(result);
         }

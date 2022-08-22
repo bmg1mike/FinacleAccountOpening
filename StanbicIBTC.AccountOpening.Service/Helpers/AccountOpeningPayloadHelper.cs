@@ -255,7 +255,7 @@ public static class AccountOpeningPayloadHelper
     <CurCode>NGN</CurCode>
     </GenLedgerSubHead>
     <AcctName>{request.FirstName.ToUpper() + " " + request.MiddleName.ToUpper() + " " + request.LastName.ToUpper()}</AcctName>
-    <AcctShortName>{request.FirstName.ToUpper()}</AcctShortName>
+    <AcctShortName>{request.LastName.ToUpper()}</AcctShortName>
     <AcctStmtMode>S</AcctStmtMode>
     <DespatchMode>N</DespatchMode>
     </SBAcctGenInfo>

@@ -87,6 +87,57 @@ public partial class CIFRequestRepository : ICIFRequestRepository
         return result.ModifiedCount == 1;
     }
 
+    public async Task<List<UserResponse>> GetPendingCifRequestsByAccountManager(string sapId)
+    {
+       
+        var query = context.CIFRequests.AsQueryable();
+        var requests = query.Where(x => x.AccountManagerSapId == sapId && x.AccountOpeningStatus == AccountOpeningStatus.Pending.ToString())
+            .Select(x => new UserResponse {
+            AccountNumber = x.AccountNumber,
+            Bvn = x.CustomerBVN,
+            Cif = x.Cif,
+            FirstName = x.FirstName,
+            LastName = x.LastName,
+            Reason = x.ReasonForFailure ?? string.Empty
+        }).ToList();
+
+        return requests;
+    }
+
+    public async Task<List<UserResponse>> GetSuccessfulCifRequestsByAccountManager(string sapId)
+    {
+
+        var query = context.CIFRequests.AsQueryable();
+        var requests = query.Where(x => x.AccountManagerSapId == sapId && x.AccountOpeningStatus == AccountOpeningStatus.Successful.ToString())
+            .Select(x => new UserResponse
+            {
+                AccountNumber = x.AccountNumber,
+                Bvn = x.CustomerBVN,
+                Cif = x.Cif,
+                FirstName = x.FirstName,
+                LastName = x.LastName
+            }).ToList();
+
+        return requests;
+    }
+
+    public async Task<List<UserResponse>> GetFailedCifRequestsByAccountManager(string sapId)
+    {
+
+        var query = context.CIFRequests.AsQueryable();
+        var requests = query.Where(x => x.AccountManagerSapId == sapId && x.AccountOpeningStatus == AccountOpeningStatus.Failed.ToString())
+            .Select(x => new UserResponse
+        {
+            AccountNumber = x.AccountNumber,
+            Bvn = x.CustomerBVN,
+            Cif = x.Cif,
+            FirstName = x.FirstName,
+            LastName = x.LastName,
+            Reason = x.ReasonForFailure ?? string.Empty
+            }).ToList();
+
+        return requests;
+    }
     //Use Template To Update Specific Fields According to Needs. Remember to add to your ICIFRequestRepository.cs
     /*
     public async Task<bool> UpdateSpecificFields(string cIFRequestId, CIFRequest cIFRequest)

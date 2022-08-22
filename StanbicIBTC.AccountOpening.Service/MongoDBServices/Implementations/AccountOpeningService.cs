@@ -111,11 +111,7 @@ public class AccountOpeningService : IAccountOpeningService
                     return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
                 }
             }
-            var occupationCode = _finacleRepository.GetOccupations().FirstOrDefault(x => x.OccupationCode == request.OccupationCode);
-            var employmentStatus = _finacleRepository.GetEmploymentStatus().FirstOrDefault(x => x.EmploymentStatusCode == request.EmploymentStatusCode);
-
-            if (occupationCode is null || employmentStatus is null)
-                return new ApiResult { responseCode = "999", responseDescription = "Invalid Occupation Code Or Employment status" };
+            
 
 
 
@@ -133,13 +129,6 @@ public class AccountOpeningService : IAccountOpeningService
             }
 
             var title = string.Empty;
-            if (string.IsNullOrEmpty(bvnDetails.Title))
-            {
-                bvnDetails.Title = string.Empty;
-
-            }
-
-            //var title = bvnDetails.Title;
 
             if (request.Platform is Platform.RM_Companion)
             {
@@ -147,6 +136,12 @@ public class AccountOpeningService : IAccountOpeningService
             }
             else
             {
+                if (string.IsNullOrEmpty(bvnDetails.Title))
+                {
+                    bvnDetails.Title = string.Empty;
+
+                }
+
                 if (string.IsNullOrEmpty(bvnDetails.Title))
                 {
                     title = string.Empty;
@@ -175,6 +170,8 @@ public class AccountOpeningService : IAccountOpeningService
                     title = "175";
                     break;
             }
+        
+            
 
             var cifRequest = new CIFRequest
             {
@@ -436,18 +433,22 @@ public class AccountOpeningService : IAccountOpeningService
                 Title = bvnDetails.Title
             };
 
-
-            cifRequest.StateOfResidence = _finacleRepository.GetStateCode(cifRequest.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
-            if (string.IsNullOrEmpty(cifRequest.StateOfResidence))
+            if (request.Platform != Platform.RM_Companion)
             {
-                return null;
+                cifRequest.StateOfResidence = _finacleRepository.GetStateCode(cifRequest.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
+                if (string.IsNullOrEmpty(cifRequest.StateOfResidence))
+                {
+                    return null;
+                }
+
+                cifRequest.LgaOfResidence = _finacleRepository.GetCityCode(cifRequest.LgaOfResidence.ToUpper().Trim());
+                if (string.IsNullOrEmpty(cifRequest.LgaOfResidence))
+                {
+                    return null;
+                }
             }
 
-            cifRequest.LgaOfResidence = _finacleRepository.GetCityCode(cifRequest.LgaOfResidence.ToUpper().Trim());
-            if (string.IsNullOrEmpty(cifRequest.LgaOfResidence))
-            {
-                return null;
-            }
+            
 
             var cif = await CreateCIF(cifRequest);
             if (string.IsNullOrEmpty(cif.cif))
@@ -861,7 +862,7 @@ public class AccountOpeningService : IAccountOpeningService
             //{
             //    bvnDetails.Title = String.Empty;
             //}
-
+            
             switch (request.Title.ToUpper())
             {
                 case "MR":
@@ -985,29 +986,32 @@ public class AccountOpeningService : IAccountOpeningService
             if (string.IsNullOrEmpty(cif))
             {
 
-
-                request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
-                if (string.IsNullOrEmpty(request.StateOfResidence))
+                if (request.Platform != Platform.RM_Companion.ToString())
                 {
-                    request.IsAccountOpenedSuccessfully = false;
-                    request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                    request.Response = "The state in the BVN is not available in the finacle Database";
-                    await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
-                    await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
-                    return null;
-                }
+                    request.StateOfResidence = _finacleRepository.GetStateCode(request.StateOfResidence.ToUpper().Replace("STATE", "").Trim());
+                    if (string.IsNullOrEmpty(request.StateOfResidence))
+                    {
+                        request.IsAccountOpenedSuccessfully = false;
+                        request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                        request.Response = "The state in the BVN is not available in the finacle Database";
+                        await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+                        await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
+                        return null;
+                    }
 
-                request.LgaOfResidence = _finacleRepository.GetCityCode(request.LgaOfResidence.ToUpper().Trim());
-                if (string.IsNullOrEmpty(request.LgaOfResidence))
-                {
-                    request.IsAccountOpenedSuccessfully = false;
-                    request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
-                    request.Response = "The City in the BVN is not available in the finacle Database";
-                    await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
+                    request.LgaOfResidence = _finacleRepository.GetCityCode(request.LgaOfResidence.ToUpper().Trim());
+                    if (string.IsNullOrEmpty(request.LgaOfResidence))
+                    {
+                        request.IsAccountOpenedSuccessfully = false;
+                        request.AccountOpeningStatus = AccountOpeningStatus.Failed.ToString();
+                        request.Response = "The City in the BVN is not available in the finacle Database";
+                        await _cifRepository.UpdateCIFRequest(request.CIFRequestId, request);
 
-                    await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
-                    return null;
+                        await _messagingNotification.SendAccountOpeningSMS(new SMSRequest { Message = "We are unable to complete the account opening process, please try again", PhoneNumber = request.PhoneNumber });
+                        return null;
+                    }
                 }
+                
 
 
                 var cifResponse = await CreateCIF(request);
@@ -1051,32 +1055,6 @@ public class AccountOpeningService : IAccountOpeningService
                     var addressverificationId = _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription, "LogAddressVerificationRequestResult");
                     request.AddressverificationId = addressverificationId;
 
-                    // log to back office
-
-                    // var backOfficeLog = new BackOfficeRequest
-                    // {
-                    //     documents = new Documents
-                    //     HaveDebitCard = "N",
-                    //     IdDoc = request.RequiredDocuments.IdImage,
-                    //     IdDocExtension = "Jpg",
-                    //     IdNumber = request.RequiredDocuments.IdNumber,
-                    //     IdType = request.RequiredDocuments.IdentityType,
-                    //     PicDoc = request.RequiredDocuments.PassportPhotograph,
-                    //     PicDocExtension = "jpg",
-                    //     RequestTranId = Guid.NewGuid().ToString(),
-                    //     SignatureDoc = request.RequiredDocuments.Signature,
-                    //     SignatureDocExtension = "jpg",
-                    //     UtilityDoc = request.RequiredDocuments.UtilityBill,
-                    //     UtilityDocExtension = "jpg"
-                    // };
-
-                    //var logToBackOffice = await _restRequestHelper.HttpAsync(Method.POST,_config[""],null,backOfficeLog);
-
-                    //if (!logToBackOffice.IsSuccessful)
-                    //{
-                    //    _logger.LogInformation("Could not log to back office");
-                    //    request.IsBackOfficeLogged = false;
-                    //}
 
                 }
 
@@ -1116,13 +1094,8 @@ public class AccountOpeningService : IAccountOpeningService
             var accountNumber = _soapRequestHelper.GetXmlTagValue<string>(openSavingsAccount.ResponseDescription, "AcctId");
             if (string.IsNullOrEmpty(accountNumber))
             {
-
-                // await _accountOpeningAttempt.CreateAccountOpeningAttempt(accountOpeningAttempt);
                 return $"Could not open the account for CIF : {cif}";
             }
-            //var cifRequest = await _cifRepository.GetCIFRequest(request.CIFRequestId);
-            //cifRequest.AccountOpeningStatus = AccountOpeningStatus.Completed.ToString();
-            //await _cifRepository.UpdateCIFRequest(cifRequest.CIFRequestId, cifRequest);
 
             var successMessage = string.Empty;
             if (request.WillOnBoard && (request.Platform == Platform.WEB.ToString() || request.Platform == Platform.MOBILE.ToString()))
@@ -1484,7 +1457,7 @@ public class AccountOpeningService : IAccountOpeningService
             if (string.IsNullOrEmpty(response.Content))
             {
                 _logger.LogInformation(response.ErrorMessage);
-                return ("9xx", "Error validating customer's BVN", null);
+                return ("9xx", response.ErrorMessage, null);
             }
             var result = JsonConvert.DeserializeObject<VerifyBVNResponseModel>(response.Content);
             return (result.ResponseCode, result.ResponseMessage, result);
@@ -1829,8 +1802,15 @@ public class AccountOpeningService : IAccountOpeningService
                 returnImages = request.returnImages
             };
 
-            var url = _config["IdEndpoint:baseUrl"];
-            var response = await _restRequestHelper.HttpAsync(Method.POST, url, null, apiRequest);
+            var url = _config["IdEndpoint:base_url"];
+            var auth = _config["IdEndpoint:Authorization"];
+            var moduleId = _config["IdEndpoint:ModuleId"];
+
+            var headers = new Dictionary<string, string>();
+            headers.Add("Module_Id",moduleId);
+            headers.Add("Authorization",auth);
+            
+            var response = await _restRequestHelper.HttpAsync(Method.POST, url, headers, apiRequest);
 
             if (response.IsSuccessful)
             {
@@ -1866,5 +1846,21 @@ public class AccountOpeningService : IAccountOpeningService
             return new ApiResult { responseCode = "999", responseDescription = ex.Message };
         }
 
+    }
+
+    public async Task<ApiResult> GetFailedCifRequestsByAccountManager(string sapId)
+    {
+        var requests = await _cifRepository.GetFailedCifRequestsByAccountManager(sapId);
+        return new ApiResult { data = requests, responseCode = "000", responseDescription = "Successful" };
+    }
+    public async Task<ApiResult> GetSuccessfulCifRequestsByAccountManager(string sapId)
+    {
+        var requests = await _cifRepository.GetSuccessfulCifRequestsByAccountManager(sapId);
+        return new ApiResult { data = requests, responseCode = "000", responseDescription = "Successful" };
+    }
+    public async Task<ApiResult> GetPendingCifRequestsByAccountManager(string sapId)
+    {
+        var requests = await _cifRepository.GetPendingCifRequestsByAccountManager(sapId);
+        return new ApiResult { data = requests, responseCode = "000", responseDescription = "Successful" };
     }
 }

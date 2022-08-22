@@ -1,3 +1,5 @@
+using StanbicIBTC.AccountOpening.Domain;
+
 namespace StanbicIBTC.AccountOpening.Data;
 public partial interface ICIFRequestRepository
 {
@@ -9,6 +11,9 @@ public partial interface ICIFRequestRepository
     Task<List<CIFRequest>> GetPendingCifRequests();
     Task<List<CIFRequest>> GetSuccessfullyOpenedAccountsByBranchId(string branchId, string bulkAccountId);
     Task<CIFRequest> GetCIFRequestByBvn(string bvn);
+    Task<List<UserResponse>> GetFailedCifRequestsByAccountManager(string sapId);
+    Task<List<UserResponse>> GetSuccessfulCifRequestsByAccountManager(string sapId);
+    Task<List<UserResponse>> GetPendingCifRequestsByAccountManager(string sapId);
 
     //Task<List<CIFRequest>> GetByFieldName(string fieldName) --Template
     //Task<bool> UpdateSpecificFields(string cIFRequestId, CIFRequest cIFRequest) --Template
