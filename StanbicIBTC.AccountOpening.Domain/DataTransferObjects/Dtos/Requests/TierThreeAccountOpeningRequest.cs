@@ -77,6 +77,10 @@ public class RequiredDocuments
     public string SignatureExtension { get; set; }
     public string UtilityBill { get; set; }
     public string UtilityBillExtension { get; set; }
+    public string AopDocument { get; set; }
+    public string BvnVerificationDocument { get; set; }
+    public string IdVerificationDocument { get; set; }
+    public string SanctionScreeningReportDocument { get; set; }
 }
 
 public class SoleProprietor

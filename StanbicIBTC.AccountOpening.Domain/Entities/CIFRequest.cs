@@ -78,4 +78,7 @@ public partial class CIFRequest
     public string Sector { get; set; }
     public string SubSector { get; set; }
     public string MotherMaidenName { get; set; }
+    public bool InternetBankingForRM { get; set; } = false;
+    public bool ApprovedByCompliance { get; set; } = false;
+    public string ComplianceOfficer { get; set; }
 }

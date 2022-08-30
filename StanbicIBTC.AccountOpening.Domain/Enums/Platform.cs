@@ -7,6 +7,7 @@ public enum Platform
     USSD,
     Bulk,
     USSD_Device_Financing,
-    RM_Companion
+    RM_Companion,
+    Ez_Cash
 }
 
