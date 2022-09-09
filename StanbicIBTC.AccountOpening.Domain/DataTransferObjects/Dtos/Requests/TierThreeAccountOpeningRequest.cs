@@ -35,6 +35,10 @@ public class TierThreeAccountOpeningRequest
     public string SectorCode { get; set; }
     public string SubSectorCode { get; set; }
     public string MotherMaidenName { get; set; }
+    public string PurposeOfAccount { get; set; }
+    public string SubSegment { get; set; }
+    public bool? InternetBankingForRM { get; set; }
+    public string LgaOfResidence { get; set; }
 }
 
 public class PoliticallyExposedPersonDetails

@@ -23,4 +23,5 @@ public class TierOneAccountOpeningRequest
     public NextOfKin NextOfKinDetails { get; set; }
     public string CustomerRelationshipManager { get; set; }
     public string AccountManager { get; set; }
+    public bool InternetBankingForRM { get; set; } = false;
 }

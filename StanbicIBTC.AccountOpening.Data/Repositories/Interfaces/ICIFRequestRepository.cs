@@ -14,6 +14,7 @@ public partial interface ICIFRequestRepository
     Task<List<UserResponse>> GetFailedCifRequestsByAccountManager(string sapId);
     Task<List<UserResponse>> GetSuccessfulCifRequestsByAccountManager(string sapId);
     Task<List<UserResponse>> GetPendingCifRequestsByAccountManager(string sapId);
+    List<CIFRequest> GetFailedSanctionScreeningRequests();
 
     //Task<List<CIFRequest>> GetByFieldName(string fieldName) --Template
     //Task<bool> UpdateSpecificFields(string cIFRequestId, CIFRequest cIFRequest) --Template

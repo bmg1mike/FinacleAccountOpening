@@ -38,8 +38,8 @@ public class FinacleRepository : IFinacleRepository
     public CifCheck CheckCifForBvn(string bvn)
     {
         var sql = $@"select x.cust_first_name as FirstName, x.cust_middle_name as MiddleName, x.cust_last_name as LastName, x.orgkey as Cif, x.struserfield30 as Bvn from crmuser.accounts x where x.struserfield30 = :bvn";
-        return db.Query<CifCheck>(sql,new { bvn = bvn }).SingleOrDefault();
-
+        var result = db.Query<CifCheck>(sql,new { bvn = bvn }).FirstOrDefault();
+        return result;
     }
 
     public FinacleAccountDetailResponse GetAccountDetailsByAccountNumber(string accountNumber)

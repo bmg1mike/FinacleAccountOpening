@@ -138,6 +138,16 @@ public partial class CIFRequestRepository : ICIFRequestRepository
 
         return requests;
     }
+
+    public List<CIFRequest> GetFailedSanctionScreeningRequests()
+    {
+        var requests = context.CIFRequests.AsQueryable();
+        return requests.Where(x=>x.SanctionScreeningVerified == false && 
+                x.RequiredDocuments.SanctionScreeningReportDocument != null &&
+                (x.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString() || 
+                x.AccountTypeRequested == AccountTypeRequested.Tier_One_Upgrade.ToString())).ToList();
+
+    }
     //Use Template To Update Specific Fields According to Needs. Remember to add to your ICIFRequestRepository.cs
     /*
     public async Task<bool> UpdateSpecificFields(string cIFRequestId, CIFRequest cIFRequest)

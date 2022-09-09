@@ -1,7 +1,6 @@
 namespace StanbicIBTC.AccountOpening.Service;
 public interface IAccountOpeningService
 {
-    Task AddressVerificationRequest(AccountOpeningAttempt request);
     Task<string> CheckAddressVerificationStatus(string addressVerificationId);
     Task<string> DownloadAddressVerificationReport(string addressVerificationId);
     ApiResult GetAccountNameByAccountNumber(string accountNumber);
@@ -26,4 +25,6 @@ public interface IAccountOpeningService
     Task<ApiResult> GetFailedCifRequestsByAccountManager(string sapId);
     Task<ApiResult> GetSuccessfulCifRequestsByAccountManager(string sapId);
     Task<ApiResult> GetPendingCifRequestsByAccountManager(string sapId);
+    Task<ApiResult> ApproveFailedSanctionScreeningReport(SanctionScreeningComplianceRequest request, string cifRequestId);
+    ApiResult GetFailedSanctionScreenRequests();
 }

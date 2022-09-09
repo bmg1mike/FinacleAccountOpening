@@ -77,8 +77,19 @@ public partial class CIFRequest
     public string CountryOfBirth { get; set; }
     public string Sector { get; set; }
     public string SubSector { get; set; }
+    public string SubSegment { get; set; }
     public string MotherMaidenName { get; set; }
-    public bool InternetBankingForRM { get; set; } = false;
-    public bool ApprovedByCompliance { get; set; } = false;
-    public string ComplianceOfficer { get; set; }
+    public bool? InternetBankingForRM { get; set; } = false;
+    public SanctionScreeningComplianceApproval SanctionScreeningComplianceApproval { get; set; }
+    public string NearestBusStop { get; set; }
+    public string PurposeOfAccount { get; set; }
+}
+
+public class SanctionScreeningComplianceApproval
+{
+    public string ComplianceApprovalStatus { get; set; } = ApprovalStatus.Pending.ToString();
+    public string ComplianceOfficerSapId { get; set; }
+    public string Comment { get; set; }
+    public DateTime DateCreated { get; set; } = DateTime.Now;
+    public DateTime DateModified { get; set; } = DateTime.Now;
 }

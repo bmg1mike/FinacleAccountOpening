@@ -197,5 +197,24 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
             return Ok(result);
         }
 
+        [HttpPost("ApproveSanctionScreeningRequest/{id}")]
+        public async Task<IActionResult> ApproveSanctionScreeningRequest(string id,[FromBody]SanctionScreeningComplianceRequest request)
+        {
+            var result = new Result<string>();
+            var response = await _accountOpeningService.ApproveFailedSanctionScreeningReport(request,id);
+            result.Content = response.responseDescription;
+            return Ok(result);
+        }
+
+        [HttpGet("GetFailedSanctionScreenRequests")]
+        public IActionResult GetFailedSanctionScreenRequests()
+        {
+            var result = new Result<List<SanctionScreeningDto>>();
+            var response =  _accountOpeningService.GetFailedSanctionScreenRequests();
+            result.Content = (List<SanctionScreeningDto>)response.data;
+            result.ResponseCode = response.responseCode;
+            return Ok(result);
+        }
+
     }
 }

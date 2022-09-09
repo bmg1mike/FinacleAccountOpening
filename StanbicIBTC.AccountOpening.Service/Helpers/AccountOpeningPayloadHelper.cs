@@ -141,7 +141,7 @@ public static class AccountOpeningPayloadHelper
                 <StaffEmployeeId></StaffEmployeeId>
                 <StaffFlag>N</StaffFlag>
                 <SubSector>{request.SubSector ?? "S960"}</SubSector>
-                <SubSegment>106</SubSegment>
+                <SubSegment>{request.SubSegment ?? "106"}</SubSegment>
                 <TaxDeductionTable>001</TaxDeductionTable>
                 <TradeFinFlag>N</TradeFinFlag>
                 </CustData>
@@ -506,7 +506,7 @@ public static class AccountOpeningPayloadHelper
         return payload;
     }
 
-    public static string AddressVerificationRequestPayload(string Address, string cif)
+    public static string AddressVerificationRequestPayload(string Address, string cif, string NearestBusStop)
     {
         var payload = $@"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:tem=""http://tempuri.org/"">
                <soapenv:Header />
@@ -516,7 +516,7 @@ public static class AccountOpeningPayloadHelper
                     <tem:RequestType>1</t8em:RequestType>
                      <tem:Alias>neon</tem:Alias>
                     <tem:Branchid>000001</tem:Branchid>
-                    <tem:LandMark>Conoil Gas Station</tem:LandMark>
+                    <tem:LandMark>{NearestBusStop}</tem:LandMark>
                      <tem:LoggedBy>A168357</tem:LoggedBy>
                   </tem:LogAddressVerificationRequest>
                </soapenv:Body>

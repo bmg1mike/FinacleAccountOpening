@@ -215,6 +215,7 @@ public class AccountOpeningService : IAccountOpeningService
                 cifRequest.RequiredDocuments = request.Documents;
                 cifRequest.CustomerAddress = request.Address;
                 cifRequest.PhoneNumber = request.PhoneNumber;
+                cifRequest.InternetBankingForRM = request.InternetBankingForRM;
 
                 cifRequest.NextOfKinDetail = new CIFNextOfKinDetail
                 {
@@ -539,19 +540,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             }
 
-            var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
-                AccountOpeningPayloadHelper.AddressVerificationRequestPayload(bvnDetailsResponse.data.ResidentialAddress, cif));
-
-            if (addressVerificationRequest.ResponseCode != "000")
-            {
-                _logger.LogInformation($"There was a problem logging for Address Verification");
-                return new ApiResult { responseCode = "999", responseDescription = $"There was a problem logging for Address Verification for BVN: {request.Bvn} Please try again later" };
-
-            }
-
-            var addressverificationId = _soapRequestHelper.GetXmlTagValue<string>(addressVerificationRequest.ResponseDescription, "LogAddressVerificationRequestResult");
-
-
+            
 
             var photographResponse = await SaveDocumentToDataStore(cif, request.PassportPhotograph, "Customer Photograph");
             if (photographResponse.OutCome.Status != "SUCCESS")
@@ -610,7 +599,6 @@ public class AccountOpeningService : IAccountOpeningService
                 MonthlyIncome = request.MonthlyIncome,
                 PhoneNumber = bvnDetailsResponse.data.PhoneNumber.AsNigerianPhoneNumber(),
                 SanctionScreeningAccountId = sanctionScreeningRequest.AccountOpeningRequestId,
-                AddressverificationId = addressverificationId,
                 AccountOpeningStatus = AccountOpeningStatus.Pending.ToString(),
                 IsKycDocumentsUploaded = true,
                 IsAddressVerificationLogged = true,
@@ -862,31 +850,31 @@ public class AccountOpeningService : IAccountOpeningService
             //{
             //    bvnDetails.Title = String.Empty;
             //}
-            
-            switch (request.Title.ToUpper())
+            var phoneNumber = bvnDetails.PhoneNumber ?? string.Empty;
+            if (request.Platform != Platform.RM_Companion)
             {
-                case "MR":
-                    request.Title = "041";
-                    break;
-                case "MRS":
-                    request.Title = "042";
-                    break;
-                case "MISS":
-                    request.Title = "043";
-                    break;
-                case "MS":
-                    request.Title = "040";
-                    break;
-                default:
+                switch (request.Title.ToUpper())
+                {
+                    case "MR":
+                        request.Title = "041";
+                        break;
+                    case "MRS":
+                        request.Title = "042";
+                        break;
+                    case "MISS":
+                        request.Title = "043";
+                        break;
+                    case "MS":
+                        request.Title = "040";
+                        break;
+                    default:
                     request.Title = "175";
                     break;
+                }
+
+                phoneNumber = request.PhoneNumber;
             }
 
-
-            if (request.RequiredDocuments.IdIssueDate == null)
-            {
-                return new ApiResult { responseCode = "999", responseDescription = "Please indicate the date the ID was issued" };
-            }
 
             var cifRequest = new CIFRequest
             {
@@ -897,14 +885,14 @@ public class AccountOpeningService : IAccountOpeningService
                 AccountOpeningStatus = AccountOpeningStatus.Pending.ToString(),
                 EmploymentStatus = request.EmploymentStatusCode,
                 OccupationCode = request.OccupationCode,
-                FirstName = bvnDetails.FirstName,
+                FirstName =  bvnDetails.FirstName,
                 LastName = bvnDetails.LastName,
                 CustomerBVN = bvnDetails.BVN,
                 DateOfBirthInY_M_D_Format = bvnDetails.DateOfBirth,
                 Email = request.Email,
                 StateOfResidence = request.StateOfResidence,
-                MaritalStatus = Util.MaritalStatusCode(bvnDetails.MaritalStatus),
-                LgaOfResidence = bvnDetails.LgaOfResidence,
+                MaritalStatus = Util.MaritalStatusCode(request.MaritalStatus ?? bvnDetails.MaritalStatus),
+                LgaOfResidence = request.LgaOfResidence ?? bvnDetails.LgaOfResidence,
                 NIN = bvnDetails.NIN,
                 PhoneNumber = bvnDetails.PhoneNumber,
                 Gender = bvnDetails.Gender,
@@ -942,9 +930,13 @@ public class AccountOpeningService : IAccountOpeningService
                 AccountManagerSapId = request.AccountManager,
                 BranchManagerSapId = request.CustomerRelationshipManager,
                 CountryOfBirth = request.CountryOfBirth,
-                Sector = request.SectorCode,
-                SubSector = request.SubSectorCode,
-
+                Sector = request.SectorCode ?? string.Empty,
+                SubSector = request.SubSectorCode ?? string.Empty,
+                SubSegment = request.SubSegment ?? string.Empty,
+                NearestBusStop = request.NearestBusStop,
+                PurposeOfAccount = request.PurposeOfAccount ?? string.Empty,
+                InternetBankingForRM = request.InternetBankingForRM ?? false
+                
             };
             // Check if CIF exist
 
@@ -1042,7 +1034,7 @@ public class AccountOpeningService : IAccountOpeningService
                 if (request.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString())
                 {
                     var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
-                    AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.CustomerAddress, cifResponse.cif));
+                    AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.CustomerAddress, cifResponse.cif,request.NearestBusStop));
                     //
 
                     if (addressVerificationRequest.ResponseCode != "000")
@@ -1294,7 +1286,7 @@ public class AccountOpeningService : IAccountOpeningService
                 EmploymentType = cifRequest.EmploymentStatus,
                 NationalIdNumber = cifRequest.NIN,
                 DateCreated = DateTime.UtcNow,
-                CountryOfBirth = "NG",
+                CountryOfBirth = cifRequest.CountryOfBirth ?? "NG",
                 CountryOfTaxResidence = "NG",
                 CustomerId = cif,
                 DistributionChannel = "D",
@@ -1302,7 +1294,9 @@ public class AccountOpeningService : IAccountOpeningService
                 ReturnsClassificationCode = "087",
                 PrimarySicCode = "96",
                 SecondarySicCode = "S960",
-                PoliticallyExposed = "N"
+                PoliticallyExposed = "N",
+                ShortName = cifRequest.LastName,
+            
 
             };
             await _modelContext.AddAsync(customData);
@@ -1613,12 +1607,6 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
-    public async Task AddressVerificationRequest(AccountOpeningAttempt request)
-    {
-        var addressVerificationRequest = await _soapRequestHelper.FinacleCall(AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.Address, request.Cif), null, _config["Address_Verification:base_url"]);
-
-    }
-
     public ApiResult GetAccountNameByAccountNumber(string accountNumber)
     {
         var accountDetails = _finacleRepository.GetAccountDetailsByAccountNumber(accountNumber);
@@ -1863,4 +1851,45 @@ public class AccountOpeningService : IAccountOpeningService
         var requests = await _cifRepository.GetPendingCifRequestsByAccountManager(sapId);
         return new ApiResult { data = requests, responseCode = "000", responseDescription = "Successful" };
     }
+
+    public async Task<ApiResult> ApproveFailedSanctionScreeningReport(SanctionScreeningComplianceRequest request, string cifRequestId)
+    {
+        var cifRequest = await _cifRepository.GetCIFRequest(cifRequestId);
+        cifRequest.SanctionScreeningComplianceApproval.Comment = request.Comment;
+        cifRequest.SanctionScreeningComplianceApproval.ComplianceApprovalStatus = request.ComplianceApprovalStatus.ToString();
+        cifRequest.SanctionScreeningComplianceApproval.ComplianceOfficerSapId = request.ComplianceOfficerSapId;
+        cifRequest.SanctionScreeningComplianceApproval.DateModified = DateTime.Now;
+
+        var updateCIFRequest = await _cifRepository.UpdateCIFRequest(cifRequestId,cifRequest);
+
+        if (!updateCIFRequest)
+        {
+            return new ApiResult {responseCode = "999", responseDescription = "Unsuccessful"};
+        }
+
+        return new ApiResult{responseCode = "000", responseDescription = "Successful"};
+    }
+
+    public ApiResult GetFailedSanctionScreenRequests()
+    {
+        var requests = _cifRepository.GetFailedSanctionScreeningRequests();
+        if (requests is null)
+        {
+            return new ApiResult{responseCode = "000", responseDescription = "There is no Failed Requests"}; 
+        }
+
+        var requestDtos = new List<SanctionScreeningDto>();
+        foreach (var item in requests)
+        {
+         
+            requestDtos.Add(new SanctionScreeningDto{
+                CIFRequestId = item.CIFRequestId,
+                SanctionScreeningAccountId = item.SanctionScreeningAccountId,
+                SanctionScreeningReportDocument = item.RequiredDocuments.SanctionScreeningReportDocument
+            });
+        }
+        return new ApiResult{responseCode = "000", responseDescription = "Successful", data = requestDtos};
+    }
+
+    
 }
