@@ -41,7 +41,11 @@ public class RestRequestHelper : IRestRequestHelper
                 restRequest.RequestFormat = DataFormat.Json;
                 restRequest.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
             }
-            restResponse = this.RestResponseWithPolicy(new RestClient(hostUrl), restRequest);
+            var restClient = new RestClient(hostUrl);
+            restClient.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            //new RestClient(hostUrl)
+            restResponse = this.RestResponseWithPolicy(restClient, restRequest);
+            // restResponse = this.RestResponseWithPolicy(new RestClient(hostUrl), restRequest);
         }
         catch (Exception ex)
         {
