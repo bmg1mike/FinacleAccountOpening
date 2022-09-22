@@ -111,7 +111,7 @@ public class AccountOpeningService : IAccountOpeningService
                     return new ApiResult { responseCode = "999", responseDescription = "Details given does not match with your BVN details" };
                 }
             }
-            
+
 
 
 
@@ -170,8 +170,8 @@ public class AccountOpeningService : IAccountOpeningService
                     title = "175";
                     break;
             }
-        
-            
+
+
 
             var cifRequest = new CIFRequest
             {
@@ -201,7 +201,8 @@ public class AccountOpeningService : IAccountOpeningService
                 Password = password,
                 ConfirmPassword = confirmPassword,
                 //NextOfKinDetail = nextOfKinDetails,
-                Title = title
+                Title = title,
+                BvnDetails = bvnDetails
             };
 
             if (cifRequest.Platform == Platform.RM_Companion.ToString())
@@ -449,7 +450,7 @@ public class AccountOpeningService : IAccountOpeningService
                 }
             }
 
-            
+
 
             var cif = await CreateCIF(cifRequest);
             if (string.IsNullOrEmpty(cif.cif))
@@ -540,7 +541,7 @@ public class AccountOpeningService : IAccountOpeningService
 
             }
 
-            
+
 
             var photographResponse = await SaveDocumentToDataStore(cif, request.PassportPhotograph, "Customer Photograph");
             if (photographResponse.OutCome.Status != "SUCCESS")
@@ -868,14 +869,36 @@ public class AccountOpeningService : IAccountOpeningService
                         request.Title = "040";
                         break;
                     default:
-                    request.Title = "175";
-                    break;
+                        request.Title = "175";
+                        break;
                 }
 
                 phoneNumber = request.PhoneNumber;
             }
-
-
+            IdType idType;
+            if (request.RequiredDocuments.IdentityType.ToUpper().Contains("VOTER"))
+            {
+                idType = IdType.VOTER_CARD;
+            }
+            else if (request.RequiredDocuments.IdentityType.ToUpper().Contains("PASSPORT"))
+            {
+                idType = IdType.INTERNATIONAL_PASSPORT;
+            }
+            else if (request.RequiredDocuments.IdentityType.ToUpper().Contains("DRIVER"))
+            {
+                idType = IdType.DRIVERS_LICENSE;
+            }
+            else
+            {
+                idType = IdType.NATIONAL_IDENTITY;
+            }
+            var IdCardDetails = await VerifyIdCard(new IdVerificationRequest
+            {
+                idNumber = request.RequiredDocuments.IdNumber,
+                idType = idType,
+                lastNameOnId = bvnDetails.LastName,
+                processingOfficer = request.AccountManager
+            });
             var cifRequest = new CIFRequest
             {
                 AccountTypeRequested = AccountTypeRequested.Tier_Three.ToString(),
@@ -885,7 +908,7 @@ public class AccountOpeningService : IAccountOpeningService
                 AccountOpeningStatus = AccountOpeningStatus.Pending.ToString(),
                 EmploymentStatus = request.EmploymentStatusCode,
                 OccupationCode = request.OccupationCode,
-                FirstName =  bvnDetails.FirstName,
+                FirstName = bvnDetails.FirstName,
                 LastName = bvnDetails.LastName,
                 CustomerBVN = bvnDetails.BVN,
                 DateOfBirthInY_M_D_Format = bvnDetails.DateOfBirth,
@@ -935,8 +958,10 @@ public class AccountOpeningService : IAccountOpeningService
                 SubSegment = request.SubSegment ?? string.Empty,
                 NearestBusStop = request.NearestBusStop,
                 PurposeOfAccount = request.PurposeOfAccount ?? string.Empty,
-                InternetBankingForRM = request.InternetBankingForRM ?? false
-                
+                InternetBankingForRM = request.InternetBankingForRM ?? false,
+                IdCardDetails = (IdVerificationResponse)IdCardDetails.data,
+                BvnDetails = bvnDetails
+
             };
             // Check if CIF exist
 
@@ -1003,7 +1028,7 @@ public class AccountOpeningService : IAccountOpeningService
                         return null;
                     }
                 }
-                
+
 
 
                 var cifResponse = await CreateCIF(request);
@@ -1034,7 +1059,7 @@ public class AccountOpeningService : IAccountOpeningService
                 if (request.AccountTypeRequested == AccountTypeRequested.Tier_Three.ToString())
                 {
                     var addressVerificationRequest = await _soapRequestHelper.LogAddressVerification(
-                    AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.CustomerAddress, cifResponse.cif,request.NearestBusStop));
+                    AccountOpeningPayloadHelper.AddressVerificationRequestPayload(request.CustomerAddress, cifResponse.cif, request.NearestBusStop));
                     //
 
                     if (addressVerificationRequest.ResponseCode != "000")
@@ -1296,7 +1321,7 @@ public class AccountOpeningService : IAccountOpeningService
                 SecondarySicCode = "S960",
                 PoliticallyExposed = "N",
                 ShortName = cifRequest.LastName,
-            
+
 
             };
             await _modelContext.AddAsync(customData);
@@ -1795,9 +1820,9 @@ public class AccountOpeningService : IAccountOpeningService
             var moduleId = _config["IdEndpoint:ModuleId"];
 
             var headers = new Dictionary<string, string>();
-            headers.Add("Module_Id",moduleId);
-            headers.Add("Authorization",auth);
-            
+            headers.Add("Module_Id", moduleId);
+            headers.Add("Authorization", auth);
+
             var response = await _restRequestHelper.HttpAsync(Method.POST, url, headers, apiRequest);
 
             if (response.IsSuccessful)
@@ -1855,19 +1880,23 @@ public class AccountOpeningService : IAccountOpeningService
     public async Task<ApiResult> ApproveFailedSanctionScreeningReport(SanctionScreeningComplianceRequest request, string cifRequestId)
     {
         var cifRequest = await _cifRepository.GetCIFRequest(cifRequestId);
+        if (cifRequest is null)
+        {
+            return new ApiResult { responseCode = "999", responseDescription = "Invalid Request Id" };
+        }
         cifRequest.SanctionScreeningComplianceApproval.Comment = request.Comment;
         cifRequest.SanctionScreeningComplianceApproval.ComplianceApprovalStatus = request.ComplianceApprovalStatus.ToString();
         cifRequest.SanctionScreeningComplianceApproval.ComplianceOfficerSapId = request.ComplianceOfficerSapId;
         cifRequest.SanctionScreeningComplianceApproval.DateModified = DateTime.Now;
 
-        var updateCIFRequest = await _cifRepository.UpdateCIFRequest(cifRequestId,cifRequest);
+        var updateCIFRequest = await _cifRepository.UpdateCIFRequest(cifRequestId, cifRequest);
 
         if (!updateCIFRequest)
         {
-            return new ApiResult {responseCode = "999", responseDescription = "Unsuccessful"};
+            return new ApiResult { responseCode = "999", responseDescription = "Unsuccessful" };
         }
 
-        return new ApiResult{responseCode = "000", responseDescription = "Successful"};
+        return new ApiResult { responseCode = "000", responseDescription = "Successful" };
     }
 
     public ApiResult GetFailedSanctionScreenRequests()
@@ -1875,21 +1904,22 @@ public class AccountOpeningService : IAccountOpeningService
         var requests = _cifRepository.GetFailedSanctionScreeningRequests();
         if (requests is null)
         {
-            return new ApiResult{responseCode = "000", responseDescription = "There is no Failed Requests"}; 
+            return new ApiResult { responseCode = "000", responseDescription = "There is no Failed Requests" };
         }
 
         var requestDtos = new List<SanctionScreeningDto>();
         foreach (var item in requests)
         {
-         
-            requestDtos.Add(new SanctionScreeningDto{
+
+            requestDtos.Add(new SanctionScreeningDto
+            {
                 CIFRequestId = item.CIFRequestId,
                 SanctionScreeningAccountId = item.SanctionScreeningAccountId,
                 SanctionScreeningReportDocument = item.RequiredDocuments.SanctionScreeningReportDocument
             });
         }
-        return new ApiResult{responseCode = "000", responseDescription = "Successful", data = requestDtos};
+        return new ApiResult { responseCode = "000", responseDescription = "Successful", data = requestDtos };
     }
 
-    
+
 }

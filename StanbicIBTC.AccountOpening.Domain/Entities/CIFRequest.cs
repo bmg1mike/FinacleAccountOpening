@@ -83,6 +83,8 @@ public partial class CIFRequest
     public SanctionScreeningComplianceApproval SanctionScreeningComplianceApproval { get; set; }
     public string NearestBusStop { get; set; }
     public string PurposeOfAccount { get; set; }
+    public VerifyBVNResponseModel BvnDetails { get; set; }
+    public IdVerificationResponse IdCardDetails { get; set; }
 }
 
 public class SanctionScreeningComplianceApproval
