@@ -10,19 +10,291 @@ public partial class DataContext : DbContext
             : base(options)
         {
         }
-
         public  DbSet<RbxBpmCifCustomDatum> RbxBpmCifCustomData { get; set; }
         public  DbSet<RbxBpmCorpCifCompany> RbxBpmCorpCifCompanies { get; set; }
         public  DbSet<RbxBpmCorpCifCustomDatum> RbxBpmCorpCifCustomData { get; set; }
         public  DbSet<RbxBpmNextOfKinDetail> RbxBpmNextOfKinDetails { get; set; }
         public  DbSet<RbxTBvnLinkageLog> RbxTBvnLinkageLogs { get; set; }
         public  DbSet<RbxRetailsUpdateCustomDatum> RbxRetailsUpdateCustomData { get; set; }
+        public DbSet<RbxTFinCustCreationLog> RbxTFinCustCreationLogs { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.HasDefaultSchema("REDBOX")
             //    .UseCollation("USING_NLS_COMP");
+
+            modelBuilder.Entity<RbxTFinCustCreationLog>(entity =>
+            {
+                entity.ToTable("RBX_T_FIN_CUST_CREATION_LOG");
+
+                entity.Property(e => e.Id)
+                    .HasPrecision(19)
+                    .ValueGeneratedNever()
+                    .HasColumnName("ID");
+
+                entity.Property(e => e.AccountManager)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("ACCOUNT_MANAGER");
+
+                entity.Property(e => e.Bvn)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("BVN");
+
+                entity.Property(e => e.BvnEnrollmentBank)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("BVN_ENROLLMENT_BANK");
+
+                entity.Property(e => e.BvnEnrollmentBranch)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("BVN_ENROLLMENT_BRANCH");
+
+                entity.Property(e => e.BvnLinkageFlag)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("BVN_LINKAGE_FLAG");
+
+                entity.Property(e => e.ChannelId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("CHANNEL_ID");
+
+                entity.Property(e => e.ComponentServerIp)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("COMPONENT_SERVER_IP");
+
+                entity.Property(e => e.CustCoreMigDesc)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("CUST_CORE_MIG_DESC");
+
+                entity.Property(e => e.CustCoreMigStatus)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("CUST_CORE_MIG_STATUS");
+
+                entity.Property(e => e.CustomerBranchId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("CUSTOMER_BRANCH_ID");
+
+                entity.Property(e => e.CustomerId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("CUSTOMER_ID");
+
+                entity.Property(e => e.CustomerTypeCode)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("CUSTOMER_TYPE_CODE");
+
+                entity.Property(e => e.DateOfBirth)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("DATE_OF_BIRTH");
+
+                entity.Property(e => e.EmailAddress)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("EMAIL_ADDRESS");
+
+                entity.Property(e => e.EmploymentStatus)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("EMPLOYMENT_STATUS");
+
+                entity.Property(e => e.Entity)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("ENTITY");
+
+                entity.Property(e => e.FinErrorSrc)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("FIN_ERROR_SRC");
+
+                entity.Property(e => e.FinErrorType)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("FIN_ERROR_TYPE");
+
+                entity.Property(e => e.FinRespCode)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("FIN_RESP_CODE");
+
+                entity.Property(e => e.FinRespDesc)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("FIN_RESP_DESC");
+
+                entity.Property(e => e.FinRespStatus)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("FIN_RESP_STATUS");
+
+                entity.Property(e => e.FirstName)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("FIRST_NAME");
+
+                entity.Property(e => e.Gender)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("GENDER");
+
+                entity.Property(e => e.IsCustomerNonResident)
+                    .HasPrecision(10)
+                    .HasColumnName("IS_CUSTOMER_NON_RESIDENT");
+
+                entity.Property(e => e.IsStaffFlag)
+                    .HasPrecision(10)
+                    .HasColumnName("IS_STAFF_FLAG");
+
+                entity.Property(e => e.LanguageCodes)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("LANGUAGE_CODES");
+
+                entity.Property(e => e.LastName)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("LAST_NAME");
+
+                entity.Property(e => e.LifeTimeId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("LIFE_TIME_ID");
+
+                entity.Property(e => e.MaritalStatus)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("MARITAL_STATUS");
+
+                entity.Property(e => e.MiddleName)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("MIDDLE_NAME");
+
+                entity.Property(e => e.Nationality)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("NATIONALITY");
+
+                entity.Property(e => e.OccupationCode)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("OCCUPATION_CODE");
+
+                entity.Property(e => e.PhoneNumber)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("PHONE_NUMBER");
+
+                entity.Property(e => e.PhysicalAddressDetails)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("PHYSICAL_ADDRESS_DETAILS");
+
+                entity.Property(e => e.ProdReqInTime)
+                    .HasPrecision(6)
+                    .HasColumnName("PROD_REQ_IN_TIME");
+
+                entity.Property(e => e.ProdReqOutTime)
+                    .HasPrecision(6)
+                    .HasColumnName("PROD_REQ_OUT_TIME");
+
+                entity.Property(e => e.ProdRespInTime)
+                    .HasPrecision(6)
+                    .HasColumnName("PROD_RESP_IN_TIME");
+
+                entity.Property(e => e.ProdRespOutTime)
+                    .HasPrecision(6)
+                    .HasColumnName("PROD_RESP_OUT_TIME");
+
+                entity.Property(e => e.RelationshipOpeningDate)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("RELATIONSHIP_OPENING_DATE");
+
+                entity.Property(e => e.RequestUuid)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("REQUEST_UUID");
+
+                entity.Property(e => e.RespCode)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("RESP_CODE");
+
+                entity.Property(e => e.RespDesc)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("RESP_DESC");
+
+                entity.Property(e => e.RespStatus)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("RESP_STATUS");
+
+                entity.Property(e => e.Salutation)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("SALUTATION");
+
+                entity.Property(e => e.SegmentationClass)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("SEGMENTATION_CLASS");
+
+                entity.Property(e => e.ServiceRequestId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("SERVICE_REQUEST_ID");
+
+                entity.Property(e => e.SrcModuleId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("SRC_MODULE_ID");
+
+                entity.Property(e => e.SrcTranRef)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("SRC_TRAN_REF");
+
+                entity.Property(e => e.StaffEmployeeId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("STAFF_EMPLOYEE_ID");
+
+                entity.Property(e => e.SubSegment)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("SUB_SEGMENT");
+
+                entity.Property(e => e.SupportingDocumentData)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("SUPPORTING_DOCUMENT_DATA");
+
+                entity.Property(e => e.TaxDeductionTable)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("TAX_DEDUCTION_TABLE");
+
+                entity.Property(e => e.TranDate)
+                    .HasColumnType("DATE")
+                    .HasColumnName("TRAN_DATE");
+
+                entity.Property(e => e.TranTime)
+                    .HasPrecision(6)
+                    .HasColumnName("TRAN_TIME");
+            });
 
             modelBuilder.Entity<RbxBpmCifCustomDatum>(entity =>
             {

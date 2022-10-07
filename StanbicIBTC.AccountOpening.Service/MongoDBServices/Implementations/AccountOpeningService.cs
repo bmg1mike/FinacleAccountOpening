@@ -1339,6 +1339,11 @@ public class AccountOpeningService : IAccountOpeningService
             };
             await _modelContext.AddAsync(bvnLinkageLog);
 
+            var customLog = new RbxTFinCustCreationLog
+            {
+                
+            };
+
             //var nextofkinId = await _modelContext.RbxBpmCifCustomData.FirstOrDefaultAsync(x => x.Bvn == cifRequest.CustomerBVN);
 
             var nextOfKin = new RbxBpmNextOfKinDetail
