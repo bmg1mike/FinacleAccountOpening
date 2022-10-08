@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -1324,7 +1325,7 @@ public class AccountOpeningService : IAccountOpeningService
 
 
             };
-            await _modelContext.AddAsync(customData);
+            await _modelContext.RbxBpmCifCustomData.AddAsync(customData);
             //await _modelContext.SaveChangesAsync();
             var bvnLinkageLog = new RbxTBvnLinkageLog
             {
@@ -1337,13 +1338,39 @@ public class AccountOpeningService : IAccountOpeningService
                 CifId = cif,
 
             };
-            await _modelContext.AddAsync(bvnLinkageLog);
+            await _modelContext.RbxTBvnLinkageLogs.AddAsync(bvnLinkageLog);
 
             var customLog = new RbxTFinCustCreationLog
             {
-                
+                AccountManager = cifRequest.AccountManagerSapId ?? "A221040",
+                Bvn = cifRequest.CustomerBVN,
+                BvnEnrollmentBank = cifRequest.BvnErollmentBank,
+                BvnEnrollmentBranch = cifRequest.BvnEnrollmentBranch,
+                CustomerId = cifRequest.Cif,
+                DateOfBirth = cifRequest.DateOfBirthInY_M_D_Format,
+                CustomerBranchId = cifRequest.SolId ?? "999999",
+                EmailAddress = cifRequest.Email ?? string.Empty,
+                EmploymentStatus = cifRequest.EmploymentStatus,
+                FirstName = cifRequest.FirstName,
+                LastName = cifRequest.LastName,
+                MiddleName = cifRequest.MiddleName,
+                Gender = cifRequest.Gender,
+                ServiceRequestId = "RetCustAdd",
+                SubSegment = cifRequest.SubSegment ?? "106",
+                SegmentationClass = "001",
+                LanguageCodes = "en",
+                RelationshipOpeningDate = DateTime.Now.ToString("yyyy-MM-dd" + "T" + "HH:mm:ss.fff"),
+                TaxDeductionTable = "001",
+                MaritalStatus = cifRequest.MaritalStatus,
+                Nationality = "NG",
+                CustomerTypeCode = "019",
+                IsCustomerNonResident = 0,
+                ComponentServerIp = Dns.GetHostName(),
+                TranDate = DateTime.Now,
+                TranTime = DateTime.Now
             };
 
+            await _modelContext.RbxTFinCustCreationLogs.AddAsync(customLog);
             //var nextofkinId = await _modelContext.RbxBpmCifCustomData.FirstOrDefaultAsync(x => x.Bvn == cifRequest.CustomerBVN);
 
             var nextOfKin = new RbxBpmNextOfKinDetail
@@ -1362,7 +1389,7 @@ public class AccountOpeningService : IAccountOpeningService
             };
 
 
-            await _modelContext.AddAsync(nextOfKin);
+            await _modelContext.RbxBpmNextOfKinDetails.AddAsync(nextOfKin);
 
             if (await _modelContext.SaveChangesAsync() < 1)
             {
