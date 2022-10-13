@@ -101,7 +101,7 @@ app.UseSerilogRequestLogging();
 
 app.UseCors("corsapp");
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 //  app.UseSwagger();
 //     app.UseSwaggerUI(c => { 
