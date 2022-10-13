@@ -8,6 +8,9 @@ public enum Platform
     Bulk,
     USSD_Device_Financing,
     RM_Companion,
-    Ez_Cash
+    Ez_Cash,
+    Omni_Flow,
+    CBN_Provider,
+    Web_Service_Portal
 }
 
