@@ -9,5 +9,6 @@ namespace StanbicIBTC.AccountOpening.Service
         Task<SoapCallResponse> LogAddressVerification(string payload);
         Task<SoapCallResponse> GetAddressVerificationStatus(string payload);
         Task<SoapCallResponse> DownloadAddressVerificationReport(string payload);
+        Task<SoapCallResponse> DedupCheck(string payloaad);
     }
 }

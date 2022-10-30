@@ -5,9 +5,10 @@ using StanbicIBTC.AccountOpening.Service;
 namespace StanbicIBTC.AccountOpening.API.Controllers.v1
 {
     //[Authorize(AuthenticationSchemes = "Bearer")]
+    
     public class AccountOpeningController : BaseController
     {
-        private readonly IAccountOpeningService _accountOpeningService;
+        private readonly IAccountOpeningService _accountOpeningService; 
 
         public AccountOpeningController(IAccountOpeningService accountOpeningService)
         {
@@ -158,10 +159,10 @@ namespace StanbicIBTC.AccountOpening.API.Controllers.v1
         }
 
         [HttpGet("CheckAccountAvailabilityByBvn/{bvn}")]
-        public IActionResult CheckAccountAvailabilityByBvn(string bvn)
+        public async Task<IActionResult> CheckAccountAvailabilityByBvn(string bvn)
         {
             var result = new Result<CifCheck>();
-            var response = _accountOpeningService.CheckAccountAvailabilityByBvn(bvn);
+            var response = await _accountOpeningService.CheckAccountAvailabilityByBvn(bvn);
             result.Content = (CifCheck)response.data;
             result.ResponseCode = response.responseCode;
             return Ok(result);

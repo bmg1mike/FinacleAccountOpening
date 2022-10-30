@@ -21,7 +21,7 @@ public interface IAccountOpeningService
     ApiResult GetBranches();
     Task<ApiResult> OpenTierOneAccountForEzCash(TierOneAccountOpeningRequest request);
     Task<ApiResult> VerifyIdCard(IdVerificationRequest request);
-    ApiResult CheckAccountAvailabilityByBvn(string bvn);
+    Task<ApiResult> CheckAccountAvailabilityByBvn(string bvn);
     Task<ApiResult> GetFailedCifRequestsByAccountManager(string sapId);
     Task<ApiResult> GetSuccessfulCifRequestsByAccountManager(string sapId);
     Task<ApiResult> GetPendingCifRequestsByAccountManager(string sapId);

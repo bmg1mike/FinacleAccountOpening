@@ -749,7 +749,7 @@ public static class AccountOpeningPayloadHelper
 <firstName>{firstName}</firstName>
 <middleName></middleName>
 <lastName>{lastName}</lastName>
-<dOB>1993-10-03T00:00:00.000</dOB>{dateOfBirth.ToString("YYYY-MM-DD")}
+<dOB>{dateOfBirth.ToString("YYYY-MM-DD")}T00:00:00.000</dOB>
 <phoneNumber>{phoneNumber.AsNigerianPhoneNumber()}</phoneNumber>
 <corporateName>
 </corporateName>

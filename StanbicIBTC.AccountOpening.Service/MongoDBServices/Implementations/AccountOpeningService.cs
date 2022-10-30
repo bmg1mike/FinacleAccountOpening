@@ -47,6 +47,7 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
+            
             //var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
             //var platform = identity.FindFirst("DisplayName").Value;
 
@@ -113,21 +114,6 @@ public class AccountOpeningService : IAccountOpeningService
                 }
             }
 
-
-
-
-            var secretQuestion = string.Empty;
-            var secretAnswer = string.Empty;
-            var password = string.Empty;
-            var confirmPassword = string.Empty;
-
-            if (request.WillOnboard)
-            {
-                secretQuestion = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.SecretQuestion));
-                secretAnswer = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.SecretAnswer));
-                password = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.Password));
-                confirmPassword = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.ConfirmPassword));
-            }
 
             var title = string.Empty;
 
@@ -197,11 +183,10 @@ public class AccountOpeningService : IAccountOpeningService
                 Platform = request.Platform.ToString(),
                 MiddleName = bvnDetails.MiddleName,
                 WillOnBoard = request.WillOnboard,
-                SecretQuestion = secretQuestion,
-                SecretAnswer = secretAnswer,
-                Password = password,
-                ConfirmPassword = confirmPassword,
-                //NextOfKinDetail = nextOfKinDetails,
+                SecretQuestion = string.Empty,
+                SecretAnswer = string.Empty,
+                Password = string.Empty,
+                ConfirmPassword = string.Empty,
                 Title = title,
                 BvnDetails = bvnDetails
             };
@@ -1873,11 +1858,15 @@ public class AccountOpeningService : IAccountOpeningService
 
     }
 
-    public ApiResult CheckAccountAvailabilityByBvn(string bvn)
+    public async Task<ApiResult> CheckAccountAvailabilityByBvn(string bvn)
     {
         try
         {
-            var response = _finacleRepository.CheckCifForBvn(bvn);
+            var bvnDetails = await GetBVNDetails(bvn);
+            var details = bvnDetails.data;
+            var response = _soapRequestHelper.DedupCheck(AccountOpeningPayloadHelper.DedupCheckPayload(details.FirstName,details.LastName,Convert.ToDateTime(details.DateOfBirth),details.PhoneNumber.AsNigerianPhoneNumber()));
+
+            
             if (response is null)
             {
                 return new ApiResult { responseCode = "000", responseDescription = "No record for this Bvn", data = null };
@@ -1952,6 +1941,5 @@ public class AccountOpeningService : IAccountOpeningService
         }
         return new ApiResult { responseCode = "000", responseDescription = "Successful", data = requestDtos };
     }
-
 
 }
