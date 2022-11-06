@@ -49,6 +49,7 @@ public class AccountOpeningService : IAccountOpeningService
     {
         try
         {
+
             //var identity = _contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
             //var platform = identity.FindFirst("DisplayName").Value;
 
@@ -184,7 +185,10 @@ public class AccountOpeningService : IAccountOpeningService
                 Platform = request.Platform.ToString(),
                 MiddleName = bvnDetails.MiddleName,
                 WillOnBoard = request.WillOnboard,
-                //NextOfKinDetail = nextOfKinDetails,
+                SecretQuestion = string.Empty,
+                SecretAnswer = string.Empty,
+                Password = string.Empty,
+                ConfirmPassword = string.Empty,
                 Title = title,
                 BvnDetails = bvnDetails
             };
@@ -1856,17 +1860,14 @@ public class AccountOpeningService : IAccountOpeningService
 
     }
 
-    public ApiResult CheckAccountAvailabilityByBvn(string bvn)
+    public async Task<ApiResult> CheckAccountAvailabilityByBvn(string bvn)
     {
         try
         {
-            var response = _finacleRepository.CheckCifForBvn(bvn);
-            if (response is null)
-            {
-                return new ApiResult { responseCode = "000", responseDescription = "No record for this Bvn", data = null };
-            }
+            var details = _finacleRepository.CheckCifForBvn(bvn);
+            await Task.CompletedTask;
+            return new ApiResult { responseCode = "000", responseDescription = "Successful", data = details };
 
-            return new ApiResult { responseCode = "000", responseDescription = "Customer already has an account", data = response };
         }
         catch (Exception ex)
         {
