@@ -13,6 +13,7 @@ namespace StanbicIBTC.AccountOpening.Data.Mappings
         public MappingProfile()
         {
             CreateMap<BulkAccountRequest, BulkAccountDto>().ReverseMap();
+            CreateMap<RMIdentity, RmIdentityDto>().ReverseMap();
         }
     }
 }

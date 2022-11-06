@@ -22,12 +22,13 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly IOutboundLogRepository _outboundLogRepository;
     private readonly IInboundLogRepository _inboundLogRepository;
     private readonly IHttpContextAccessor _contextAccessor;
+    private readonly IRMIdentityRepository _rmIdentity;
 
     public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper,
             ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt,
             IConfiguration config, IRestRequestHelper restRequestHelper, IFinacleRepository finacleRepository,
             IMassageNotification messagingNotification, DataContext modelContext, IOutboundLogRepository outboundLogRepository,
-            IInboundLogRepository inboundLogRepository, IHttpContextAccessor contextAccessor)
+            IInboundLogRepository inboundLogRepository, IHttpContextAccessor contextAccessor, IRMIdentityRepository rmIdentity)
     {
         _logger = logger;
         _soapRequestHelper = soapRequestHelper;
@@ -41,6 +42,7 @@ public class AccountOpeningService : IAccountOpeningService
         _outboundLogRepository = outboundLogRepository;
         _inboundLogRepository = inboundLogRepository;
         _contextAccessor = contextAccessor;
+        _rmIdentity = rmIdentity;
     }
 
     public async Task<ApiResult> ValidateTierOneAccountOpeningRequest(TierOneAccountOpeningRequest request)
@@ -114,21 +116,6 @@ public class AccountOpeningService : IAccountOpeningService
             }
 
 
-
-
-            var secretQuestion = string.Empty;
-            var secretAnswer = string.Empty;
-            var password = string.Empty;
-            var confirmPassword = string.Empty;
-
-            if (request.WillOnboard)
-            {
-                secretQuestion = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.SecretQuestion));
-                secretAnswer = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.SecretAnswer));
-                password = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.Password));
-                confirmPassword = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.ConfirmPassword));
-            }
-
             var title = string.Empty;
 
             if (request.Platform is Platform.RM_Companion)
@@ -197,10 +184,6 @@ public class AccountOpeningService : IAccountOpeningService
                 Platform = request.Platform.ToString(),
                 MiddleName = bvnDetails.MiddleName,
                 WillOnBoard = request.WillOnboard,
-                SecretQuestion = secretQuestion,
-                SecretAnswer = secretAnswer,
-                Password = password,
-                ConfirmPassword = confirmPassword,
                 //NextOfKinDetail = nextOfKinDetails,
                 Title = title,
                 BvnDetails = bvnDetails
@@ -1951,6 +1934,12 @@ public class AccountOpeningService : IAccountOpeningService
             });
         }
         return new ApiResult { responseCode = "000", responseDescription = "Successful", data = requestDtos };
+    }
+
+    public async Task<ApiResult> GetRMIdentities()
+    {
+        var managers = await _rmIdentity.GetRMIdentitiesAsync();
+        return new ApiResult { responseCode = "000", responseDescription = "Successful", data = managers };
     }
 
 

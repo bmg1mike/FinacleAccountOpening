@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using StanbicIBTC.AccountOpening.Data;
@@ -11,7 +12,7 @@ public static class DependencyInjection
         services.AddControllers()
             .AddFluentValidation(x => x.RegisterValidatorsFromAssemblyContaining<AccountOpeningAttemptDtoValidator>());
 
-
+        services.AddAutoMapper(Assembly.GetExecutingAssembly());
         services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(configuration.GetConnectionString("MongoDb")));
 
         services.AddSingleton<IMongoDbConfig, MongoDbConfig>(
@@ -29,6 +30,7 @@ public static class DependencyInjection
         services.AddTransient<IOutboundLogRepository, OutboundLogRepository>();
         services.AddTransient<IBulkAccountRequestRepository, BulkAccountRequestRepository>();
         services.AddScoped<IFinacleRepository, FinacleRepository>();
+        services.AddScoped<IRMIdentityRepository, RMIdentityRepository>();
 
 
         return services;

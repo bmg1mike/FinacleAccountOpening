@@ -12,6 +12,7 @@ public partial interface IAccountOpeningMongoDBContext
     IMongoCollection<OutboundLog> OutboundLogs { get; set; }
     IMongoCollection<BulkAccountRequest> BulkAccountRequests { get; set; }
     IMongoCollection<BulkAccount> BulkAccounts { get; set; }
+    IMongoCollection<RMIdentity> RMIdentities { get; set; }
 
 }
 

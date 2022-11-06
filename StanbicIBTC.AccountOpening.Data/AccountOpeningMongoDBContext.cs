@@ -11,6 +11,7 @@ public partial class AccountOpeningMongoDBContext : IAccountOpeningMongoDBContex
     public IMongoCollection<OutboundLog> OutboundLogs { get; set; }
     public IMongoCollection<BulkAccountRequest> BulkAccountRequests { get; set; }
     public IMongoCollection<BulkAccount> BulkAccounts { get; set; }
+    public IMongoCollection<RMIdentity> RMIdentities { get; set; }
 
     public AccountOpeningMongoDBContext(IMongoDbConfig config, IMongoClient mongoClient)
     {
@@ -24,6 +25,7 @@ public partial class AccountOpeningMongoDBContext : IAccountOpeningMongoDBContex
         OutboundLogs = database.GetCollection<OutboundLog>("Outbound_Logs");
         BulkAccountRequests = database.GetCollection<BulkAccountRequest>("BulkAccountRequests");
         BulkAccounts = database.GetCollection<BulkAccount>("BulkAccounts");
+        RMIdentities = database.GetCollection<RMIdentity>("RM_Identities");
 
     }
 
