@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Security.Claims;
@@ -23,6 +24,7 @@ public class AccountOpeningService : IAccountOpeningService
     private readonly IInboundLogRepository _inboundLogRepository;
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IRMIdentityRepository _rmIdentity;
+    private readonly IMapper _mapper;
 
     public AccountOpeningService(ILogger<AccountOpeningService> logger, ISoapRequestHelper soapRequestHelper,
             ICIFRequestRepository cifRepository, IAccountOpeningAttemptRepository accountOpeningAttempt,
@@ -1943,5 +1945,26 @@ public class AccountOpeningService : IAccountOpeningService
         return new ApiResult { responseCode = "000", responseDescription = "Successful", data = managers };
     }
 
+    public async Task<ApiResult> AddRelationshipManager(RmIdentityDto request)
+    {
+        try
+        {
+            var rmIdentity = new RMIdentity
+            {
+                AANumber = request.AANumber,
+                Email = request.Email,
+                FullName = request.FullName,
+                Region = request.Region,
+                SAP = request.SAP
+            };
+            var manager = await _rmIdentity.AddRmIdentity(rmIdentity);
+            return new ApiResult { responseCode = "000", responseDescription = "Successful", data = manager };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription = ex.Message };
+        }
+    }
 
 }

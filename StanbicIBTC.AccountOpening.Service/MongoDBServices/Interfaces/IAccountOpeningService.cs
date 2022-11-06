@@ -28,4 +28,5 @@ public interface IAccountOpeningService
     Task<ApiResult> ApproveFailedSanctionScreeningReport(SanctionScreeningComplianceRequest request, string cifRequestId);
     ApiResult GetFailedSanctionScreenRequests();
     Task<ApiResult> GetRMIdentities();
+    Task<ApiResult> AddRelationshipManager(RmIdentityDto request);
 }

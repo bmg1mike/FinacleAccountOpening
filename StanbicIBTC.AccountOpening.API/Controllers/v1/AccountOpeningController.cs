@@ -159,10 +159,10 @@ public class AccountOpeningController : BaseController
     }
 
     [HttpGet("CheckAccountAvailabilityByBvn/{bvn}")]
-    public IActionResult CheckAccountAvailabilityByBvn(string bvn)
+    public async Task<IActionResult> CheckAccountAvailabilityByBvn(string bvn)
     {
         var result = new Result<CifCheck>();
-        var response = _accountOpeningService.CheckAccountAvailabilityByBvn(bvn);
+        var response = await _accountOpeningService.CheckAccountAvailabilityByBvn(bvn);
         result.Content = (CifCheck)response.data;
         result.ResponseCode = response.responseCode;
         return Ok(result);
@@ -224,6 +224,17 @@ public class AccountOpeningController : BaseController
         var result = new Result<List<RmIdentityDto>>();
         var response = await _accountOpeningService.GetRMIdentities();
         result.Content = (List<RmIdentityDto>)response.data;
+        result.ResponseCode = response.responseCode;
+        return Ok(result);
+    }
+
+    [HttpPost("AddRelationshipManager")]
+    [ProducesResponseType(200,Type = typeof(Result<string>))]
+    public async Task<IActionResult> AddRelationshipManager(RmIdentityDto data)
+    {
+        var result = new Result<string>(); 
+        var response = await _accountOpeningService.AddRelationshipManager(data);
+        result.Content = (string)response.data;
         result.ResponseCode = response.responseCode;
         return Ok(result);
     }
