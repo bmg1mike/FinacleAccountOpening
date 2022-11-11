@@ -1967,4 +1967,67 @@ public class AccountOpeningService : IAccountOpeningService
         }
     }
 
+    public async Task<ApiResult> GetAccountOpeningDetails()
+    {
+        try
+        {
+            var cifRequests = await _cifRepository.GetCIFRequests();
+            var details = new List<AccountOpeningDetails>();
+            foreach (var item in cifRequests)
+            {
+                details.Add(new AccountOpeningDetails
+                {
+                    Id = item.CIFRequestId,
+                    AccountNumber = item.AccountNumber,
+                    Cif = item.Cif,
+                    CustomerBVN = item.CustomerBVN,
+                    Email = item.Email,
+                    FirstName = item.FirstName,
+                    LastName = item.LastName,
+                    MiddleName = item.MiddleName,
+                    RequiredDocuments = item.RequiredDocuments
+                });
+            }
+
+            return new ApiResult { data = details, responseCode = "000", responseDescription = "Successful" };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription = ex.Message };
+        }
+
+    }
+
+    public async Task<ApiResult> GetAccountDetailsById(string id)
+    {
+        try
+        {
+            var cifRequest = await _cifRepository.GetCIFRequest(id);
+            if (cifRequest == null)
+            {
+                return new ApiResult { responseCode = "999", responseDescription = $"There is no details with the Id {id}" };
+            }
+            var details = new AccountOpeningDetails
+            {
+                Id = cifRequest.CIFRequestId,
+                AccountNumber = cifRequest.AccountNumber,
+                Cif = cifRequest.Cif,
+                CustomerBVN = cifRequest.CustomerBVN,
+                Email = cifRequest.Email,
+                FirstName = cifRequest.FirstName,
+                LastName = cifRequest.LastName,
+                MiddleName = cifRequest.MiddleName,
+                RequiredDocuments = cifRequest.RequiredDocuments
+            };
+
+            return new ApiResult { data = details, responseCode = "000", responseDescription = "Successful" };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return new ApiResult { responseCode = "999", responseDescription = ex.Message };
+        }
+    }
+
 }

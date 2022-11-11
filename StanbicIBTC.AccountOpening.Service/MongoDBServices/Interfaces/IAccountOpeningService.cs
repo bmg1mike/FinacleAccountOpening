@@ -29,4 +29,7 @@ public interface IAccountOpeningService
     ApiResult GetFailedSanctionScreenRequests();
     Task<ApiResult> GetRMIdentities();
     Task<ApiResult> AddRelationshipManager(RmIdentityDto request);
+    Task<ApiResult> GetAccountDetailsById(string id);
+    Task<ApiResult> GetAccountOpeningDetails();
+
 }

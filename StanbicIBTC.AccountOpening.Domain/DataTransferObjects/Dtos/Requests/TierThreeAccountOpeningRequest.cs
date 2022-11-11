@@ -69,22 +69,22 @@ public class EmployedAndStudentCustomerInformation
 
 public class RequiredDocuments
 {
-    public string IdentityType { get; set; }
-    public string IdNumber { get; set; }
-    public string IdImage { get; set; } // regulatory Id
-    public string IdImageExtension { get; set; }
+    public string IdentityType { get; set; } = string.Empty;
+    public string IdNumber { get; set; } = string.Empty;
+    public string IdImage { get; set; } = string.Empty; // regulatory Id
+    public string IdImageExtension { get; set; } = string.Empty;
     public DateTime? IdIssueDate { get; set; }
     public DateTime? IdExpiryDate { get; set; }
-    public string PassportPhotograph { get; set; }
-    public string PassportPhotographExtension { get; set; }
-    public string Signature { get; set; }
-    public string SignatureExtension { get; set; }
-    public string UtilityBill { get; set; }
-    public string UtilityBillExtension { get; set; }
-    public string AopDocument { get; set; }
-    public string BvnVerificationDocument { get; set; }
-    public string IdVerificationDocument { get; set; }
-    public string SanctionScreeningReportDocument { get; set; }
+    public string PassportPhotograph { get; set; } = string.Empty;
+    public string PassportPhotographExtension { get; set; } = string.Empty;
+    public string Signature { get; set; } = string.Empty;
+    public string SignatureExtension { get; set; } = string.Empty;
+    public string UtilityBill { get; set; } = string.Empty;
+    public string UtilityBillExtension { get; set; } = string.Empty;
+    public string AopDocument { get; set; } = string.Empty;
+    public string BvnVerificationDocument { get; set; } = string.Empty;
+    public string IdVerificationDocument { get; set; } = string.Empty;
+    public string SanctionScreeningReportDocument { get; set; } = string.Empty;
 }
 
 public class SoleProprietor

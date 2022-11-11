@@ -221,6 +221,7 @@ public class AccountOpeningController : BaseController
     [ProducesResponseType(200, Type = typeof(Result<List<RmIdentityDto>>))]
     public async Task<IActionResult> GetRmIdentities()
     {
+        
         var result = new Result<List<RmIdentityDto>>();
         var response = await _accountOpeningService.GetRMIdentities();
         result.Content = (List<RmIdentityDto>)response.data;
@@ -229,12 +230,34 @@ public class AccountOpeningController : BaseController
     }
 
     [HttpPost("AddRelationshipManager")]
-    [ProducesResponseType(200,Type = typeof(Result<string>))]
+    [ProducesResponseType(200, Type = typeof(Result<string>))]
     public async Task<IActionResult> AddRelationshipManager(RmIdentityDto data)
     {
-        var result = new Result<string>(); 
+        var result = new Result<string>();
         var response = await _accountOpeningService.AddRelationshipManager(data);
         result.Content = (string)response.data;
+        result.ResponseCode = response.responseCode;
+        return Ok(result);
+    }
+
+    [HttpGet("GetAccountOpeningDetails")]
+    [ProducesResponseType(200, Type = typeof(Result<List<AccountOpeningDetails>>))]
+    public async Task<IActionResult> GetAccountOpeningDetails()
+    {
+        var result = new Result<List<AccountOpeningDetails>>();
+        var response = await _accountOpeningService.GetAccountOpeningDetails();
+        result.Content = (List<AccountOpeningDetails>)response.data;
+        result.ResponseCode = response.responseCode;
+        return Ok(result);
+    }
+
+    [HttpGet("GetAccountOpeningDetails/{id}")]
+    [ProducesResponseType(200, Type = typeof(AccountOpeningDetails))]
+    public async Task<IActionResult> GetAccountOpeningDetailsById(string id)
+    {
+        var result = new Result<AccountOpeningDetails>();
+        var response = await _accountOpeningService.GetAccountDetailsById(id);
+        result.Content = (AccountOpeningDetails)response.data;
         result.ResponseCode = response.responseCode;
         return Ok(result);
     }
