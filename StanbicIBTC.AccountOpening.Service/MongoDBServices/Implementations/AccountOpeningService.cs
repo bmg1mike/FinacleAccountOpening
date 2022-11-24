@@ -197,7 +197,8 @@ public class AccountOpeningService : IAccountOpeningService
 
             if (cifRequest.Platform == Platform.RM_Companion.ToString())
             {
-                cifRequest.AccountManagerSapId = request.AccountManager;
+                var rm = await _rmIdentity.GetRMIdentityByAASapIdAsync(request.CustomerRelationshipManager);
+                cifRequest.AccountManagerSapId = rm.AANumber ?? request.AccountManager;
                 cifRequest.BranchManagerSapId = request.CustomerRelationshipManager;
                 cifRequest.SolId = request.BranchId;
                 cifRequest.LgaOfResidence = request.LgaOfResidence;
