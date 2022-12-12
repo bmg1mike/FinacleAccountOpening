@@ -19,7 +19,7 @@ public class RMIdentityRepository : IRMIdentityRepository
 
     public async Task<RMIdentity> GetRMIdentityByAASapIdAsync(string sapId)
     {
-        var identity = context.RMIdentities.AsQueryable().Where(x => x.AANumber == sapId).FirstOrDefault();
+        var identity = context.RMIdentities.AsQueryable().Where(x => x.SAP == sapId).FirstOrDefault();
         await Task.CompletedTask;
         return identity;
     }
