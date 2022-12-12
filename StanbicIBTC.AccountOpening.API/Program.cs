@@ -8,9 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Configuration.SetBasePath($"{Directory.GetCurrentDirectory()}/others")
-   .AddJsonFile("appsettings.json")
-   .Build();
+// builder.Configuration.SetBasePath($"{Directory.GetCurrentDirectory()}/others")
+//    .AddJsonFile("appsettings.json")
+//    .Build();
 
 builder.Host.UseSerilog((context, config) =>
 {
@@ -59,11 +59,12 @@ builder.Services.AddHealthChecksUI(opt =>
     opt.SetApiMaxActiveRequests(1); //api requests concurrency    
     // $"https://{Dns.GetHostName()}:5100/health"
     opt.AddHealthCheckEndpoint("Acount Opening api", $"https://{Dns.GetHostName()}:443/health"); //map health check api    
-    opt.UseApiEndpointHttpMessageHandler(x => {
+    opt.UseApiEndpointHttpMessageHandler(x =>
+    {
         return new HttpClientHandler
         {
             ClientCertificateOptions = ClientCertificateOption.Manual,
-			ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
+            ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
         };
     });
 })
@@ -101,7 +102,7 @@ app.UseSerilogRequestLogging();
 
 app.UseCors("corsapp");
 
- app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 //  app.UseSwagger();
 //     app.UseSwaggerUI(c => { 
