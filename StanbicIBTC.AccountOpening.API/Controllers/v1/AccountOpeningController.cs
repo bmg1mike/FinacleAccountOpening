@@ -169,6 +169,7 @@ public class AccountOpeningController : BaseController
     }
 
     [HttpGet("GetFailedAccountsByAccountManager/{sapId}")]
+    [ProducesResponseType(200, Type = typeof(Result<List<UserResponse>>))]
     public async Task<IActionResult> GetFailedAccountsByAccountManager(string sapId)
     {
         var result = new Result<List<UserResponse>>();
@@ -179,6 +180,7 @@ public class AccountOpeningController : BaseController
     }
 
     [HttpGet("GetSuccessfulAccountsByAccountManager/{sapId}")]
+    [ProducesResponseType(200, Type = typeof(Result<List<UserResponse>>))]
     public async Task<IActionResult> GetSuccessfulAccountsByAccountManager(string sapId)
     {
         var result = new Result<List<UserResponse>>();
@@ -189,6 +191,7 @@ public class AccountOpeningController : BaseController
     }
 
     [HttpGet("GetPendingAccountsByAccountManager/{sapId}")]
+    [ProducesResponseType(200, Type = typeof(Result<List<UserResponse>>))]
     public async Task<IActionResult> GetPendingAccountsByAccountManager(string sapId)
     {
         var result = new Result<List<UserResponse>>();
@@ -199,6 +202,7 @@ public class AccountOpeningController : BaseController
     }
 
     [HttpPost("ApproveSanctionScreeningRequest/{id}")]
+    [ProducesResponseType(200, Type = typeof(Result<string>))]
     public async Task<IActionResult> ApproveSanctionScreeningRequest(string id, [FromBody] SanctionScreeningComplianceRequest request)
     {
         var result = new Result<string>();
@@ -208,6 +212,7 @@ public class AccountOpeningController : BaseController
     }
 
     [HttpGet("GetFailedSanctionScreenRequests")]
+    [ProducesResponseType(200, Type = typeof(Result<List<SanctionScreeningDto>>))]
     public IActionResult GetFailedSanctionScreenRequests()
     {
         var result = new Result<List<SanctionScreeningDto>>();
@@ -221,7 +226,7 @@ public class AccountOpeningController : BaseController
     [ProducesResponseType(200, Type = typeof(Result<List<RmIdentityDto>>))]
     public async Task<IActionResult> GetRmIdentities()
     {
-        
+
         var result = new Result<List<RmIdentityDto>>();
         var response = await _accountOpeningService.GetRMIdentities();
         result.Content = (List<RmIdentityDto>)response.data;
