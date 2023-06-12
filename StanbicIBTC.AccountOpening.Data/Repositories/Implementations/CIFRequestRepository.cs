@@ -61,6 +61,7 @@ public partial class CIFRequestRepository : ICIFRequestRepository
         var filter = context.CIFRequests.AsQueryable();
         var cifRequests = filter.Where(x => x.SolId == branchId && x.BulkAccountId == bulkAccountId && x.IsAccountOpenedSuccessfully == true)
                         .OrderByDescending(x => x.DateModified).ToList();
+        await Task.CompletedTask;
         return cifRequests;
     }
     public async Task<List<CIFRequest>> GetPendingCifRequests()
